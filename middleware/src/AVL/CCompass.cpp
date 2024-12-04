@@ -78,7 +78,7 @@ void CCompass::Fnx_Lsm303Thread()
     return;
 }
 
-CCompass::CCompass(void *hannle)
+CCompass::CCompass(void *handle, int ch)
 {
     m_yawAngle = 0;
     m_samples = 0;
@@ -89,7 +89,7 @@ CCompass::CCompass(void *hannle)
     memset(&compassFiltery, 0, sizeof(MovingAverageFilter));
     calibration_flag = 0;
     calibration_offset_angle = 90;
-    m_han = hannle;
+    m_han = handle;
 }
 
 CCompass::~CCompass()

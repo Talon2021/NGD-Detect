@@ -1,8 +1,14 @@
 include ../profile
 #include ./porfile
+#export MAKEFLAGS="--color=always"
+#export CFLAGS="-fdiagnostics-color=always"
+#export LDFLAGS="-fdiagnostics-color=always"
+
+
+
 ARCH:=arm
-CROSS_COMPILE_PREFIX=arm-linux-gnueabihf-
-CROSS_COMPILE_PATH=/opt/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin
+CROSS_COMPILE_PREFIX=aarch64-buildroot-linux-gnu-
+CROSS_COMPILE_PATH=/opt/rk3588_host/host/bin
 
 LIBDIR=../../lib
 
@@ -12,9 +18,9 @@ STRIP=$(CROSS_COMPILE_PREFIX)strip
 RM=rm -rf
 INSTALL=install -cv -m 777
 CFLAGS+= -fPIC -shared 
-CFLAGS+= -Wall 
+CFLAGS+= -Wall -std=c++17
 RFLAGS+= $(CFLAGS) -Os -DNDEBUG
-DFLAGS+= $(CFLAGS) -W -g
+DFLAGS+= $(CFLAGS) -W -g 
 TESTFLAGS+= -O3 -DNDEBUG -Wall
 LFLAGS+= -lpthread #-ldbus-1
 
@@ -46,18 +52,22 @@ ifeq ($(NET_ETHERNET),yes)
 CFLAGS += -DNET_ETHERNET
 endif
 
+ifeq ($(PROCESS_CTRL),yes)
+CFLAGS += -DPROCESS_CTRL
+endif
+
 #moudle include
 INCPATH+=-I../../../moudle/include/minini
 INCPATH+=-I../../../moudle/include/mahony
 INCPATH+=-I../../../moudle/include
 INCPATH+=-I../../../moudle/ip
-
+INCPATH+=-I../../../moudle/mqtt
 #network
 INCPATH+=-I../../include/network
 
 #mid
 INCPATH+=-I../../inc
-INCPATH+=-I../include -I../common -I../NET
+INCPATH+=-I../include -I../common -I../NET -I../MSG
 LIBPATH+= -L../../lib
 
 #alg include

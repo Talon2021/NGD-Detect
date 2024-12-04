@@ -46,7 +46,7 @@ public:
     int m_gpsThreadExit;
     int m_timeZone;
     pthread_mutex_t m_lock;
-    CCGpsPosition(void *hannle);
+    CCGpsPosition(void *handle, int ch);
     ~CCGpsPosition();
     int Init();
     int UnInit();

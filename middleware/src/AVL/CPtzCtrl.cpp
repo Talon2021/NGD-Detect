@@ -72,14 +72,14 @@ static int CheckPtzUartData(unsigned char *data, int size)
     return 0;
 }
 
-CPtzCtrl::CPtzCtrl(void *hannle)
+CPtzCtrl::CPtzCtrl(void *handle, int ch)
 {
     m_ptzYaw = 0;
     m_ptzPitch = 0;
     m_mode = 0;
     m_ptzstep = 0;
     m_enable = 0;
-    m_han = hannle;
+    m_han = handle;
     memset(&m_preset, 0, sizeof(m_preset));
     m_preset_size = 0;
 }
@@ -157,7 +157,8 @@ int CPtzCtrl::Init()
     pthread_mutex_init(&m_lock,NULL);
     m_serial = new Cserial(DEV_TTYSERIAL, 115200);
     m_serial->init();
-    PtzZeroInit();
+    //PtzZeroInit();
+    m_init = 1;
     CConfig *pcfg = CConfig::GetInstance();
     m_mode = pcfg->GetValue(PTZ_CTRLINFO, "scan_mode", (long)PTZ_SCAN_WEEKLY);
     m_ptzstep = pcfg->GetValue(PTZ_CTRLINFO, "ptz_step", (float)PTZ_STEP_ANGLE);
@@ -180,9 +181,9 @@ int CPtzCtrl::Init()
     else
         SetScanModel(m_han, PTZ_SCAN_WEEKLY);
 #endif
-    QueryVersion();
-    InitSetParamMotor();
-    m_read_uart_hread = std::thread(std::bind(&CPtzCtrl::Fnx_ReadUartThread,this));
+    //QueryVersion();
+    //InitSetParamMotor();
+    //m_read_uart_hread = std::thread(std::bind(&CPtzCtrl::Fnx_ReadUartThread,this));
     
    
 #ifdef ALG_SDK
@@ -200,12 +201,18 @@ int CPtzCtrl::UnInit()
     //SetPtzEnable(0);    //归0前，必须停止
     PtzZeroInit();
     pthread_mutex_destroy(&m_lock);
+    m_init = 0;
     return 0;
 }
 
 int CPtzCtrl::SetPtzPitchAngle(double pitch)
 {
     //int ret = 0;
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     int sum = 0;
     unsigned char buf[PTZ_WRIT_BUFF] = {0};
     pthread_mutex_lock(&m_lock);
@@ -247,6 +254,11 @@ int CPtzCtrl::SetPtzPitchAngle(double pitch)
 
 int CPtzCtrl::GetPtzPitchAngle(double *pitch)
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     pthread_mutex_lock(&m_lock);
     *pitch = m_ptzPitch;
     pthread_mutex_unlock(&m_lock);
@@ -255,6 +267,11 @@ int CPtzCtrl::GetPtzPitchAngle(double *pitch)
 
 int CPtzCtrl::SetPtzYawAngle(double yaw)
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     int sum = 0;
     unsigned char buf[PTZ_WRIT_BUFF] = {0};
     pthread_mutex_lock(&m_lock);
@@ -294,6 +311,11 @@ int CPtzCtrl::SetPtzYawAngle(double yaw)
 
 int CPtzCtrl::GetPtzYawAngle(double *yaw)
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     pthread_mutex_lock(&m_lock);
     *yaw = m_ptzYaw;
     pthread_mutex_unlock(&m_lock);
@@ -302,6 +324,11 @@ int CPtzCtrl::GetPtzYawAngle(double *yaw)
 
 int CPtzCtrl::SetScanMode(int mode)
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     pthread_mutex_lock(&m_lock);
     int sum = 0;
     unsigned char buf[PTZ_WRIT_BUFF] = {0};
@@ -345,6 +372,11 @@ int CPtzCtrl::SetScanMode(int mode)
 
 int CPtzCtrl::GetScanMode(int *mode)
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     pthread_mutex_lock(&m_lock);
     *mode = m_mode;
     pthread_mutex_unlock(&m_lock);
@@ -353,6 +385,11 @@ int CPtzCtrl::GetScanMode(int *mode)
 
 int CPtzCtrl::SetStep(double step)
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     pthread_mutex_lock(&m_lock);
     CConfig *pcfg = CConfig::GetInstance();
     m_ptzstep = step;
@@ -363,6 +400,11 @@ int CPtzCtrl::SetStep(double step)
 
 int CPtzCtrl::GetStep(double *step)
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     pthread_mutex_lock(&m_lock);
     *step = m_ptzstep;
     pthread_mutex_unlock(&m_lock);
@@ -371,7 +413,11 @@ int CPtzCtrl::GetStep(double *step)
 
 int CPtzCtrl::SetPtzEnable(int enable)
 {
-    DEBUG("ptz enable = %d\n",enable);
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     pthread_mutex_lock(&m_lock);
     int sum = 0;
     unsigned char buf[PTZ_WRIT_BUFF_1] = {0};
@@ -403,6 +449,11 @@ int CPtzCtrl::SetPtzEnable(int enable)
 
 int CPtzCtrl::GetPtzEnable(int *enable)
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     pthread_mutex_lock(&m_lock);
     *enable = m_enable;
     pthread_mutex_unlock(&m_lock);
@@ -445,6 +496,11 @@ int CPtzCtrl::AngleToPix(int angle)
 
 int CPtzCtrl::StartYawElc()
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     int sum;
     unsigned char buf[PTZ_WRIT_BUFF_1];
     memset(buf, 0, sizeof(buf));
@@ -468,6 +524,11 @@ int CPtzCtrl::StartYawElc()
 
 int CPtzCtrl::QueryVersion()
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     int sum = 0;
     unsigned char buf[PTZ_WRIT_BUFF_1];
     memset(buf, 0, sizeof(buf));
@@ -487,6 +548,11 @@ int CPtzCtrl::QueryVersion()
 
 int CPtzCtrl::DataTransm(void *data, int len, void *out)
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     int ret = 0;
     m_serial->UartWrite((const unsigned char *)data, len);
     if(ret != 0)
@@ -500,6 +566,11 @@ int CPtzCtrl::DataTransm(void *data, int len, void *out)
 
 int CPtzCtrl::PtzZeroInit()
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     static int last_time = 0;
     int sum = 0;
     int i = 0;
@@ -549,7 +620,11 @@ int CPtzCtrl::PtzZeroInit()
 
 int CPtzCtrl::SetTargetLocation(target_data data)
 {
-    
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     double angle = data.target_angle;
     if(data.mode == 0)
     {
@@ -618,6 +693,11 @@ int CPtzCtrl::SetTargetLocation(target_data data)
 
 int CPtzCtrl::GetTargetLocation(target_data *data)
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     pthread_mutex_lock(&m_lock);
     data->target_angle = m_targetAngle;
     data->angle_x = m_target_x;
@@ -628,6 +708,11 @@ int CPtzCtrl::GetTargetLocation(target_data *data)
 
 int CPtzCtrl::SetFanScanAngle(double startAngle, double endAngle)
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     pthread_mutex_lock(&m_lock);
     int sum = 0;
     unsigned short start_intpart = (unsigned short)floor(startAngle);
@@ -662,6 +747,11 @@ int CPtzCtrl::SetFanScanAngle(double startAngle, double endAngle)
 
 int CPtzCtrl::GetFanScanAngle(double *startAngle, double *endAngle)
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     pthread_mutex_lock(&m_lock);
     *startAngle = m_startAngle;
     *endAngle = m_endAngle;
@@ -671,6 +761,11 @@ int CPtzCtrl::GetFanScanAngle(double *startAngle, double *endAngle)
 
 int CPtzCtrl::SetScanSpeed(unsigned short speed)
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     pthread_mutex_lock(&m_lock);
     int sum = 0;
     unsigned char buf[PTZ_WRIT_BUFF] = {0};
@@ -701,6 +796,11 @@ int CPtzCtrl::SetScanSpeed(unsigned short speed)
 
 int CPtzCtrl::GetScanSpeed(unsigned short *speed)
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     pthread_mutex_lock(&m_lock);
     *speed = m_speed;
     pthread_mutex_unlock(&m_lock);
@@ -709,6 +809,11 @@ int CPtzCtrl::GetScanSpeed(unsigned short *speed)
 
 int CPtzCtrl::SetFanEnable(int enable)
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     if(m_fan_enable == enable)
         return 0;
     pthread_mutex_lock(&m_lock);
@@ -740,6 +845,11 @@ int CPtzCtrl::GetFanEnable()
 
 int CPtzCtrl::SetHeatingEnbale(int enable)
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     if(m_heating_enable == enable)
         return 0;
     pthread_mutex_lock(&m_lock);
@@ -771,6 +881,11 @@ int CPtzCtrl::GetHeatingEnbale()
 
 int CPtzCtrl::SetPreset(char *preset_name)
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     if(m_preset_size >= 256)
     {
         ERROR("set preset is max\n");
@@ -794,6 +909,11 @@ int CPtzCtrl::SetPreset(char *preset_name)
 
 int CPtzCtrl::GetPreset(traget_preset *presetInfo, int *num)
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     pthread_mutex_lock(&m_lock);
     *num = m_preset_size;
     memcpy(presetInfo, m_preset, sizeof(traget_preset) * m_preset_size);
@@ -804,6 +924,11 @@ int CPtzCtrl::GetPreset(traget_preset *presetInfo, int *num)
 
 int CPtzCtrl::DelPreset(char *preset_name)
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     if(preset_name == NULL)
     {
         ERROR("param is null\n");
@@ -824,6 +949,11 @@ int CPtzCtrl::DelPreset(char *preset_name)
 
 int CPtzCtrl::SetPresetEx(traget_preset *presetInfo, int num)
 {
+    if(m_init != 1)
+    {
+        ERROR("ptz is no init \n");
+        return -1;
+    }
     if(presetInfo == NULL)
     {
         ERROR("prame is err \n");

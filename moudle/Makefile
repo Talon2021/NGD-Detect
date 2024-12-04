@@ -1,6 +1,6 @@
 #!/usr/bin/make -f
 
-MODS:=minini mahony ip
+MODS:=minini mahony ip mqtt
 
 .PHONY:release clean
 

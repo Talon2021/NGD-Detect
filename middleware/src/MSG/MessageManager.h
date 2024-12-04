@@ -2,7 +2,6 @@
 #define _MESSAGE_MANAGER_H_
 
 #include "AsyncPro.h"
-
 #define MAX_MSGHANDLE   1
 typedef struct msg_alarmInfo
 {
@@ -29,6 +28,8 @@ public:
     int UnInit();
 
     int MSG_SetAlarmCallback(MSG_ALARMCALLBACK cb);
+
+    int MSG_SendMessage(int ch, int code, std::string data, int wait_flag, int time_out, std::shared_ptr<receMessage> out_msg);
 private:
 
     void GetMessageThread(int arg); 
@@ -40,6 +41,7 @@ private:
     static MessageManager *m_messageManagerHandle;
     
     std::thread m_GetMsgthread[MAX_MSGHANDLE];
+    
     
 };
 

@@ -52,7 +52,7 @@ private:
     CConfig *m_CConfig;
     int LoadParam();
 public:
-    CCoder(void *handle);
+    CCoder(void *handle, int ch);
     ~CCoder();
 
     int Init();

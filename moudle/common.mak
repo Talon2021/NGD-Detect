@@ -1,6 +1,6 @@
 ARCH:=arm
-CROSS_COMPILE_PREFIX=arm-linux-gnueabihf-
-CROSS_COMPILE_PATH=/opt/gcc-arm-8.3-2019.03-x86_64-arm-linux-gnueabihf/bin
+CROSS_COMPILE_PREFIX=aarch64-buildroot-linux-gnu-
+CROSS_COMPILE_PATH=/opt/rk3588_host/host/bin
 
 LIBDIR=../../middleware/lib
 
@@ -10,9 +10,12 @@ STRIP=$(CROSS_COMPILE_PREFIX)strip
 RM=rm -rf
 INSTALL=install -cv -m 777
 CFLAGS+= -fPIC -shared 
-CFLAGS+= -Wall 
+CFLAGS+= -Wall -fcommon
+CPPFLAGS+= -fPIC -shared 
+CPPFLAGS+=-Wall -std=c++17 -fcommon
 RFLAGS+= $(CFLAGS) -Os -DNDEBUG
-DFLAGS+= $(CFLAGS) -W -g
+CPPRFLAGS+= $(CPPFLAGS) -Os -DNDEBUG
+DFLAGS+= $(CFLAGS) -W -g 
 TESTFLAGS+= -O3 -DNDEBUG -Wall
 LFLAGS+= -lpthread #-ldbus-1
 
@@ -60,7 +63,7 @@ $(DEBUG_TARGET):$(addprefix $(DEBUG_DIR)/,$(OBJECTS))
 	$(INSTALL) $@ ${LIBDIR} 
 	
 $(RELEASE_TARGET):$(addprefix $(RELEASE_DIR)/,$(OBJECTS))
-	$(CXX) -o $@ $^ $(LFLAGS) $(LIBPATH) $(RFLAGS)
+	$(CXX) -o $@ $^ $(LFLAGS) $(LIBPATH) $(CPPRFLAGS)
 	$(STRIP) $@
 	$(INSTALL) $@ ${LIBDIR}
 # cp $@ ../../lib -rf
@@ -77,4 +80,4 @@ $(DEBUG_DIR)/%.o:%.cpp
 	$(CXX) -c $^ -o $@ $(DFLAGS) $(INCPATH)
 
 $(RELEASE_DIR)/%.o:%.cpp
-	$(CXX) -c $^ -o $@ $(RFLAGS) $(INCPATH)
+	$(CXX) -c $^ -o $@ $(CPPRFLAGS) $(INCPATH)

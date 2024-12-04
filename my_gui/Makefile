@@ -1,5 +1,5 @@
 # Compiler settings - Can change to clang++ if required
-CXX := arm-linux-gnueabihf-g++
+CXX := aarch64-buildroot-linux-gnu-g++
 # Compiler flags
 CXXFLAGS := -Wall -g -I./include
 CXXFLAGS += -I../middleware/src/common
@@ -7,10 +7,13 @@ CXXFLAGS += -I../middleware/src/include
 CXXFLAGS += -I../middleware/include/algdetect
 CXXFLAGS += -I../middleware/include/network
 CXXFLAGS += -I../middleware/include
+CXXFLAGS += -I../middleware/src/MSG
 
 CXXFLAGS += -I../moudle/include/minini
 CXXFLAGS += -I../moudle/include/mahony
 CXXFLAGS += -I../moudle/include 
+CXXFLAGS += -I../moudle/mqtt
+
 
 LDFLAGS := -L../middleware/lib 
 LDFLAGS += -L../middleware/lib/network
@@ -21,7 +24,7 @@ LDFLAGS += -L../middleware/lib/rk_lib  -Wl,-rpath-link,../middleware/lib/rk_lib
 DESTDIR=/home/share/nfs/ngd-detect/
 
 # Libraries to link against
-LIBS := -lAVL -lMPU -lNET -lmahony -lminini -lip  -lpthread -lcommon -lLOG
+LIBS := -lAVL -lMPU -lNET -lmahony -lminini -lip -lmqtt -lpthread -lcommon -lLOG -lMSG
 
 #LIBS += -ljpsdk
 

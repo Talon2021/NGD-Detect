@@ -110,7 +110,6 @@ int CChannelManager::Init()
         ERROR("alg init is fail\n");
     }
 #endif
-    INFO("alg init is success\n");
 
 
     CConfig *pcfg = CConfig::GetInstance();
@@ -119,31 +118,33 @@ int CChannelManager::Init()
     m_iEncChannelCnt = MAX_CH_NUM;
     for(i = 0; i < m_iEncChannelCnt; i++)
     {
-        m_infraredImage[i] = new CCInfraredImage(hannle);
-        m_ccgyro[i] = new CCGyro(hannle);
-        m_areahannle[i] = new CCAreaInvasion(hannle);
-        m_compasshannel[i] = new CCompass(hannle);
-        m_Actionhannel[i] = new CActionAlarm(hannle);
-        m_Ptzhannel[i] = new CPtzCtrl(hannle);
-        m_coderhannel[i] = new CCoder(hannle);
-        m_ExtCtrl[i] = new CExtctrl(hannle);
-
+        m_infraredImage[i] = new CCInfraredImage(hannle, i);
+        m_ccgyro[i] = new CCGyro(hannle, i);
+        m_areahannle[i] = new CCAreaInvasion(hannle, i);
+        m_compasshannel[i] = new CCompass(hannle, i);
+        m_Actionhannel[i] = new CActionAlarm(hannle, i);
+        m_Ptzhannel[i] = new CPtzCtrl(hannle, i);
+        m_coderhannel[i] = new CCoder(hannle, i);
+        m_ExtCtrl[i] = new CExtctrl(hannle, i);
+        m_VisLightImage[i] = new CVisLightImage(hannle, i);
+        
         //ret |= m_ccgyro[i]->Init();
         ret |= m_infraredImage[i]->Init();
-        ret |= m_areahannle[i]->Init();
+        //ret |= m_areahannle[i]->Init();
         //ret |= m_compasshannel[i]->Init();
         ret |= m_Actionhannel[i]->Init();
         ret |= m_Ptzhannel[i]->Init();
         ret |= m_coderhannel[i]->Init();
         ret |= m_ExtCtrl[i]->Init();
+        ret |= m_VisLightImage[i]->Init();
     }
-    ret = pthread_create(&m_PeripheralReportThread, NULL, Fnx_ReportThread, this);
-    if(ret != 0)
-    {
-        ERROR("creat m_PeripheralReportThread thread is err\n");
-        UnInit();
-        return -1;
-    }
+    // ret = pthread_create(&m_PeripheralReportThread, NULL, Fnx_ReportThread, this);
+    // if(ret != 0)
+    // {
+    //     ERROR("creat m_PeripheralReportThread thread is err\n");
+    //     UnInit();
+    //     return -1;
+    // }
     m_bInit = 1;
     return 0;
 }
@@ -638,38 +639,6 @@ int CChannelManager::InfraredImage_GetInfraredImageAutoFocus(int nch, int *enabl
     }
     
     return m_infraredImage[nch]->GetInfraredImageAutoFocus(enable);
-}
-
-int CChannelManager::InfraredImage_SetAutoVisibleLight(int nch, int enable)
-{
-    if(!m_bInit)
-    {
-        ERROR("CChannelManager not inited\n");
-        return -1;
-    }
-    if(nch < 0 || nch >= m_iEncChannelCnt)
-    {
-        ERROR("CChannelManager channel_no err channel = %d\n",nch);
-        return -1;
-    }
-    
-    return m_infraredImage[nch]->SetAutoVisibleLight(enable);
-}
-
-int CChannelManager::InfraredImage_GetAutoVisibleLight(int nch, int *enable)
-{
-    if(!m_bInit)
-    {
-        ERROR("CChannelManager not inited\n");
-        return -1;
-    }
-    if(nch < 0 || nch >= m_iEncChannelCnt)
-    {
-        ERROR("CChannelManager channel_no err channel = %d\n",nch);
-        return -1;
-    }
-    
-    return m_infraredImage[nch]->GetAutoVisibleLight(enable);
 }
 
 int CChannelManager::InfraredImage_SetGasEnhanced(int nch, int enable)
@@ -1840,4 +1809,154 @@ int CChannelManager::Ext_GetCvbsEnable(int nch, int *enable)
         return -1;
     }
     return m_ExtCtrl[nch]->GetCvbsEnable(enable);
+}
+
+int CChannelManager::Vis_SetBrightness(int nch, int value)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_VisLightImage[nch]->SetBrightness(value);
+}
+
+int CChannelManager::Vis_GetBrightness(int nch, int *value)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_VisLightImage[nch]->GetBrightness(value);
+}
+
+int CChannelManager::Vis_SetContrast(int nch, int value)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_VisLightImage[nch]->SetContrast(value);
+}
+
+int CChannelManager::Vis_GetContrast(int nch, int *value)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_VisLightImage[nch]->GetContrast(value);
+}
+
+int CChannelManager::Vis_SetAutoFocuEnabele(int nch, int enable)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_VisLightImage[nch]->SetAutoFocuEnabele(enable);
+}
+
+int CChannelManager::Vis_GetAutoFocuEnabele(int nch, int *enable)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_VisLightImage[nch]->GetAutoFocuEnabele(enable);
+}
+
+int CChannelManager::Vis_SetSaturation(int nch, int value)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_VisLightImage[nch]->SetSaturation(value);
+}
+
+int CChannelManager::Vis_GetSaturation(int nch, int *value)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_VisLightImage[nch]->GetSaturation(value);
+}
+
+int CChannelManager::Vis_SetSharpness(int nch, int value)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_VisLightImage[nch]->SetSharpness(value);
+}
+
+int CChannelManager::Vis_GetSharpness(int nch, int *value)
+{
+     if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_VisLightImage[nch]->GetSharpness(value);
 }

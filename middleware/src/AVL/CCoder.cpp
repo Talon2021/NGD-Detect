@@ -25,7 +25,7 @@ int CCoder::LoadParam()
     SetTimeConfig(cfg_time);
     return 0;
 }
-CCoder::CCoder(void *handle)
+CCoder::CCoder(void *handle, int ch)
 {
     memset(&m_vEncType, 0, sizeof(video_codec));
     memset(&m_aEncType, 0, sizeof(audio_codec));

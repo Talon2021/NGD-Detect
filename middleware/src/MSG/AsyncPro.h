@@ -10,6 +10,7 @@
 #include <string>
 #include <memory>
 #include "safe_quene.hpp"
+#include "mqtt_client.h"
 
 
  typedef struct Message_st 
@@ -22,7 +23,10 @@
 
 typedef struct recvMessage_st
 {
+    std::string send_name;
     std::string recv_data;
+    recvMessage_st(const std::string& name, const std::string& data)
+        : send_name(name), recv_data(data) {}
 }receMessage;
 
 struct ConditionData {
@@ -33,11 +37,8 @@ struct ConditionData {
 
 class MessageHandler {
 public:
-    static MessageHandler *getInstance();
-
-    MessageHandler(const MessageHandler&) = delete;
-    MessageHandler& operator=(const MessageHandler&) = delete;
-
+     MessageHandler();
+    ~MessageHandler();
     int sendMessage(MessagePro &msg, std::shared_ptr<receMessage> out_msg);
 
     void startReceiver();
@@ -49,8 +50,7 @@ public:
     int getMessage(std::shared_ptr<receMessage> out_msg);
 
 private:
-    MessageHandler();
-    ~MessageHandler();
+   
 
     void receiveMessages();
     SafeQueuee<std::shared_ptr<receMessage>> receive_msg_queue;
@@ -61,7 +61,7 @@ private:
     std::thread receiver_thread;
     bool stop_flag;
 
-    static MessageHandler *m_messageHandle;
+    mqtt_client *m_mqtt_handle;
 };
 
 

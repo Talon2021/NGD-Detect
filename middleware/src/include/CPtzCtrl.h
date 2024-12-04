@@ -56,8 +56,9 @@ private:
     traget_preset m_preset[256];
     int m_preset_size;
     pthread_mutex_t m_lock;
+    int m_init = 0;
 public:
-    CPtzCtrl(void *hannle);
+    CPtzCtrl(void *handle, int ch);
     ~CPtzCtrl();
     int Init();
     int UnInit();

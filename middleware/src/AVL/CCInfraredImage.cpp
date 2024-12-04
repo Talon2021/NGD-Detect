@@ -8,8 +8,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
+#include "json_pack.hpp"
 #include "sdk_log.h"
+#include "MessageManager.h"
 #define SERIAL_BUFFER_LEN  8
 // void *CCInfraredImage::g_threadImage(void *lpParameter)
 // {
@@ -32,12 +33,12 @@
 // }
 
 
-CCInfraredImage::CCInfraredImage(void *hannle)
+CCInfraredImage::CCInfraredImage(void *handle, int ch)
 {
     m_serial = NULL;
     m_init = 0;
     //Comm_CreateThread(&m_serialThread, 0, g_threadImage);
-    m_han = hannle;
+    m_han = handle;
 }
 
 int CCInfraredImage::Init()
@@ -59,29 +60,26 @@ int CCInfraredImage::Init()
     value = pcfg->GetValue("infrareImage","Contrast_value",(long)50);
     SetImageContrast(value);
 
-    value = pcfg->GetValue("infrareImage","HotspotTracking_enable",(long)0);
-    SetHotspotTracking(value);
+    // value = pcfg->GetValue("infrareImage","HotspotTracking_enable",(long)0);
+    // SetHotspotTracking(value);
 
-    value =  pcfg->GetValue("infrareImage","Removal_threshold",(long)26);
-    ManualDefectRemoval(0, value);
+    // value =  pcfg->GetValue("infrareImage","Removal_threshold",(long)26);
+    // ManualDefectRemoval(0, value);
 
-    value = pcfg->GetValue("infrareImage","Sharpening_value",(long)0);
-    SetInfraredImageSharpening(value);
+    // value = pcfg->GetValue("infrareImage","Sharpening_value",(long)0);
+    // SetInfraredImageSharpening(value);
 
     value = pcfg->GetValue("infrareImage","Polarity_value",(long)0);
     SetInfraredImagePolarity(value);
 
-    value = pcfg->GetValue("infrareImage","PAL_status",(long)0);
-    SetInfraredImagePAL(value);
+    // value = pcfg->GetValue("infrareImage","PAL_status",(long)0);
+    // SetInfraredImagePAL(value);
 
     m_ElectronicZoom = pcfg->GetValue("infrareImage","electron_zoom",(long)1);
     SetInfraredImageElectronicZoom(m_ElectronicZoom);
 
     m_AutoFocus = pcfg->GetValue("infrareImage","auto_focus",(long)1);
     SetInfraredImageAutoFocus(m_AutoFocus);
-
-    m_VisibleLight = pcfg->GetValue("infrareImage","visible_light",(long)1);
-    SetAutoVisibleLight(m_VisibleLight);
 
     m_GasEnhanced = pcfg->GetValue("infrareImage","gas_enhanced",(long)1);
     SetGasEnhanced(m_GasEnhanced);
@@ -112,7 +110,39 @@ int CCInfraredImage::SetImageBrightness(int value)
         return -1;
     }
     pthread_mutex_lock(&m_Lock);
+    if(m_brightness == value)
+    {
+        pthread_mutex_unlock(&m_Lock);
+        return 0;
+    }
     int ret = 0;
+#ifdef PROCESS_CTRL
+    JsonConfigExt info(_Code(IR_PIC_BRIGHTNESS_CODE, "brightness_ir"), "set");
+    info.data = DataConfigBody();
+    info.data->value = std::to_string(value);  
+    std::string json_data;
+    JsonPackData<JsonConfigExt>(info, json_data);
+    MessageManager *msghandle = MessageManager::getInstance();
+    std::shared_ptr<receMessage> out_msg;
+    ret = msghandle->MSG_SendMessage(0, IR_PIC_BRIGHTNESS_CODE, json_data, 1, 100, out_msg);
+    if(ret != IR_PIC_BRIGHTNESS_CODE)
+    {
+        ERROR("get reply message is err \n");
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+    DataConfigResponse out_response;
+    JsonParseData<DataConfigResponse>(out_response, out_msg->recv_data);
+    if(std::stoi(out_response.status.value()) != 0)
+    {
+        ERROR(" reply message is status = %s \n", out_response.status->c_str());
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+
+    CConfig *pcfg = CConfig::GetInstance();
+    pcfg->SetValue("infrareImage","birgthness_value",(long)value);
+#else
     char buf[SERIAL_BUFFER_LEN] = {0};
 
     buf[0] = 0xAA;
@@ -138,6 +168,8 @@ int CCInfraredImage::SetImageBrightness(int value)
         }
         
     }
+#endif
+    m_brightness = value;
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -150,8 +182,7 @@ int CCInfraredImage::GetImageBrightness(int *value)
     }
 
     pthread_mutex_lock(&m_Lock);
-    CConfig *pcfg = CConfig::GetInstance();
-    *value = pcfg->GetValue("infrareImage","birgthness_value",(long)50);
+    *value = m_brightness;
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -163,7 +194,39 @@ int CCInfraredImage::SetImageContrast(int value)
         return -1;
     }
     pthread_mutex_lock(&m_Lock);
+    if(m_contrast == value)
+    {
+        pthread_mutex_unlock(&m_Lock);
+        return 0;
+    }
     int ret = 0;
+#ifdef PROCESS_CTRL
+    JsonConfigExt info(_Code(IR_PIC_CONTRAST_CODE, "contrast_ir"), "set");
+    info.data = DataConfigBody();
+    info.data->value = std::to_string(value);  
+    std::string json_data;
+    JsonPackData<JsonConfigExt>(info, json_data);
+    MessageManager *msghandle = MessageManager::getInstance();
+    std::shared_ptr<receMessage> out_msg;
+    ret = msghandle->MSG_SendMessage(0, IR_PIC_CONTRAST_CODE, json_data, 1, 100, out_msg);
+    if(ret != IR_PIC_CONTRAST_CODE)
+    {
+        ERROR("get reply message is err \n");
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+    DataConfigResponse out_response;
+    JsonParseData<DataConfigResponse>(out_response, out_msg->recv_data);
+    if(std::stoi(out_response.status.value()) != 0)
+    {
+        ERROR(" reply message is status = %s \n", out_response.status->c_str());
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+
+    CConfig *pcfg = CConfig::GetInstance();
+    pcfg->SetValue("infrareImage","Contrast_value",(long)value);
+#else
     char buf[SERIAL_BUFFER_LEN]= {0};
     buf[0] = 0xAA;
     buf[1] = 0xB1;
@@ -189,6 +252,9 @@ int CCInfraredImage::SetImageContrast(int value)
         }
         
     }
+#endif
+
+    m_contrast = value;
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -200,8 +266,7 @@ int CCInfraredImage::GetImageContrast(int *value)
         return -1;
     }
     pthread_mutex_lock(&m_Lock);
-    CConfig *pcfg = CConfig::GetInstance();
-    *value = pcfg->GetValue("infrareImage","Contrast_value",(long)50);
+    *value = m_contrast;
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -399,6 +464,35 @@ int CCInfraredImage::SetInfraredImagePolarity(int value)
     }
     int ret;
     pthread_mutex_lock(&m_Lock);
+#ifdef PROCESS_CTRL
+    JsonConfigExt info(_Code(IR_PSEUDO_CONFIG_CODE, "pseudo"), "set");
+    info.data = DataConfigBody();
+    info.data->value = "ironbow_forward";  //等待协议修改
+    std::string json_data;
+    JsonPackData<JsonConfigExt>(info, json_data);
+    MessageManager *msghandle = MessageManager::getInstance();
+    std::shared_ptr<receMessage> out_msg;
+    ret = msghandle->MSG_SendMessage(0, IR_PSEUDO_CONFIG_CODE, json_data, 1, 100, out_msg);
+    if(ret != IR_PSEUDO_CONFIG_CODE)
+    {
+        ERROR("get reply message is err \n");
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+    DataConfigResponse out_response;
+    JsonParseData<DataConfigResponse>(out_response, out_msg->recv_data);
+    if(std::stoi(out_response.status.value()) != 0)
+    {
+        ERROR(" reply message is status = %s \n", out_response.status->c_str());
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+    
+    CConfig *pcfg = CConfig::GetInstance();
+    pcfg->SetValue("infrareImage","Polarity_value",(long)value);
+    
+    
+#else
     char buf[SERIAL_BUFFER_LEN]= {0};
     buf[0] = 0xAA;
     buf[1] =0xb2;
@@ -410,9 +504,9 @@ int CCInfraredImage::SetInfraredImagePolarity(int value)
         ERROR("write is err\n");
         return -1;
     }
-    memset(buf, 0, SERIAL_BUFFER_LEN);
     CConfig *pcfg = CConfig::GetInstance();
     pcfg->SetValue("infrareImage","Polarity_value",(long)value);
+    memset(buf, 0, SERIAL_BUFFER_LEN);
     ret = m_serial->UartRead(buf,SERIAL_BUFFER_LEN,READ_SERIAL_MS);
     if(ret > 0)
     {
@@ -423,6 +517,8 @@ int CCInfraredImage::SetInfraredImagePolarity(int value)
         }
         
     }
+#endif
+    m_pseudo = value;
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -434,8 +530,7 @@ int CCInfraredImage::GetInfraredImagePolarity(int *value)
         return -1;
     }
     pthread_mutex_lock(&m_Lock);
-    CConfig *pcfg = CConfig::GetInstance();
-    *value = pcfg->GetValue("infrareImage","Polarity_value",(long)0);
+    *value = m_pseudo;
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -519,13 +614,44 @@ int CCInfraredImage::SetInfraredImageElectronicZoom(float value)
         return -1;
     }
     pthread_mutex_lock(&m_Lock);
-    m_ElectronicZoom = value;
-    CConfig *pcfg = CConfig::GetInstance();
-    pcfg->SetValue("infrareImage","electron_zoom",(long)value);
+    int ret;
+    if(m_ElectronicZoom == value)
+    {
+        pthread_mutex_unlock(&m_Lock);
+        return 0;
+    }
+#ifdef PROCESS_CTRL
+    JsonConfigExt info(_Code(IR_ZOOM_CONFIG_CODE, "zoom"), "set");
+    info.data = DataConfigBody();
+    info.data->value = std::to_string(value);  
+    std::string json_data;
+    JsonPackData<JsonConfigExt>(info, json_data);
+    MessageManager *msghandle = MessageManager::getInstance();
+    std::shared_ptr<receMessage> out_msg;
+    ret = msghandle->MSG_SendMessage(0, IR_ZOOM_CONFIG_CODE, json_data, 1, 100, out_msg);
+    if(ret != IR_ZOOM_CONFIG_CODE)
+    {
+        ERROR("get reply message is err \n");
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+    DataConfigResponse out_response;
+    JsonParseData<DataConfigResponse>(out_response, out_msg->recv_data);
+    if(std::stoi(out_response.status.value()) != 0)
+    {
+        ERROR(" reply message is status = %s \n", out_response.status->c_str());
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
 
+    CConfig *pcfg = CConfig::GetInstance();
+    pcfg->SetValue("infrareImage","electron_zoom",(float)value);
+#endif
+    
+    m_ElectronicZoom = value;
     pthread_mutex_unlock(&m_Lock);
     
-    return 0;
+    return -1;
 }
 
 int CCInfraredImage::GetInfraredImageElectronicZoom(float *value)
@@ -548,9 +674,40 @@ int CCInfraredImage::SetInfraredImageAutoFocus(int enable)
         return -1;
     }
     pthread_mutex_lock(&m_Lock);
-    m_AutoFocus = enable;
+    int ret = 0;
+    if(m_AutoFocus == enable)
+    {
+        pthread_mutex_unlock(&m_Lock);
+        return 0;
+    }
+#ifdef PROCESS_CTRL
+    JsonConfigExt info(_Code(IR_AUTO_FOCU_CODE, "autofocus_ir"), "set");
+    info.data = DataConfigBody();
+    info.data->value = std::to_string(enable); 
+    info.data->type = "continue";
+    std::string json_data;
+    JsonPackData<JsonConfigExt>(info, json_data);
+    MessageManager *msghandle = MessageManager::getInstance();
+    std::shared_ptr<receMessage> out_msg;
+    ret = msghandle->MSG_SendMessage(0, IR_AUTO_FOCU_CODE, json_data, 1, 100, out_msg);
+    if(ret != IR_AUTO_FOCU_CODE)
+    {
+        ERROR("get reply message is err \n");
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+    DataConfigResponse out_response;
+    JsonParseData<DataConfigResponse>(out_response, out_msg->recv_data);
+    if(std::stoi(out_response.status.value()) != 0)
+    {
+        ERROR(" reply message is status = %s \n", out_response.status->c_str());
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
     CConfig *pcfg = CConfig::GetInstance();
     pcfg->SetValue("infrareImage","auto_focus",(long)enable);
+#endif
+    m_AutoFocus = enable;
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -567,42 +724,47 @@ int CCInfraredImage::GetInfraredImageAutoFocus(int *enable)
     return 0;
 }
 
-int CCInfraredImage::SetAutoVisibleLight(int enable)
-{
-    if(!m_init)
-    {
-        return -1;
-    }
-    pthread_mutex_lock(&m_Lock);
-    m_VisibleLight = enable;
-    CConfig *pcfg = CConfig::GetInstance();
-    pcfg->SetValue("infrareImage","visible_light",(long)enable);
-    pthread_mutex_unlock(&m_Lock);
-    return 0;
-}
-
-int CCInfraredImage::GetAutoVisibleLight(int *enable)
-{
-    if(!m_init)
-    {
-        return -1;
-    }
-    pthread_mutex_lock(&m_Lock);
-    *enable = m_VisibleLight;
-    pthread_mutex_unlock(&m_Lock);
-    return 0;
-}
-
 int CCInfraredImage::SetGasEnhanced(int enable)
 {
     if(!m_init)
     {
         return -1;
     }
+    int ret = 0;
     pthread_mutex_lock(&m_Lock);
-    m_GasEnhanced = enable;
+    if(enable == m_GasEnhanced)
+    {
+        pthread_mutex_unlock(&m_Lock);
+        return 0;
+    }
+#ifdef PROCESS_CTRL
+    JsonConfigExt info(_Code(GAS_ENHANCEMENT_CODE, "gas_enhancement"), "set");
+    info.data = DataConfigBody();
+    info.data->value = std::to_string(enable);  
+    std::string json_data;
+    JsonPackData<JsonConfigExt>(info, json_data);
+    MessageManager *msghandle = MessageManager::getInstance();
+    std::shared_ptr<receMessage> out_msg;
+    ret = msghandle->MSG_SendMessage(0, GAS_ENHANCEMENT_CODE, json_data, 1, 100, out_msg);
+    if(ret != GAS_ENHANCEMENT_CODE)
+    {
+        ERROR("get reply message is err \n");
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+    DataConfigResponse out_response;
+    JsonParseData<DataConfigResponse>(out_response, out_msg->recv_data);
+    if(std::stoi(out_response.status.value()) != 0)
+    {
+        ERROR(" reply message is status = %s \n", out_response.status->c_str());
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+
     CConfig *pcfg = CConfig::GetInstance();
     pcfg->SetValue("infrareImage","gas_enhanced",(long)enable);
+#endif
+    m_GasEnhanced = enable;
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -615,6 +777,42 @@ int CCInfraredImage::GetGasEnhanced(int *enable)
     }
     pthread_mutex_lock(&m_Lock);
     *enable = m_GasEnhanced;
+    pthread_mutex_unlock(&m_Lock);
+    return 0;
+}
+
+int CCInfraredImage::SetElectricFocu(int action)
+{
+    if(!m_init)
+    {
+        return -1;
+    }
+    int ret = 0;
+    pthread_mutex_lock(&m_Lock);
+#ifdef PROCESS_CTRL
+   JsonConfigExt info(_Code(IR_ELEC_FOCU_CODE, "ir_elec_focu"), "set");
+    info.data = DataConfigBody();
+    info.data->action = std::to_string(action); 
+    std::string json_data;
+    JsonPackData<JsonConfigExt>(info, json_data);
+    MessageManager *msghandle = MessageManager::getInstance();
+    std::shared_ptr<receMessage> out_msg;
+    ret = msghandle->MSG_SendMessage(0, IR_ELEC_FOCU_CODE, json_data, 1, 100, out_msg);
+    if(ret != IR_ELEC_FOCU_CODE)
+    {
+        ERROR("get reply message is err \n");
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+    DataConfigResponse out_response;
+    JsonParseData<DataConfigResponse>(out_response, out_msg->recv_data);
+    if(std::stoi(out_response.status.value()) != 0)
+    {
+        ERROR(" reply message is status = %s \n", out_response.status->c_str());
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+#endif
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }

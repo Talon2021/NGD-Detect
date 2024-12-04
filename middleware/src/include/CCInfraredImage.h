@@ -12,14 +12,16 @@ private:
     int m_init;
     void *m_han;
 
-    int m_ElectronicZoom;
+    float m_ElectronicZoom;
     int m_AutoFocus;
-    int m_VisibleLight;
     int m_GasEnhanced;
+    int m_brightness;
+    int m_contrast;
+    int m_pseudo;
     pthread_mutex_t m_Lock;
 
 public:
-    CCInfraredImage(void *hannle);
+    CCInfraredImage(void *handle, int ch);
     ~CCInfraredImage();
 
     int Init();
@@ -162,16 +164,6 @@ public:
     /// @return successful 0
     int GetInfraredImageAutoFocus(int *enable);
 
-    /// @brief 设置可见光调焦使能
-    /// @param enable 
-    /// @return successful 0
-    int SetAutoVisibleLight(int enable);
-
-    /// @brief 获取可见光调焦使能
-    /// @param enable 
-    /// @return successful 0
-    int GetAutoVisibleLight(int *enable);
-
     /// @brief 设置气体增强
     /// @param enable 
     /// @return successful 0
@@ -184,6 +176,8 @@ public:
      * @return int successful 0
      */
     int GetGasEnhanced(int *enable);
+
+    int SetElectricFocu(int action);
 };
 
 

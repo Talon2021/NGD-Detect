@@ -15,13 +15,13 @@
 #include "common.h"
 #include "sdk_log.h"
 #include "connect.h"
-CCAreaInvasion::CCAreaInvasion(void *hannle)
+CCAreaInvasion::CCAreaInvasion(void *handle, int ch)
 {
     memset(&m_area, 0, sizeof(area_information) * AREA_COUNT_MAX);
     m_area_count = 0;
     m_really_count = 0;
     m_init = 0;
-    m_han = hannle;
+    m_han = handle;
 }
 
 CCAreaInvasion::~CCAreaInvasion()

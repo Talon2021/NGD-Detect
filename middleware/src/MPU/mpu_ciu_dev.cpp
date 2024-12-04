@@ -75,7 +75,6 @@ static int MPU_CIU_GET_DevSystem(NetworkSystem *pcfg)
     char *serialNumbae = "123456";
     struct timeval curTime = {0};
     char addr[32] = {0};
-    CConfig *p_config = NULL;
     switch (pcfg->type)
     {
     case NETWORK_SYSTEM_REBOOT:
@@ -92,7 +91,9 @@ static int MPU_CIU_GET_DevSystem(NetworkSystem *pcfg)
         mysystem("sync");
         break;
     case NETWORK_SYSTEM_DEVICE_INFO:
-        p_config = new CConfig();
+#if 0
+        CConfig *p_config = new CConfig();
+
         p_config->LoadFile("/oem/app/edvr/DeviceVersion.ini");
         snprintf(pcfg->out.device_info.soft_version, sizeof(pcfg->out.device_info.soft_version),"%d.%d.%d-%02d-%d",
                             p_config->GetValue("Software", "Major_version", (long)1),
@@ -110,6 +111,8 @@ static int MPU_CIU_GET_DevSystem(NetworkSystem *pcfg)
        
         memcpy(pcfg->out.device_info.serial_number, serialNumbae, sizeof(pcfg->out.device_info.serial_number));
         delete p_config;
+#endif
+        
         break;
     case NETWORK_SYSTEM_SET_TIME:
         break;
@@ -173,7 +176,7 @@ static int MPU_CIU_SET_DevSystem(NetworkSystem *pcfg)
 }
 
 
-int MPU_CIU_GET_DevConfig(int type, void *buff, int bufflen)
+int MPU_CIU_GET_DevConfig(unsigned int type, void *buff, int bufflen)
 {
     int ret = 0;
     switch (type)
@@ -209,7 +212,7 @@ int MPU_CIU_GET_DevConfig(int type, void *buff, int bufflen)
     return ret;
 }
 
-int MPU_CIU_SET_DevConfig(int type, void *buff, int bufflen)
+int MPU_CIU_SET_DevConfig(unsigned int type, void *buff, int bufflen)
 {
     int ret = 0;
     switch (type)

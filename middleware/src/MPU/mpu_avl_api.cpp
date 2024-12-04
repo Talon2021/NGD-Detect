@@ -171,15 +171,6 @@ int AVL_InfraredImage_GetInfraredImageAutoFocus(int nch, int *enable)
     MPU_AVL_CALL(InfraredImage_GetInfraredImageAutoFocus(nch, enable));
 }
 
-int AVL_InfraredImage_SetAutoVisibleLight(int nch, int enable)
-{
-    MPU_AVL_CALL(InfraredImage_SetAutoVisibleLight(nch, enable));
-}
-
-int AVL_InfraredImage_GetAutoVisibleLight(int nch, int *enable)
-{
-    MPU_AVL_CALL(InfraredImage_GetAutoVisibleLight(nch, enable));
-}
 
 int AVL_InfraredImage_SetGasEnhanced(int nch, int enable)
 {
@@ -566,4 +557,54 @@ int AVL_Ext_SetCvbsEnable(int nch, int enable)
 int AVL_Ext_GetCvbsEnable(int nch, int *enable)
 {
     MPU_AVL_CALL(Ext_GetCvbsEnable(nch, enable));
+}
+
+int AVL_Vis_SetBrightness(int nch, int value)
+{
+    MPU_AVL_CALL(Vis_SetBrightness(nch, value));
+}
+
+int AVL_Vis_GetBrightness(int nch, int *value)
+{
+    MPU_AVL_CALL(Vis_GetBrightness(nch, value));
+}
+
+int AVL_Vis_SetContrast(int nch, int value)
+{
+    MPU_AVL_CALL(Vis_SetContrast(nch, value));
+}
+
+int AVL_Vis_GetContrast(int nch, int *value)
+{
+    MPU_AVL_CALL(Vis_GetContrast(nch, value));
+}
+
+int AVL_Vis_SetAutoFocuEnabele(int nch, int enable)
+{
+    MPU_AVL_CALL(Vis_SetAutoFocuEnabele(nch, enable));
+}
+
+int AVL_Vis_GetAutoFocuEnabele(int nch, int *enable)
+{
+    MPU_AVL_CALL(Vis_GetAutoFocuEnabele(nch, enable));
+}
+
+int AVL_Vis_SetSaturation(int nch, int value)
+{
+    MPU_AVL_CALL(Vis_SetSaturation(nch, value));
+}
+
+int AVL_Vis_GetSaturation(int nch, int *value)
+{
+    MPU_AVL_CALL(Vis_GetSaturation(nch, value));
+}
+
+int AVL_Vis_SetSharpness(int nch, int value)
+{
+    MPU_AVL_CALL(Vis_SetSharpness(nch, value));
+}
+
+int AVL_Vis_GetSharpness(int nch, int *value)
+{
+    MPU_AVL_CALL(Vis_GetSharpness(nch, value));
 }

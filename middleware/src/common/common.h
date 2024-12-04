@@ -147,7 +147,31 @@ static inline void TimerMicroseconds(unsigned long uSec)
 #define JP_PTZ_CTRL_HOME            5
 #define JP_PTZ_CTRL_PRESET          6
 
+/*========================================process code============================================*/
 
+#define IR_PSEUDO_CONFIG_CODE          510
+#define IR_ZOOM_CONFIG_CODE            511
+#define SCREE_BRIGHTNESS_CODE          512
+#define SCREE_CONTRAST_CODE            513
+#define GAS_ENHANCEMENT_CODE           514
+#define IR_PIC_BRIGHTNESS_CODE         515
+#define IR_PIC_CONTRAST_CODE           516 
+#define AUTO_FILL_LIGHT_CODE           520
+#define WIPERS_CODE                    521
+#define CVBS_CODE                      522
+#define IR_AUTO_FOCU_CODE              523
+#define VIS_AUTO_FOCU_CODE             524
+#define VIS_PIC_BRIGHTNESS_CODE        525
+#define VIS_PIC_CONTRAST_CODE          526
+#define VIS_PIC_STAURATION_CODE        527
+#define VIS_PIC_SHARPNESS_CODE         528
+
+#define DEV_RTSP_URL_CODE              531
+#define DEV_VERSION_CODE               530     
+
+#define IR_ELEC_FOCU_CODE              600
+#define FACTORY_RESET_CODE             601
+#define DEV_FORMAT_CODE                602
 
 
 /* 线程管理资源 */

@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.cpp": "c",
+        "condition_variable": "cpp",
+        "sdk_log.h": "c"
+    }
+}

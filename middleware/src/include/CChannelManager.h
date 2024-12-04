@@ -19,6 +19,7 @@
 #include "CExtctrl.h"
 #include "jpsdk.h"
 #include "CCoder.h"
+#include "CVisLightImage.h"
 #define MAX_CH_NUM                      (1)
 
 typedef struct _peripheral_info
@@ -48,7 +49,7 @@ private:
     CPtzCtrl *m_Ptzhannel[MAX_CH_NUM];
     CCoder *m_coderhannel[MAX_CH_NUM];
     CExtctrl *m_ExtCtrl[MAX_CH_NUM];
-            
+    CVisLightImage *m_VisLightImage[MAX_CH_NUM];        
     static CChannelManager *pCChannelManger;
     int m_iEncChannelCnt;
     int m_bInit;
@@ -133,9 +134,6 @@ public:
 
     int InfraredImage_GetInfraredImageAutoFocus(int nch, int *enable);
 
-    int InfraredImage_SetAutoVisibleLight(int nch, int enable);
-
-    int InfraredImage_GetAutoVisibleLight(int nch, int *enable);
 
     int InfraredImage_SetGasEnhanced(int nch, int enable);
 
@@ -295,6 +293,25 @@ public:
 
     int Ext_GetCvbsEnable(int nch, int *enable);
 
+    int Vis_SetBrightness(int nch, int value);
+
+    int Vis_GetBrightness(int nch, int *value);
+
+    int Vis_SetContrast(int nch, int value);
+
+    int Vis_GetContrast(int nch, int *value);
+
+    int Vis_SetAutoFocuEnabele(int nch, int enable);
+
+    int Vis_GetAutoFocuEnabele(int nch, int *enable);
+
+    int Vis_SetSaturation(int nch, int value);
+
+    int Vis_GetSaturation(int nch, int *value);
+
+    int Vis_SetSharpness(int nch, int value);
+    
+    int Vis_GetSharpness(int nch, int *value);
 };
 
 

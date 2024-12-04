@@ -25,9 +25,9 @@
 int mpu_ciu_config_init();
 int mpu_ciu_config_deinit();
 
-int MPU_CIU_Set_ALL_ConfigGure(int major, int minor, void *buffer, int bufflen);
+int MPU_CIU_Set_ALL_ConfigGure(unsigned int major, unsigned int minor, void *buffer, int bufflen);
 
-int MPU_CIU_Get_ALL_ConfigGure(int major, int minor, void *buffer, int bufflen);
+int MPU_CIU_Get_ALL_ConfigGure(unsigned int major, unsigned int minor, void *buffer, int bufflen);
 
 void CIU_RegisterConfig();
 void CIU_UnRegisterConfig();

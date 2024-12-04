@@ -196,7 +196,7 @@ static void *GpsThread(void *arg)
     return NULL;
 }
 
-CCGpsPosition::CCGpsPosition(void *hannle)
+CCGpsPosition::CCGpsPosition(void *handle, int ch)
 {
     m_init = 0;
     m_serial = NULL;
@@ -204,7 +204,7 @@ CCGpsPosition::CCGpsPosition(void *hannle)
     m_gpsThreadExit = 0;
     m_timeZone = 0;
     memset(&m_data, 0, sizeof(g_data));
-    m_han = hannle;
+    m_han = handle;
 }
 
 CCGpsPosition::~CCGpsPosition()

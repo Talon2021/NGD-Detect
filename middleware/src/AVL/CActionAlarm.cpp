@@ -31,11 +31,11 @@ static int CB_AlarmFenceCode(int type, void *buffer, void *userdata)
     return 0;
 }
 
-CActionAlarm::CActionAlarm(void *hannle)
+CActionAlarm::CActionAlarm(void *handle, int ch)
 {
     m_bEnable = 0;
     m_FnxalarmCallback = NULL;
-    m_han = hannle;
+    m_han = handle;
 }
 
 CActionAlarm::~CActionAlarm()

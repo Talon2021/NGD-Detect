@@ -13,6 +13,7 @@ ALG_SDK=no
 RTSP_PREVIEW=no
 NET_ETHERNET=no
 NET_WLAN=no
+PROCESS_CTRL=no
 ifeq ($(TYPE),RV1126_CARAI)
     GTRO_MODULE=yes
     COMPASS_MODULE=yes
@@ -33,6 +34,7 @@ ifeq ($(TYPE),RV1126_PANORAMIC)
 endif
 
 ifeq ($(TYPE),RK3588_NGD_DETECT)
-    HTTP_UPLOAD=yes
+    HTTP_UPLOAD=no
     NET_WLAN=yes
+    PROCESS_CTRL=yes
 endif

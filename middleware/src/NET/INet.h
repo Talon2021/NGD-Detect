@@ -64,6 +64,10 @@ public:
     int NET_GetDns(char *strDns0, char *strDns1);
 
     int NET_GetDhcpEnable();
+
+    int WLAN_SetIPAddress(const char *pszIPAddress);
+    
+    char *WLAN_GetIPAddress(char *pszIPAddress);
     
 };
 

@@ -35,7 +35,7 @@ void CCGyro::Fnx_Mpu6500Thread()
     return;
 }
 
-CCGyro::CCGyro(void *hannle)
+CCGyro::CCGyro(void *handle, int ch)
 {
     m_PitchAngle = 0;
     m_rollAngle = 0;
@@ -47,7 +47,7 @@ CCGyro::CCGyro(void *hannle)
     bias_RollAngle = 0;
     m_CalibrationFlag = 0;
     m_Mpu6500Exit = 0;
-    m_han = hannle;
+    m_han = handle;
 }
 
 CCGyro::~CCGyro()

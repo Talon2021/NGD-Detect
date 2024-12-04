@@ -115,7 +115,6 @@ static int MPU_CIU_SET_ConfigCamear(NetworkCameraChipInfo *pcfg)
     ret |= AVL_InfraredImage_ManualDefectRemoval(0, 0, pcfg->bad_pix_threshold);
     ret |= AVL_InfraredImage_SetInfraredImageElectronicZoom(0, pcfg->electronic_zoom);
     ret |= AVL_InfraredImage_SetInfraredImageAutoFocus(0, pcfg->inrared_auto_focus);
-    ret |= AVL_InfraredImage_SetAutoVisibleLight(0, pcfg->visible_light_auto_focus);
     ret |= AVL_InfraredImage_SetGasEnhanced(0, pcfg->gas_enhanced_display);
     return ret;
 }
@@ -136,7 +135,7 @@ static int MPU_CIU_GET_ConfigCamear(NetworkCameraChipInfo *pcfg)
     AVL_InfraredImage_GetManualDefectRemoval(0, &opt, &pcfg->bad_pix_threshold);
     AVL_InfraredImage_GetInfraredImageElectronicZoom(0, &pcfg->electronic_zoom);
     AVL_InfraredImage_GetInfraredImageAutoFocus(0, &pcfg->inrared_auto_focus);
-    AVL_InfraredImage_GetAutoVisibleLight(0, &pcfg->visible_light_auto_focus);
+    ///AVL_InfraredImage_GetAutoVisibleLight(0, &pcfg->visible_light_auto_focus);
     AVL_InfraredImage_GetGasEnhanced(0, &pcfg->gas_enhanced_display);
     return 0;
 }
@@ -648,7 +647,7 @@ int MPU_CIU_Get_ConfigGure(int type, void *buffer, unsigned int bufflen)
     return ret;
 }
 
-int MPU_CIU_Get_ALL_ConfigGure(int major, int minor, void *buffer, int bufflen)
+int MPU_CIU_Get_ALL_ConfigGure(unsigned int major, unsigned int minor, void *buffer, int bufflen)
 {
     int ret  = 0;
     DEBUG("xh test pro major = %d minjor = %d buffer = %p bufflen = %d \n", major, minor, buffer, bufflen);
@@ -676,7 +675,7 @@ int MPU_CIU_Get_ALL_ConfigGure(int major, int minor, void *buffer, int bufflen)
     return ret;
 }
 
-int MPU_CIU_Set_ALL_ConfigGure(int major, int minor, void *buffer, int bufflen)
+int MPU_CIU_Set_ALL_ConfigGure(unsigned int major, unsigned int minor, void *buffer, int bufflen)
 {
      DEBUG("xh test pro major = %d minjor = %d buffer = %p bufflen = %d \n", major, minor, buffer, bufflen);
     int ret  = 0;

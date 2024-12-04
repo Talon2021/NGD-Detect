@@ -64,10 +64,6 @@ int AVL_InfraredImage_SetInfraredImageAutoFocus(int nch, int enable);
 
 int AVL_InfraredImage_GetInfraredImageAutoFocus(int nch, int *enable);
 
-int AVL_InfraredImage_SetAutoVisibleLight(int nch, int enable);
-
-int AVL_InfraredImage_GetAutoVisibleLight(int nch, int *enable);
-
 int AVL_InfraredImage_SetGasEnhanced(int nch, int enable);
 
 int AVL_InfraredImage_GetGasEnhanced(int nch, int *enable);
@@ -226,4 +222,25 @@ int AVL_Ext_GetAutoLightEnable(int nch, int *enable);
 int AVL_Ext_SetCvbsEnable(int nch, int enable);
 
 int AVL_Ext_GetCvbsEnable(int nch, int *enable);
+
+
+int AVL_Vis_SetBrightness(int nch, int value);
+
+int AVL_Vis_GetBrightness(int nch, int *value);
+
+int AVL_Vis_SetContrast(int nch, int value);
+
+int AVL_Vis_GetContrast(int nch, int *value);
+
+int AVL_Vis_SetAutoFocuEnabele(int nch, int enable);
+
+int AVL_Vis_GetAutoFocuEnabele(int nch, int *enable);
+
+int AVL_Vis_SetSaturation(int nch, int value);
+
+int AVL_Vis_GetSaturation(int nch, int *value);
+
+int AVL_Vis_SetSharpness(int nch, int value);
+
+int AVL_Vis_GetSharpness(int nch, int *value);
 #endif

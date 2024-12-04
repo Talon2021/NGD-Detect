@@ -6,9 +6,10 @@
 
 typedef struct DevInfo_st
 {
-    char sort_version[32];
-    char hart_version[32];
-    char serial_number[32];
+    char sort_version[64];
+    char hart_version[64];
+    char serial_number[64];
+    char rtsp_url[10][64];
 }DevInfo_st;
 
 
@@ -23,9 +24,13 @@ private:
     pthread_mutex_t m_Lock;
     int m_init;
     
+    DevInfo_st m_DevVersion;
+
+    void *m_handle;
+    int m_ch;
     int LoadParam();
 public:
-    CExtctrl(void *handle);
+    CExtctrl(void *handle, int ch);
     ~CExtctrl();
 
     int Init();
@@ -40,7 +45,10 @@ public:
     int SetCvbsEnable(int enable);
     int GetCvbsEnable(int *enable);
 
-    int GetDevInfo(DevInfo_st *info);
+    int CtrlDevFactoryReset();
+    int CtrlDevClear();
+
+    int GetDevVersionInfo(DevInfo_st *info);
 };
 
 

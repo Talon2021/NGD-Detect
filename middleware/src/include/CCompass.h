@@ -48,7 +48,7 @@ private:
     void *m_han;
 public:
     
-    CCompass(void *hannle);
+    CCompass(void *handle, int ch);
     ~CCompass();
     int Init();
     int UnInit();

@@ -57,7 +57,7 @@ int INet::LoadParam()
 
 	int mac0, mac1, mac2, mac3, mac4, mac5;
     CConfig *pCfg = CConfig::GetInstance();
-
+#ifdef NET_ETHERNET
     m_bDHCP_Enable = pCfg->GetValue(INet_CfgSection, INet_DHCP_key, (long)0);
 
 	m_pCConfig->GetValue(INet_CfgSection, INet_IP_key, (char *)INet_IP_Default_s, ip, MAX_IP_STR_LEN);
@@ -103,7 +103,9 @@ int INet::LoadParam()
 		strcpy(major_dns, DNS_Default);
 	}
 	NET_SetDns(major_dns, NULL);
+#elif defined(NET_ETHERNET)
 
+#endif
     return 0;
 }
 

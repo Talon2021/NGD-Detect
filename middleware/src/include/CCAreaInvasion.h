@@ -48,7 +48,7 @@ private:
     std::vector<long> m_track_id;
     void *m_han;
 public:
-    CCAreaInvasion(void *hannle);
+    CCAreaInvasion(void *handle, int ch);
 
     ~CCAreaInvasion();
 

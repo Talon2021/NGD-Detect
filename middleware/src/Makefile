@@ -1,6 +1,6 @@
 #!/usr/bin/make -f
 
-MODS:=AVL MPU common LOG NET
+MODS:=AVL MPU common LOG NET MSG
 
 .PHONY:release clean
 

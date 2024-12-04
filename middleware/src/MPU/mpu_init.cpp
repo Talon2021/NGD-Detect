@@ -19,6 +19,7 @@
 #include "mpu_ciu_ptz.h"
 //#include "onvif.h"
 #include "mpu_net_api.h"
+#include <string>
 #include <map>
 #include <unistd.h>
 //调用初始化动作
@@ -308,7 +309,7 @@ int mpu_init()
 
     while(1)
     {
-        if(!get_localip("eth0", addr))
+        if(!get_localip("wlan0", addr))
         {
             break;
         }

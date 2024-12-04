@@ -38,7 +38,7 @@ private:
     
 public:
     
-    CCGyro(void *hannle);
+    CCGyro(void *handle, int ch);
     ~CCGyro();
     int Init();
 

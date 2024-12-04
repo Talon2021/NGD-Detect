@@ -45,7 +45,7 @@ private:
 	pthread_mutex_t m_lock;
 	void *m_han;
 public:
-    CActionAlarm(void *hannle);
+    CActionAlarm(void *handle, int ch);
     ~CActionAlarm();
     int Init();
     int UnInit();
