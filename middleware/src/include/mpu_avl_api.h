@@ -60,14 +60,17 @@ int AVL_InfraredImage_SetInfraredImageElectronicZoom(int nch, float value);
 
 int AVL_InfraredImage_GetInfraredImageElectronicZoom(int nch, float *value);
 
-int AVL_InfraredImage_SetInfraredImageAutoFocus(int nch, int enable);
+int AVL_InfraredImage_SetInfraredImageFocusMode(int nch, int mode);
 
-int AVL_InfraredImage_GetInfraredImageAutoFocus(int nch, int *enable);
+int AVL_InfraredImage_GetInfraredImageFocusMode(int nch, int *mode);
 
 int AVL_InfraredImage_SetGasEnhanced(int nch, int enable);
 
 int AVL_InfraredImage_GetGasEnhanced(int nch, int *enable);
 
+int AVL_InfraredImage_SetElectricFocu(int nch, int action);
+
+int AVL_InfraredImage_SetAutoFocuData(int nch, int type);
 
 
 int AVL_Groy_Init(int nch);
@@ -211,6 +214,8 @@ int AVL_Coder_SetTimeConfig(int nch, time_cfg cfg);
 
 int AVL_Coder_GetTimeConfig(int nch, time_cfg *cfg);
 
+int AVL_Coder_SetTime(int nch, unsigned int time);
+
 int AVL_Ext_SetWipersEnable(int nch, int enable);
 
 int AVL_Ext_GetWipersEnable(int nch, int *enable);
@@ -223,6 +228,8 @@ int AVL_Ext_SetCvbsEnable(int nch, int enable);
 
 int AVL_Ext_GetCvbsEnable(int nch, int *enable);
 
+int AVL_Ext_GetDevVersionInfo(int nch, DevInfo_st *info);
+
 
 int AVL_Vis_SetBrightness(int nch, int value);
 
@@ -232,9 +239,9 @@ int AVL_Vis_SetContrast(int nch, int value);
 
 int AVL_Vis_GetContrast(int nch, int *value);
 
-int AVL_Vis_SetAutoFocuEnabele(int nch, int enable);
+int AVL_Vis_SetFocuMode(int nch, int mode);
 
-int AVL_Vis_GetAutoFocuEnabele(int nch, int *enable);
+int AVL_Vis_GetFocuMode(int nch, int *mode);
 
 int AVL_Vis_SetSaturation(int nch, int value);
 
@@ -243,4 +250,5 @@ int AVL_Vis_GetSaturation(int nch, int *value);
 int AVL_Vis_SetSharpness(int nch, int value);
 
 int AVL_Vis_GetSharpness(int nch, int *value);
+
 #endif

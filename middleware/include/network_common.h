@@ -4,109 +4,47 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-/** 获取设备能力 **/
-typedef struct {
-    bool support_state; // 支持状态
-    int min;            // 最小值
-    int max;            // 最大值
-}NetworkFunctionSoap;
-
-typedef struct {
-    uint64_t language_support_mask; // 语言掩码
-    bool position_function_support; // 定位功能
-    bool ptz_function_support;      // 云台功能
-    bool area_function_support;     // 区域功能
-    bool onvif_protocol_support;    // onvif协议
-    bool ipv6_protocol_support;     // ipv6协议
-}NetworkSystemFunction;
-
-typedef struct {
-    int brightness_support;                     // 亮度
-    int contrast_support;                       // 对比度
-    uint64_t pseudo_color_support_mask;         // 极性/伪彩掩码
-    int sharpening_support;                     // 锐度
-    bool central_enhance_support;               // 中心增强
-    int detail_enhance_support;                 // 细节增强
-    int electronic_zoom_support;                // 电子变倍，【0：不支持】【1：1/2/4】【2：1-4(±0.1)】【3：1-8(±1)】【4：1/2/4/8】
-    bool target_recognition_support;            // 目标识别
-    bool background_calibration_support;        // 背景校正
-    bool hot_spot_tracking_support;             // 热点追踪
-    uint64_t picture_in_picture_support_mask;   // 画中画掩码
-    bool outdoor_mode_support;                  // 户外模式
-    uint64_t fusion_mode_support_mask;          // 融合模式
-    bool shutter_calibration_support;           // 快门校正
-    NetworkFunctionSoap bad_pix_threshold_support;     // 坏点阈值
-    bool inrared_auto_focus_support;            // 红外自动调焦
-    bool visible_light_auto_focus_support;      // 可见光自动调焦   
-    bool gas_enhanced_display_support;          // 气体增强显示
-}NetworkCameraChipFunction;
-
-typedef struct {
-    bool support_state;                     // 支持状态
-    bool gun_type_support;                  // 枪型
-    uint64_t graticule_style_support_mask;  // 分划掩码
-    uint64_t color_support_mask;            // 分划颜色掩码
-}NetworkCalibrationGunFunction;
-
-typedef struct {
-    bool defog_by_heat_support;         // 去雾加热
-    bool heat_support;                  // 加热
-    bool fan_support;                   // 风扇
-    bool electronic_compass_support;    // 电子罗盘
-    bool red_dot_support;               // 红点
-    bool hdmi_support;                  // hdmi
-    bool wipers_support;                // 雨刷
-    bool fill_light_support;			// 补光灯
-    bool cvbs_support;					// cvbs
-}NetworkOtherFunction;
-
-typedef struct {
-    bool object_detection_support;      // 目标检测
-    bool tracking_support;              // 追踪
-    bool action_analyze_support;        // 行为分析
-    bool splicing_support;              // 拼接
-    bool fire_point_support;            // 火点检测
-}NetworkAlgorithmFunction;
-
-typedef struct {
-    NetworkSystemFunction system_function;
-    NetworkCameraChipFunction camera_chip_function;
-    NetworkCalibrationGunFunction calibration_gun_function;
-    NetworkOtherFunction other_function;
-    NetworkAlgorithmFunction algorithm_function;
-}NetworkSupportFunction;
-
-/** 系统请求 **/
-typedef struct {
-    char soft_version[32];  // 软件版本
-    char hard_version[32];  // 硬件版本
-    char serial_number[32]; // 序列号
-}NetworkDeviceInfo;
-
-/** 配置 **/
-typedef struct {
-    int x;
-    int y;
-}NetworkPoint;
-
-typedef struct {
-    char language[32];          // 语言
-    char time_zone[16];         // 时区
-    int time_format;            // 时间格式
-    bool summer_time_enable;    // 夏令时使能
-}NetworkSystemInfo;
+#define NETWORK_CAMERA_MAX_NUM (4)	// 最大摄像头数量
+#define NETWORK_PRESET_NAME_MAX_SIZE (64)
 
 typedef enum {
-    NETWORK_PSEUDO_COLOR_WHITE_HOT,     // 白热
-    NETWORK_PSEUDO_COLOR_BLACK_HOT,     // 黑热
-    NETWORK_PSEUDO_COLOR_IRON_RED,      // 铁红
-    NETWORK_PSEUDO_COLOR_DESERT_YELLOW, // 沙漠黄
-    NETWORK_PSEUDO_COLOR_GREEN_HOT,     // 绿热
-    NETWORK_PSEUDO_COLOR_RED_HOT,       // 红热
-    NETWORK_PSEUDO_COLOR_SKY,           // 天空
-    NETWORK_PSEUDO_COLOR_EDGE,          // 边缘
-    NETWORK_PSEUDO_COLOR_RAINBOW,       // 彩虹
+	NETWORK_PSEUDO_COLOR_WHITE_HOT,			// 白热
+	NETWORK_PSEUDO_COLOR_BLACK_HOT,			// 黑热
+	NETWORK_PSEUDO_COLOR_IRON_RED,			// 铁红
+	NETWORK_PSEUDO_COLOR_DESERT_YELLOW,		// 沙漠黄
+	NETWORK_PSEUDO_COLOR_GREEN_HOT,			// 绿热
+	NETWORK_PSEUDO_COLOR_RED_HOT,			// 红热
+	NETWORK_PSEUDO_COLOR_SKY,				// 天空
+	NETWORK_PSEUDO_COLOR_EDGE,				// 边缘
+	NETWORK_PSEUDO_COLOR_RAINBOW,			// 彩虹
+	NETWORK_PSEUDO_COLOR_IRONBOW_REVERSE,	// 反铁红
+	NETWORK_PSEUDO_COLOR_LAVA_FORWARD,		// 熔盐
+	NETWORK_PSEUDO_COLOR_LAVA_REVERSE,		// 反熔盐
+	NETWORK_PSEUDO_COLOR_RAINBOW_REVERSE,	// 反彩虹
+	NETWORK_PSEUDO_COLOR_RAINBOWHC_FORWARD,	// 彩虹高对比度
+	NETWORK_PSEUDO_COLOR_RAINBOWHC_REVERSE,	// 反彩虹高对比度
 }NetworkPseudoColor;
+
+typedef enum {
+	NETWORK_FOCUSING_MODE_AUTO,					// 自动聚焦
+	NETWORK_FOCUSING_MODE_ELECTRIC,				// 电动聚焦
+	NETWORK_FOCUSING_MODE_ONCE_FOCUSING,		// 一次聚焦
+	NETWORK_FOCUSING_MODE_MANUAL_FOCUSING,		// 手动聚焦
+	NETWORK_FOCUSING_MODE_SEMI_AUTO_FOCUSING,	// 半自动聚焦
+}NetworkFocusingMode;
+
+typedef enum {
+	NETWORK_SENSITIVITY_NORMAL,		// 普通
+	NETWORK_SENSITIVITY_LOW,		// 低
+	NETWORK_SENSITIVITY_MID,		// 中
+	NETWORK_SENSITIVITY_HIGH,		// 高
+}NetworkSensitivityMode;
+
+typedef enum {
+    NETWORK_FUSION_VISIBLE_LIGHT,               // 可见光
+    NETWORK_FUSION_INFRARED,                    // 红外
+    NETWORK_FUSION_VISIBLE_LIGHT_AND_INFRARED,  // 融合
+}NetworkFusionMode;
 
 typedef enum {
     NETWORK_PICTURE_IN_PICTURE_OFF,         // 关闭
@@ -116,39 +54,11 @@ typedef enum {
 }NetworkPictureInPicturePos;
 
 typedef enum {
-    NETWORK_FUSION_VISIBLE_LIGHT,               // 可见光
-    NETWORK_FUSION_INFRARED,                    // 红外
-    NETWORK_FUSION_VISIBLE_LIGHT_AND_INFRARED,  // 融合
-}NetworkFusionMode;
+    NETWORK_LANGUAGE_CHINESE,	// 中
+    NETWORK_LANGUAGE_ENGLISH,	// 英
+    NETWORK_LANGUAGE_RUSSIAN,   // 俄
+}NetworkLanguage;
 
-typedef struct {
-    int brightness;                 // 亮度
-    int contrast;                   // 对比度
-    int pseudo_color;               // 极性/伪彩，enum NetworkPseudoColor
-    int sharpening;                 // 锐化
-    bool central_enhance;           // 中心增强
-    int detail_enhance;             // 细节增强
-    float electronic_zoom;          // 电子变倍
-    bool target_recognition;        // 目标识别
-    bool background_calibration;    // 背景校正
-    bool hot_spot_tracking;         // 红点追踪
-    int picture_in_picture;         // 画中画，enum NetworkPictureInPicturePos
-    bool outdoor_mode;              // 户外模式
-    int fusion_mod;                 // 融合，enum NetworkFusionMode
-    bool shutter_calibration;       // 快门校正
-    int bad_pix_threshold;          // 坏点阈值
-    int inrared_auto_focus;			// 红外自动调焦
-    int visible_light_auto_focus;	// 可见光自动调焦
-    int gas_enhanced_display;		// 气体增强显示
-}NetworkCameraChipInfo;
-
-typedef struct {
-    int position_mode;              // 定位模式
-    bool external_position;         // 外部定位
-    bool target_guidance;           // 目标引导
-    bool first_and_last_target;     // 首末目标
-    bool multi_point_position;      // 多点定位
-}NetworkPosition;
 
 typedef enum {
     NETWORK_COLGRATICULE_COLOR_WHITE,   // 白
@@ -157,84 +67,372 @@ typedef enum {
     NETWORK_COLGRATICULE_COLOR_BLUE,    // 蓝
 }NetworkColgraticuleColor;
 
+
+/** 获取设备能力 **/
 typedef struct {
-    char gun_type[32];          // 枪型
-    int colgraticule_style;     // 分划样式 
-    int color;                  // 颜色，enum NetworkColgraticuleColor
-    NetworkPoint coordinate;    // 坐标
-}NetworkCalibrationGun;
+	int support_state;	// 支持状态
+	int min;			// 最小值
+	int max;			// 最大值
+}NetworkAbilityFunctionSoap;
+
+/** 红外摄像头 **/
+typedef struct {
+	int brightness_support;					// 亮度
+	int contrast_support;					// 对比度
+	uint64_t pseudo_color_support_mask;		// 极性/伪彩掩码，【1 << NetworkPseudoColor】
+	int sharpening_support;					// 锐度
+	int saturation_support;					// 饱和度
+}NetworkAbilityCameraIrImageInfoFunction;
+
+typedef struct {
+    int central_enhance_support;			// 中心增强
+    int detail_enhance_support;				// 细节增强
+}NetworkAbilityCameraIrImageEnhanceFunction;
+
+typedef struct {
+    int background_calibration_support;						// 背景校正
+    int shutter_calibration_support;						// 快门校正
+	NetworkAbilityFunctionSoap bad_pix_threshold_support;	// 坏点阈值
+}NetworkAbilityCameraIrCalibrationFunction;
+
+typedef struct {
+    int electronic_zoom_support;			// 电子变倍，【0：不支持】【1：1/2/4】【2：1-4(±0.1)】【3：1-8(±1)】【4：1/2/4/8】
+}NetworkAbilityCameraIrImageZoomFunction;
+
+typedef struct {
+    uint64_t focusing_mode_support_mask;			// 变焦模式, 【1 << NetworkFocusingMode】
+}NetworkAbilityCameraIrImageFocusingFunction;
+
+typedef struct {
+    int support_state;
+	NetworkAbilityCameraIrImageInfoFunction camera_ir_image_info;			// 图像信息
+	NetworkAbilityCameraIrImageEnhanceFunction camera_ir_image_enhance;		// 图像增强
+	NetworkAbilityCameraIrCalibrationFunction camera_ir_calibration;		// 校正
+	NetworkAbilityCameraIrImageZoomFunction camera_ir_image_zoom;			// 变倍
+	NetworkAbilityCameraIrImageFocusingFunction camera_ir_focusing;			// 调焦
+}NetworkAbilityCameraIrFunction;
+
+typedef struct {
+    int num;
+	NetworkAbilityCameraIrFunction camera_ir[NETWORK_CAMERA_MAX_NUM];
+}NetworkAbilityCameraIrFunctions;
+
+/** 可见光摄像头 **/
+typedef struct {
+	int brightness_support;					// 亮度
+	int contrast_support;					// 对比度
+	int sharpening_support;					// 锐度
+	int saturation_support;					// 饱和度
+}NetworkAbilityCameraVisImageInfoFunction;
+
+typedef struct {
+    int electronic_zoom_support;			// 电子变倍
+}NetworkAbilityCameraVisImageZoomFunction;
+
+typedef struct {
+    uint64_t focusing_mode_support_mask;							// 变焦模式, 【1 << NetworkFocusingMode】
+	uint64_t sensitivity_support_mask;								// 灵敏度, 【1 << NetworkSensitivityMode】
+	int min_focusing_distance_support;								// 最小调焦距离
+	NetworkAbilityFunctionSoap focus_distance_coordinates_support;	// 焦距坐标范围
+}NetworkAbilityCameraVisImageFocusingFunction;
+
+typedef struct {
+    int support_state;
+	NetworkAbilityCameraVisImageInfoFunction camera_vis_image_info;				// 图像信息
+	NetworkAbilityCameraVisImageZoomFunction camera_vis_image_zoom;				// 变倍
+	NetworkAbilityCameraVisImageFocusingFunction camera_vis_focusing;			// 调焦
+}NetworkAbilityCameraVisFunction;
+
+typedef struct {
+    int num;
+	NetworkAbilityCameraVisFunction camera_vis[NETWORK_CAMERA_MAX_NUM];
+}NetworkAbilityCameraVisFunctions;
+
+/** 云台 **/
+typedef struct {
+	int ptz_info_support;	// 全景云台信息
+	int preset_support;		// 预置点
+}NetworkAbilityPtzFunction;
+
+/** 算法 **/
+typedef struct {
+	int area_support;	// 报警区域
+}NetworkAbilityAlgorithmInfoFunction;
+
+typedef struct {
+	int object_detection_support;	// 目标检测
+	int tracking_support;			// 追踪
+	int action_analyze_support;		// 行为分析
+	int fire_point_support;			// 火点检测
+	int gas_detection_support;		// 气体检测
+}NetworkAbilityAlgorithmDetectionFunction;
+
+typedef struct {
+	int gas_display_support;			// 气体显示增强
+	int outdoor_mode_support;			// 户外模式
+	int splicing_support;				// 图像拼接
+	uint64_t fusion_mode_support_mask;	// 融合模式，【1 << NetworkFusionMode】
+}NetworkAbilityAlgorithmImageFunction;
+
+typedef struct {
+	NetworkAbilityAlgorithmInfoFunction algorithm_info;				// 算法信息
+	NetworkAbilityAlgorithmDetectionFunction algorithm_detection;	// 检测算法
+	NetworkAbilityAlgorithmImageFunction algorithm_image;			// 图像算法
+}NetworkAbilityAlgorithmFunction;
+
+/** 网络 **/
+typedef struct {
+	int onvif_protocol_support;		// onvif协议
+	int ipv6_protocol_support;		// ipv6协议
+}NetworkAbilityNetworkFunction;
+
+/** 设备显示屏 **/
+typedef struct {
+	uint64_t picture_in_picture_support_mask;	// 画中画，【1 << NetworkPictureInPicturePos】
+	int electronic_compass_support;				// 电子罗盘
+	uint64_t language_support_mask;				// 语言掩码, 【1 << NetworkLanguage】
+	int red_dot_support;						// 红点
+}NetworkAbilityDisplayScreenInfoFunction;
+
+typedef struct {
+	int support_state;
+	int gun_type_support;					// 枪型
+	uint64_t graticule_style_support_mask;	// 分划样式
+	uint64_t color_support_mask;			// 分划颜色, 【1 << NetworkColgraticuleColor】
+}NetworkAbilityDisplayScreenCalibrationGunFunction;
+
+typedef struct {
+	NetworkAbilityDisplayScreenInfoFunction display_info;					// 显示信息
+	NetworkAbilityDisplayScreenCalibrationGunFunction calibration_gun;		// 校抢
+}NetworkAbilityDisplayScreenFunction;
+
+/** 杂项 **/
+typedef struct {
+	int heat_support;			// 加热
+	int fan_support;			// 风扇
+	int wipers_support;			// 雨刷
+	int fill_light_support;		// 补光灯
+}NetworkAbilityOtherInfoFunction;
+
+typedef struct {
+	int hdmi_support;			// hdmi
+	int cvbs_support;			// cvbs
+}NetworkAbilityOtherPreviewFunction;
+
+typedef struct {
+	NetworkAbilityOtherInfoFunction other_info;		// 其他信息
+	NetworkAbilityOtherPreviewFunction preview;		// 预览
+}NetworkAbilityOtherFunction;
+
+typedef struct {
+	NetworkAbilityCameraIrFunctions camera_ir_funcs;			// 红外摄像头
+	NetworkAbilityCameraVisFunctions camera_vis_funcs;			// 可见光摄像头
+	NetworkAbilityPtzFunction ptz_func;							// 云台
+	NetworkAbilityAlgorithmFunction algorithm_func;				// 算法
+	NetworkAbilityNetworkFunction network_func;					// 网络
+	NetworkAbilityDisplayScreenFunction display_screen_func;	// 设备显示屏
+	NetworkAbilityOtherFunction other_func;						// 杂项
+}NetworkAbilitySupportFunction;
+
+/** 系统请求 **/
+#define NETWORK_SYSTEM_DEVICE_INFO_MAX (32)		// 设备信息长度
+#define NETWORK_SYSTEM_URL_MAX (128)			// 码流地址长度
+
+typedef struct {
+	char soft_version[NETWORK_SYSTEM_DEVICE_INFO_MAX];	// 软件版本
+	char hard_version[NETWORK_SYSTEM_DEVICE_INFO_MAX];	// 硬件版本
+	char serial_number[NETWORK_SYSTEM_DEVICE_INFO_MAX];	// 序列号
+}NetworkSystemDeviceInfo;
+
+typedef struct {
+    char main_stream[NETWORK_SYSTEM_URL_MAX];	// 主码流
+    char sub_stream[NETWORK_SYSTEM_URL_MAX];	// 次码流
+    char third_stream[NETWORK_SYSTEM_URL_MAX];	// 第三码流
+}NetworkSystemRtspUrl;
+
+/** 配置 **/
+typedef struct {
+	int x;
+	int y;
+}NetworkConfigPoint;
+
+typedef struct {
+	char time_zone[16];		// 时区
+	int time_format;		// 时间格式
+	int summer_time;		// 夏令时
+}NetworkConfigSystemTimeInfo;
+
+
+typedef struct {
+	int brightness;		// 亮度
+	int contrast;		// 对比度
+	int sharpening;		// 锐化
+	int saturation;		// 饱和度
+	int pseudo_color;	// 极性/伪彩，enum NetworkPseudoColor
+}NetworkConfigCameraIrImageInfo;
+
+typedef struct {
+	int deal_num;	// 处理数组中的某项，【-1：表示全数组】
+	int num;		// 数组数
+	NetworkConfigCameraIrImageInfo image_info[NETWORK_CAMERA_MAX_NUM];
+}NetworkConfigCameraIrImageInfos;
+
+typedef struct {
+	int central;	// 中心增强
+	int detail;		// 细节增强
+}NetworkConfigCameraIrImageEnhance;
+
+typedef struct {
+	int deal_num;	// 处理数组中的某项，【-1：表示全数组】
+	int num;		// 数组数
+	NetworkConfigCameraIrImageEnhance image_enhance[NETWORK_CAMERA_MAX_NUM];
+}NetworkConfigCameraIrImageEnhances;
+
+typedef struct {
+	float electronic;	// 电子变倍
+}NetworkConfigCameraIrImageZoom;
+
+typedef struct {
+	int deal_num;	// 处理数组中的某项，【-1：表示全数组】
+	int num;		// 数组数
+	NetworkConfigCameraIrImageZoom image_zoom[NETWORK_CAMERA_MAX_NUM];
+}NetworkConfigCameraIrImageZooms;
+
+typedef struct {
+	int focusing_mode;	// 调焦模式, enum NetworkFocusingMode
+}NetworkConfigCameraIrFocusing;
+
+typedef struct {
+	int deal_num;	// 处理数组中的某项，【-1：表示全数组】
+	int num;		// 数组数
+	NetworkConfigCameraIrFocusing focusing[NETWORK_CAMERA_MAX_NUM];
+}NetworkConfigCameraIrFocusings;
+
+typedef struct {
+	int shutter;			// 快门校正
+	int background;			// 背景校正
+	int bad_pix_threshold;	// 坏点阈值
+}NetworkConfigCameraIrCalibration;
+
+typedef struct {
+	int deal_num;	// 处理数组中的某项，【-1：表示全数组】
+	int num;		// 数组数
+	NetworkConfigCameraIrCalibration calibration[NETWORK_CAMERA_MAX_NUM];
+}NetworkConfigCameraIrCalibrations;
+
+
+typedef struct {
+	int brightness;		// 亮度
+	int contrast;		// 对比度
+	int sharpening;		// 锐化
+	int saturation;		// 饱和度
+}NetworkConfigCameraVisImageInfo;
+
+typedef struct {
+	int deal_num;	// 处理数组中的某项，【-1：表示全数组】
+	int num;		// 数组数
+	NetworkConfigCameraVisImageInfo image_info[NETWORK_CAMERA_MAX_NUM];
+}NetworkConfigCameraVisImageInfos;
+
+typedef struct {
+	float electronic;	// 电子变倍
+}NetworkConfigCameraVisImageZoom;
+
+typedef struct {
+	int deal_num;	// 处理数组中的某项，【-1：表示全数组】
+	int num;		// 数组数
+	NetworkConfigCameraVisImageZoom image_zoom[NETWORK_CAMERA_MAX_NUM];
+}NetworkConfigCameraVisImageZooms;
+
+typedef struct {
+	int focusing_mode;					// 调焦模式, enum NetworkFocusingMode
+	int sensitivity;					// 灵敏度，enum NetworkSensitivityMode
+	int min_focusing_distance;			// 最近可聚焦距离
+	int focus_distance_coordinates;		// 焦距坐标
+}NetworkConfigCameraVisFocusing;
+
+typedef struct {
+	int deal_num;	// 处理数组中的某项，【-1：表示全数组】
+	int num;		// 数组数
+	NetworkConfigCameraVisFocusing focusing[NETWORK_CAMERA_MAX_NUM];
+}NetworkConfigCameraVisFocusings;
+
 
 typedef enum {
-    NETWORK_CONSTAN_SCAN_DEFLECTION_ANGLE,  // 角度
-    NETWORK_CONSTAN_SCAN_DEFLECTION_PIX,    // 像素点
-}NetworkConstanScanDeflectionMode;
+    NETWORK_CONFIG_CONSTAN_SCAN_DEFLECTION_ANGLE,  // 角度
+    NETWORK_CONFIG_CONSTAN_SCAN_DEFLECTION_PIX,    // 像素点
+}NetworkConfigConstanScanDeflectionMode;
 
 typedef struct {
-    int deflection_mode;    // 偏转模式，enum NetworkConstanScanDeflectionMode
+    int deflection_mode;    // 偏转模式，enum NetworkConfigConstanScanDeflectionMode
     double yaw;             // 角度
-    NetworkPoint pix;       // 像素点
-}NetworkConstantScan;
+    NetworkConfigPoint pix;	// 像素点
+}NetworkConfigConstantScan;
 
 typedef struct {
     double start_angle;     // 起始角
     double end_angle;       // 终止角
-}NetworkFanScanning;
+}NetworkConfigFanScanning;
 
 typedef enum {
-    NETWORK_PTZ_SCAN_WEEKLY,    // 周扫描
-    NETWORK_PTZ_SCAN_FAN,       // 扇扫描
-    NETWORK_PTZ_SCAN_CONSTANT,  // 定扫描
-    NETWORK_PTZ_SCAN_CONTROL,   // 控制
-}NetworkPtzScanMode;
+    NETWORK_CONFIG_PTZ_SCAN_WEEKLY,    // 周扫描
+    NETWORK_CONFIG_PTZ_SCAN_FAN,       // 扇扫描
+    NETWORK_CONFIG_PTZ_SCAN_CONSTANT,  // 定扫描
+}NetworkConfigPtzScanMode;
 
 typedef struct {
     bool motor_enable;          // 电机使能  
-    int scan_mode;              // 扫描模式，enum NetworkPtzScanMode
-    NetworkConstantScan constant_scan; 
-    NetworkFanScanning fan_scanning;
+    int scan_mode;              // 扫描模式，enum NetworkConfigPtzScanMode
+    NetworkConfigConstantScan constant_scan; 
+    NetworkConfigFanScanning fan_scanning;
     double pitch;               // 俯仰角
     double step;                // 步长
     int speed;                  // 速度
-}NetworkPtzInfo;
+}NetworkConfigPtzInfo;
 
-#define NET_AREA_NAME_SIAE (128)
-#define NET_POINT_NUM_MAX (8)
-#define NET_AREA_NUM_MAX (32)
+#define NETWORK_CONFIG_PRESET_MAX_NUM (256)
 
 typedef struct {
-    char area_name[NET_AREA_NAME_SIAE]; // 区域名
+	char name[NETWORK_PRESET_NAME_MAX_SIZE];	// 预置点名
+	int num;		// 预置点号
+}NetworkConfigPtzPreset;
+
+typedef struct {
+	int deal_num;	// 处理数组中的某项，【-1：表示全数组】
+	int preset_num;	// 数组数
+	NetworkConfigPtzPreset preset[NETWORK_CONFIG_PRESET_MAX_NUM];
+}NetworkConfigPtzPresets;
+
+typedef struct {
+    int object_detection;	// 目标检测
+    int tracking;           // 追踪
+    int action_analyze;     // 行为分析
+	int gas_detection;		// 气体检测
+}NetworkConfigAlgorithmDetection;
+
+#define NETWORK_CONFIG_AREA_NAME_SIAE (128)
+#define NETWORK_CONFIG_POINT_NUM_MAX (8)
+#define NETWORK_CONFIG_AREA_NUM_MAX (32)
+
+typedef struct {
+    char area_name[NETWORK_CONFIG_AREA_NAME_SIAE]; // 区域名
     bool enable;                        // 区域使能
     int point_num_max;                  // 区域点最大个数
     int point_num;                      // 区域点数
-    NetworkPoint point[NET_POINT_NUM_MAX];     // 区域点坐标
-}NetworkArea;
+    NetworkConfigPoint point[NETWORK_CONFIG_POINT_NUM_MAX];     // 区域点坐标
+}NetworkConfigAlgorithmArea;
 
 typedef struct {
+	int deal_num;	// 处理数组中的某项，【-1：表示全数组】
     int area_num;
-    NetworkArea area[NET_AREA_NUM_MAX];
-}NetworkAreas;
+    NetworkConfigAlgorithmArea area[NETWORK_CONFIG_AREA_NUM_MAX];
+}NetworkConfigAlgorithmAreas;
 
 typedef struct {
-    bool enable;                // 使能
-    NetworkPoint coordinate;   // 坐标
-}NetworkRedDotInfo;
-
-typedef enum {
-	NETWORK_FILL_LIGHT_OFF,		// 关
-	NETWORK_FILL_LIGHT_ON,		// 开
-	NETWORK_FILL_LIGHT_AUTO,	// 自动
-}NetworkFillLightCtrl;
-typedef struct {
-    bool defog_by_heat_enable;          // 去雾加热
-    bool heat_enable;                   // 加热
-    bool fan_enable;                    // 风扇
-    bool electronic_compass_enable;     // 电子罗盘
-    NetworkRedDotInfo red_dot;          // 红点
-    bool hdmi_enable;                   // hdmi
-    bool wipers_enable;                 // 雨刷
-    int fill_light_ctrl;                // 补光灯, enum NetworkFillLightCtrl
-    bool cvbs_enable;                   // cvbs
-}NetworkOtherConfig;
+    int gas_display_enhance;	// 气体增强
+    int outdoor_mode;           // 户外模式
+    int fusion_mode;     		// 融合模式，enum NetworkFusionMode
+}NetworkConfigAlgorithmImage;
 
 typedef struct {
     bool dhcp_enable;
@@ -245,63 +443,131 @@ typedef struct {
     bool ipv6_enable;
     char ipv6_addr[128];
     char ipv6_gateway[128];
+    char mac[18];
     char dns[16];
-}NetworkNetworkInfo;
+    char alt_dns[16];
+}NetworkConfigNetworkTcpIp;
 
 typedef struct {
-    bool detection_enable;          // 目标检测
-    bool tracking_enable;           // 追踪
-    bool action_analyze_enable;     // 行为分析
-}NetworkAlgorithm;
-
-#define NET_PRESET_MAX_NUM (256)
-typedef struct {
-	char name[64];
-	int num;
-}NetworkPreset;
+	int picture_in_picture;		// 画中画，
+	int electronic_compass;		// 电子罗盘
+	char language[32];			// 语言
+}NetworkConfigDisplayScreenInfo;
 
 typedef struct {
-	int preset_num;
-	NetworkPreset preset[NET_PRESET_MAX_NUM];
-}NetworkPresets;
+	char gun_type[32];					// 枪型
+	int graticule_style;				// 分划样式 
+	int color;							// 颜色，enum NetworkColgraticuleColor
+	NetworkConfigPoint coordinate;		// 坐标
+}NetworkConfigDisplayScreenCalibrationGun;
+
+typedef struct {
+    bool enable;					// 使能
+    NetworkConfigPoint coordinate;	// 坐标
+}NetworkConfigDisplayScreenRedDotInfo;
+
+typedef enum {
+	NETWORK_CONFIG_FILL_LIGHT_OFF,		// 关
+	NETWORK_CONFIG_FILL_LIGHT_ON,		// 开
+	NETWORK_CONFIG_FILL_LIGHT_AUTO,	// 自动
+}NetworkConfigFillLightCtrl;
+
+typedef struct {
+	int heat;			// 加热
+	int fan;			// 风扇
+	int wipers;			// 雨刷
+	int fill_light;		// 补光灯, enum NetworkConfigFillLightCtrl
+}NetworkConfigOtherInfo;
+
+typedef struct {
+	int hdmi;			// hdmi
+	int cvbs;			// cvbs
+}NetworkConfigOtherPreview;
+
+typedef struct {
+	int position_mode;			// 定位模式
+	int external_position;		// 外部定位
+	int target_guidance;		// 目标引导
+	int first_and_last_target;	// 首末目标
+	int multi_point_position;	// 多点定位
+}NetworkConfigOtherPosition;
 
 /** 控制请求 **/
+typedef struct {
+	char reserve[128];
+}NetworkContorlSnap;
+
 typedef enum {
-    NETWORK_LASER_RANGING_SINGLE,       // 单次
-    NETWORK_LASER_RANGING_CONTINUED,    // 持续
-}NetworkLaserRangingMode;
+    NETWORK_CONTORL_RECORD_STOP,       // 单次
+    NETWORK_CONTORL_RECORD_START,    // 持续
+}NetworkContorlRecordState;
+
+typedef struct {
+	int state;	// enum NetworkContorlRecordState
+	char reserve[128-4];
+}NetworkContorlRecord;
+
+typedef enum {
+    NETWORK_CONTORL_LASER_RANGING_SINGLE,       // 单次
+    NETWORK_CONTORL_LASER_RANGING_CONTINUED,    // 持续
+}NetworkContorlLaserRangingMode;
 
 typedef struct {
     int mode;   // enum NetworkLaserRangingMode   
     int state;  // 持续测距，0停止，1开始
-}NetworkLaserRanging;
+
+	int distence;
+	char reserve[128-12];
+}NetworkContorlLaserRanging;
 
 typedef enum {
-    NETWORK_PTZ_CTRL_UP,
-    NETWORK_PTZ_CTRL_DOWN,
-    NETWORK_PTZ_CTRL_LEFT,
-    NETWORK_PTZ_CTRL_RIGHT,
-    NETWORK_PTZ_CTRL_HOME,
-    NETWORK_PTZ_CTRL_PRESET, // 转到预置点，回调携带PRESET_NAME
-}NetworkPtzCtrlMode;
+    NETWORK_CONTORL_PTZ_CTRL_UP,
+    NETWORK_CONTORL_PTZ_CTRL_DOWN,
+    NETWORK_CONTORL_PTZ_CTRL_LEFT,
+    NETWORK_CONTORL_PTZ_CTRL_RIGHT,
+    NETWORK_CONTORL_PTZ_CTRL_HOME,
+    NETWORK_CONTORL_PTZ_CTRL_PRESET, // 转到预置点，回调携带PRESET_NAME
+}NetworkContorlPtzCtrlMode;
 
 typedef struct {
-    int mode;   // enum NetworkPtzCtrlMode   
-    char preset_name[64];  // 预置点名
-}NetworkPtzCtrl;
+    int mode;   // enum NetworkContorlPtzCtrlMode   
+    char preset_name[NETWORK_PRESET_NAME_MAX_SIZE];  // 预置点名
+	char reserve[128-68];
+}NetworkContorlPtzCtrl;
 
-#define NET_TRACKING_OBJECT_MAX_NUM (16)
+#define NETWORK_CONTORL_TRACKING_OBJECT_MAX_NUM (16)
 typedef struct {
     int tracking_num;
-    int tracking_object[NET_TRACKING_OBJECT_MAX_NUM];
-}NetworkTrackingObject;
+    int tracking_object[NETWORK_CONTORL_TRACKING_OBJECT_MAX_NUM];
+}NetworkContorlTrackingObject;
 
 typedef enum {
-    NETWORK_BAD_PIX_OPERATION_GET,      // 获取
-    NETWORK_BAD_PIX_OPERATION_DELETE,   // 清除
-    NETWORK_BAD_PIX_OPERATION_RESET,    // 恢复
-    NETWORK_BAD_PIX_OPERATION_SAVE,     // 保存
-}NetworkBadPixOperationType;
+    NETWORK_CONTORL_BAD_PIX_OPERATION_GET,      // 获取
+    NETWORK_CONTORL_BAD_PIX_OPERATION_DELETE,   // 清除
+    NETWORK_CONTORL_BAD_PIX_OPERATION_RESET,    // 恢复
+    NETWORK_CONTORL_BAD_PIX_OPERATION_SAVE,     // 保存
+}NetworkContorlBadPixOperationType;
+
+typedef struct {
+	int oper;	// enum NetworkContorlBadPixOperationType
+	int pix_num;
+	char reserve[128-12];
+}NetworkContorlBadPix;
+
+typedef struct {
+	char reserve[128];
+}NetworkContorlShutterCalibration;
+
+typedef enum {
+    NETWORK_CONTORL_IR_FOCUSING_STOP,		// 停止
+    NETWORK_CONTORL_IR_FOCUSING_LEFT,		// 左转
+    NETWORK_CONTORL_IR_FOCUSING_RTGHT,		// 右转
+}NetworkContorlIrFocusingMode;
+
+typedef struct {
+	int mode;	// enum NetworkContorlIrFocusing
+	char reserve[128 - 4];
+}NetworkContorlIrFocusing;
 
 /** 设备上报 **/
 typedef enum {
@@ -345,11 +611,11 @@ typedef struct {
 #define NETWORK_UPLOAD_UPGRADE_FAIL "upgrade_fail"          // 升级失败
 
 typedef enum {
-    NETWORK_UPLOAD_ALARM = 400,     // 报警
-    NETWORK_UPLOAD_PERIPHERAL,      // 外设
-    NETWORK_UPLOAD_DOWNLOAD,        // 下载
-    NETWORK_UPLOAD_UPGRADE,         // 升级
-    NETWORK_UPLOAD_LASER_RANGING,   // 测距
+    NETWORK_UPLOAD_ALARM = 4000,		// 报警
+    NETWORK_UPLOAD_PERIPHERAL,			// 外设
+    NETWORK_UPLOAD_DOWNLOAD,			// 下载
+    NETWORK_UPLOAD_UPGRADE,				// 升级
+    NETWORK_UPLOAD_LASER_RANGING,		// 测距
 }NetworkUploadType;
 
 typedef struct {

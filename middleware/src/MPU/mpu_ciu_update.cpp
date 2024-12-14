@@ -39,6 +39,7 @@ void CIU_RegisterUpdate()
 void CIU_UnRegisterUpdate()
 {
     NetworkOperationRegister(NETWORK_OPERATION_UPGRADE, NULL);
+    NetworkOperationRegister(NETWORK_OPERATION_TRANSPARENT_TRANSMISSION , NULL);
 }
 
 

@@ -7,10 +7,10 @@
 extern "C" {
 #endif
 
-typedef int (*NetworkOperationGetAbilityCb)(NetworkSupportFunction* );
+typedef int (*NetworkOperationGetAbilityCb)(NetworkAbilitySupportFunction* );
 
 typedef enum {
-    NETWORK_SYSTEM_REBOOT = 100,    // 重启
+    NETWORK_SYSTEM_REBOOT = 1000,   // 重启
     NETWORK_SYSTEM_RESET,           // 恢复出厂
     NETWORK_SYSTEM_FORMAT,          // 格式化
     NETWORK_SYSTEM_DEVICE_INFO,     // 设备信息
@@ -18,66 +18,69 @@ typedef enum {
     NETWORK_SYSTEM_GET_RTSP_URL,    // 获取rtsp_url
 }NetworkSystemType;
 typedef struct {
-    int type;
+    int type;   // NetworkSystemType
+    int cam;	// 摄像头
+
     union {
-        int time;                   // 设置的UTC时间
+        int time;								// 设置的UTC时间
     } in;
 
     union {
-        NetworkDeviceInfo device_info;     // 获取的设备信息
-        char rtsp_url[128];         // 获取的rtsp地址
+        NetworkSystemDeviceInfo device_info;	// 获取的设备信息
+        NetworkSystemRtspUrl rtsp_url;			// 获取的rtsp地址
     } out;
 }NetworkSystem;
 typedef int (*NetworkOperationSystemCb)(NetworkSystem* );
 
 typedef enum {
-    NETWORK_CONFIG_SYSTEM_INFO = 200,   // 系统信息, NetworkSystemInfo
-    NETWORK_CONFIG_CAMERA_CHIP_INFO,    // 机芯信息, NetworkCameraChipInfo
-    NETWORK_CONFIG_POSITION,            // 定位, NetworkPosition
-    NETWORK_CONFIG_CALIBRATION_GUN,     // 校枪, NetworkCalibrationGun
-    NETWORK_CONFIG_PTZ_INFO,            // 云台, NetworkPtzInfo
-    NETWORK_CONFIG_AREAS,               // 区域, NetworkAreas
-    NETWORK_CONFIG_OTHER_INFO,          // 其他信息, NetworkOtherConfig
-    NETWORK_CONFIG_NETWORK,             // 网络信息, NetworkNetworkInfo
-    NETWORK_CONFIG_ALGORITHM,           // 算法, NetworkAlgorithm
-    NETWORK_CONFIG_PRESETS,             // 预置点, NetworkPresets
+    NETWORK_CONFIG_SYSTEM_TIME_INFO = 2000,			// 时间信息, NetworkConfigSystemTimeInfo
+
+    NETWORK_CONFIG_CAMERA_IR_IMAGE_INFO,			// 红外图像信息, NetworkConfigCameraIrImageInfos
+    NETWORK_CONFIG_CAMERA_IR_IMAGE_ENHANCE,			// 红外图像增强, NetworkConfigCameraIrImageEnhance
+    NETWORK_CONFIG_CAMERA_IR_IMAGE_ZOOM,			// 红外图像变倍, NetworkConfigCameraIrImageZooms
+    NETWORK_CONFIG_CAMERA_IR_FOCUSING,				// 红外调焦, NetworkConfigCameraIrFocusings
+    NETWORK_CONFIG_CAMERA_IR_CALIBRATIONS,			// 红外校正, NetworkConfigCameraIrCalibrations
+
+    NETWORK_CONFIG_CAMERA_VIS_IMAGE_INFO,			// 可见光图像信息, NetworkConfigCameraVisImageInfos
+    NETWORK_CONFIG_CAMERA_VIS_IMAGE_ZOOM,			// 可见光图像变倍, NetworkConfigCameraVisImageZooms
+    NETWORK_CONFIG_CAMERA_VIS_FOCUSING,				// 可见光图像信息, NetworkConfigCameraVisFocusings
+
+	NETWORK_CONFIG_PTZ_INFO,						// 全景云台信息, NetworkConfigPtzInfo
+	NETWORK_CONFIG_PTZ_PRESETS,						// 预置点, NetworkConfigPtzPresets
+
+	NETWORK_CONFIG_ALGORITHM_DETECTION,				// 图像算法，NetworkConfigAlgorithmDetection
+	NETWORK_CONFIG_ALGORITHM_AREAS,					// 算法区域，NetworkConfigAlgorithmAreas
+	NETWORK_CONFIG_ALGORITHM_IMAGE,					// 图像算法，NetworkConfigAlgorithmImage
+
+	NETWORK_CONFIG_NETWORK_TCP_IP,					// TCP/IP配置，NetworkConfigNetworkTcpIp
+
+	NETWORK_CONFIG_DISPLAY_SCREEN_INFO,				// 设备显示屏信息，NetworkConfigDisplayScreenInfo
+	NETWORK_CONFIG_DISPLAY_SCREEN_CALIBRATION_GUN,	// 校抢，NetworkConfigDisplayScreenCalibrationGun
+	NETWORK_CONFIG_DISPLAY_SCREEN_RED_DOT_INFO,		// 红点，NetworkConfigDisplayScreenRedDotInfo
+
+	NETWORK_CONFIG_OTHER_INFO,						// 其他信息，NetworkConfigOtherInfo
+	NETWORK_CONFIG_OTHER_PREVIEW,					// 预览，NetworkConfigOtherPreview
+	NETWORK_CONFIG_OTHER_POSITION,					// 定位，NetworkConfigOtherPosition
 }NetworkConfigType;
-typedef int (*NetworkOperationGetConfigCb)(NetworkConfigType , void* , int );
-typedef int (*NetworkOperationSetConfigCb)(NetworkConfigType , void* , int );
+typedef int (*NetworkOperationGetConfigCb)(int , void* , int );
+typedef int (*NetworkOperationSetConfigCb)(int , void* , int );
 
 typedef enum {
-    NETWORK_CONTORL_SNAP = 300,             // 抓拍
-    NETWORK_CONTORL_RECORD,                 // 录像
-    NETWORK_CONTORL_BAD_PIX,                // 坏点
-    NETWORK_CONTORL_SHUTTER_CALIBRATION,    // 快门校正
-    NETWORK_CONTORL_LASER_RANGING,          // 测距
-    NETWORK_CONTORL_PTZ,                    // 云台(预留)
-    NETWORK_CONTORL_TRACKING,               // 跟踪
-    NETWORK_CONTORL_INFRARED_ELECTRIC_FOCUS,// 红外电动调焦
+    NETWORK_CONTORL_SNAP = 3000,				// 抓拍 NetworkContorlSnap
+    NETWORK_CONTORL_RECORD,						// 录像 NetworkContorlRecord
+    NETWORK_CONTORL_BAD_PIX,					// 坏点 NetworkContorlBadPix
+    NETWORK_CONTORL_SHUTTER_CALIBRATION,		// 快门校正 NetworkContorlShutterCalibration
+    NETWORK_CONTORL_LASER_RANGING,				// 测距 NetworkContorlLaserRanging
+    NETWORK_CONTORL_PTZ,						// 云台 NetworkContorlPtzCtrl
+    NETWORK_CONTORL_TRACKING,					// 跟踪 NetworkContorlTrackingObject
+    NETWORK_CONTORL_IR_FOCUSING,	            // 红外调焦 NetworkContorlIrFocusing
 }NetworkContorlType;
-
-typedef struct {
-    int type;   // enum NetworkContorlType
-    union {
-        int recode_state;           // 录像状态，0结束，1开始
-        int bad_pix_operation;      // enum NetworkBadPixOperationType
-        int infrared_focus_mode;    // 红外电动调焦, 0停止，1左转，2右转
-        NetworkLaserRanging laser_ranging;
-        NetworkPtzCtrl ptz_ctrl;
-        NetworkTrackingObject tracking_object;
-    } in;
-    
-    union {
-        int bad_pix_num;    // 获取坏点数
-        int distence;       // 单次测距
-    } out;
-}NetworkContorl;
-typedef int (*NetworkOperationControlCb)(NetworkContorl* );
+typedef int (*NetworkOperationControlCb)(int, int, void*, int);     // type, cam, st, st_size
 
 typedef int (*NetworkOperationUpgradeCb)(const char* );
 
 typedef enum {
-    NETWORK_TRANSPARENT_TRANSMISSION_PTZ = 400,     // 云台
+    NETWORK_TRANSPARENT_TRANSMISSION_PTZ = 4000,     // 云台
 }NetworkTransparentTransmissionType;
 typedef struct {
     int type;       // enum NetworkTransparentTransmissionType

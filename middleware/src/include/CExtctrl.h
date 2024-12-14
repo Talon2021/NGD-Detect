@@ -9,7 +9,8 @@ typedef struct DevInfo_st
     char sort_version[64];
     char hart_version[64];
     char serial_number[64];
-    char rtsp_url[10][64];
+    char ir_rtsp_url[10][64];
+    char vis_rtsp_url[10][64];
 }DevInfo_st;
 
 

@@ -13,7 +13,7 @@ private:
     void *m_han;
 
     float m_ElectronicZoom;
-    int m_AutoFocus;
+    int m_FocusMode;
     int m_GasEnhanced;
     int m_brightness;
     int m_contrast;
@@ -154,15 +154,15 @@ public:
     /// @return successful 0
     int GetInfraredImageElectronicZoom(float *value);
 
-    /// @brief 设置自动红外变焦
+    /// @brief 设置调焦模式
     /// @param enable 
     /// @return successful 0
-    int SetInfraredImageAutoFocus(int enable);
+    int SetInfraredImageFocusMode(int mode);
 
     /// @brief 获取自动红外变焦使能
     /// @param enable 
     /// @return successful 0
-    int GetInfraredImageAutoFocus(int *enable);
+    int GetInfraredImageFocusMode(int *enable);
 
     /// @brief 设置气体增强
     /// @param enable 
@@ -178,6 +178,8 @@ public:
     int GetGasEnhanced(int *enable);
 
     int SetElectricFocu(int action);
+
+    int SetAutoFocuData(int type);
 };
 
 

@@ -11,6 +11,7 @@
 #include "json_pack.hpp"
 #include "sdk_log.h"
 #include "MessageManager.h"
+#include "network_common.h"
 #define SERIAL_BUFFER_LEN  8
 // void *CCInfraredImage::g_threadImage(void *lpParameter)
 // {
@@ -31,7 +32,18 @@
 //         usleep(100*1000);
 //     }
 // }
-
+std::map<int, std::string> pseudo_enum = {
+    {NETWORK_PSEUDO_COLOR_WHITE_HOT, "white_hot"},
+    {NETWORK_PSEUDO_COLOR_BLACK_HOT, "black_hot"},
+    {NETWORK_PSEUDO_COLOR_IRON_RED, "ironbow_forward"},
+    {NETWORK_PSEUDO_COLOR_IRONBOW_REVERSE, "ironbow_reverse"},
+    {NETWORK_PSEUDO_COLOR_LAVA_FORWARD, "lava_forward"},
+    {NETWORK_PSEUDO_COLOR_LAVA_REVERSE, "lava_reverse"},
+    {NETWORK_PSEUDO_COLOR_RAINBOW, "rainbow_forward"},
+    {NETWORK_PSEUDO_COLOR_RAINBOW_REVERSE, "rainbow_reverse"},
+    {NETWORK_PSEUDO_COLOR_RAINBOWHC_FORWARD, "rainbowhc_forward"},
+    {NETWORK_PSEUDO_COLOR_RAINBOWHC_REVERSE, "rainbowhc_reverse"}
+};
 
 CCInfraredImage::CCInfraredImage(void *handle, int ch)
 {
@@ -78,8 +90,8 @@ int CCInfraredImage::Init()
     m_ElectronicZoom = pcfg->GetValue("infrareImage","electron_zoom",(long)1);
     SetInfraredImageElectronicZoom(m_ElectronicZoom);
 
-    m_AutoFocus = pcfg->GetValue("infrareImage","auto_focus",(long)1);
-    SetInfraredImageAutoFocus(m_AutoFocus);
+    m_FocusMode = pcfg->GetValue("infrareImage","focus_mode",(long)0);
+    SetInfraredImageFocusMode(m_FocusMode);
 
     m_GasEnhanced = pcfg->GetValue("infrareImage","gas_enhanced",(long)1);
     SetGasEnhanced(m_GasEnhanced);
@@ -464,10 +476,11 @@ int CCInfraredImage::SetInfraredImagePolarity(int value)
     }
     int ret;
     pthread_mutex_lock(&m_Lock);
+
 #ifdef PROCESS_CTRL
     JsonConfigExt info(_Code(IR_PSEUDO_CONFIG_CODE, "pseudo"), "set");
     info.data = DataConfigBody();
-    info.data->value = "ironbow_forward";  //等待协议修改
+    info.data->value = pseudo_enum[value]; 
     std::string json_data;
     JsonPackData<JsonConfigExt>(info, json_data);
     MessageManager *msghandle = MessageManager::getInstance();
@@ -667,7 +680,7 @@ int CCInfraredImage::GetInfraredImageElectronicZoom(float *value)
     return 0;
 }
 
-int CCInfraredImage::SetInfraredImageAutoFocus(int enable)
+int CCInfraredImage::SetInfraredImageFocusMode(int mode)
 {
     if(!m_init)
     {
@@ -675,51 +688,66 @@ int CCInfraredImage::SetInfraredImageAutoFocus(int enable)
     }
     pthread_mutex_lock(&m_Lock);
     int ret = 0;
-    if(m_AutoFocus == enable)
+    int enable = 0;
+    int msg_flag = 0;
+    if(m_FocusMode == mode)
     {
         pthread_mutex_unlock(&m_Lock);
         return 0;
     }
 #ifdef PROCESS_CTRL
-    JsonConfigExt info(_Code(IR_AUTO_FOCU_CODE, "autofocus_ir"), "set");
-    info.data = DataConfigBody();
-    info.data->value = std::to_string(enable); 
-    info.data->type = "continue";
-    std::string json_data;
-    JsonPackData<JsonConfigExt>(info, json_data);
-    MessageManager *msghandle = MessageManager::getInstance();
-    std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, IR_AUTO_FOCU_CODE, json_data, 1, 100, out_msg);
-    if(ret != IR_AUTO_FOCU_CODE)
+    if(mode == 0)       //0 自动调焦 1 电动调焦
     {
-        ERROR("get reply message is err \n");
-        pthread_mutex_unlock(&m_Lock);
-        return -1;
+        msg_flag = 1;
+        enable= 1;
     }
-    DataConfigResponse out_response;
-    JsonParseData<DataConfigResponse>(out_response, out_msg->recv_data);
-    if(std::stoi(out_response.status.value()) != 0)
+    else if(m_FocusMode == 0 && mode != 0)
     {
-        ERROR(" reply message is status = %s \n", out_response.status->c_str());
-        pthread_mutex_unlock(&m_Lock);
-        return -1;
+        msg_flag = 1;
+        enable = 0;
+    }
+    if(msg_flag)
+    {
+        JsonConfigExt info(_Code(IR_AUTO_FOCU_CODE, "focusmode_ir"), "set");
+        info.data = DataConfigBody();
+        info.data->value = std::to_string(enable); 
+        info.data->type = "continue";
+        std::string json_data;
+        JsonPackData<JsonConfigExt>(info, json_data);
+        MessageManager *msghandle = MessageManager::getInstance();
+        std::shared_ptr<receMessage> out_msg;
+        ret = msghandle->MSG_SendMessage(0, IR_AUTO_FOCU_CODE, json_data, 1, 100, out_msg);
+        if(ret != IR_AUTO_FOCU_CODE)
+        {
+            ERROR("get reply message is err \n");
+            pthread_mutex_unlock(&m_Lock);
+            return -1;
+        }
+        DataConfigResponse out_response;
+        JsonParseData<DataConfigResponse>(out_response, out_msg->recv_data);
+        if(std::stoi(out_response.status.value()) != 0)
+        {
+            ERROR(" reply message is status = %s \n", out_response.status->c_str());
+            pthread_mutex_unlock(&m_Lock);
+            return -1;
+        }
     }
     CConfig *pcfg = CConfig::GetInstance();
-    pcfg->SetValue("infrareImage","auto_focus",(long)enable);
+    pcfg->SetValue("infrareImage","focus_mode",(long)mode);
 #endif
-    m_AutoFocus = enable;
+    m_FocusMode = mode;
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
 
-int CCInfraredImage::GetInfraredImageAutoFocus(int *enable)
+int CCInfraredImage::GetInfraredImageFocusMode(int *mode)
 {
     if(!m_init)
     {
         return -1;
     }
     pthread_mutex_lock(&m_Lock);
-    *enable = m_AutoFocus;
+    *mode = m_FocusMode;
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -789,16 +817,16 @@ int CCInfraredImage::SetElectricFocu(int action)
     }
     int ret = 0;
     pthread_mutex_lock(&m_Lock);
-#ifdef PROCESS_CTRL
-   JsonConfigExt info(_Code(IR_ELEC_FOCU_CODE, "ir_elec_focu"), "set");
+
+    JsonConfigExt info(_Code(IR_ELEC_FOCU_DATA_CODE, "elecfocus_ir"), "set");
     info.data = DataConfigBody();
     info.data->action = std::to_string(action); 
     std::string json_data;
     JsonPackData<JsonConfigExt>(info, json_data);
     MessageManager *msghandle = MessageManager::getInstance();
     std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, IR_ELEC_FOCU_CODE, json_data, 1, 100, out_msg);
-    if(ret != IR_ELEC_FOCU_CODE)
+    ret = msghandle->MSG_SendMessage(0, IR_ELEC_FOCU_DATA_CODE, json_data, 1, 100, out_msg);
+    if(ret != IR_ELEC_FOCU_DATA_CODE)
     {
         ERROR("get reply message is err \n");
         pthread_mutex_unlock(&m_Lock);
@@ -812,7 +840,52 @@ int CCInfraredImage::SetElectricFocu(int action)
         pthread_mutex_unlock(&m_Lock);
         return -1;
     }
-#endif
+
+    pthread_mutex_unlock(&m_Lock);
+    return 0;
+}
+
+int CCInfraredImage::SetAutoFocuData(int type)
+{
+
+    if(!m_init)
+    {
+        return -1;
+    }
+    int ret = 0;
+    std::string action;
+    pthread_mutex_lock(&m_Lock);
+    if(type == 0)
+    {
+        action = "single";
+    }
+    else
+    {
+        action = "continue";
+    }
+    JsonConfigExt info(_Code(IR_AUTO_FOCU_DATA_CODE, "autofocus_ir"), "set");
+    info.data = DataConfigBody();
+    info.data->type = action; 
+    std::string json_data;
+    JsonPackData<JsonConfigExt>(info, json_data);
+    MessageManager *msghandle = MessageManager::getInstance();
+    std::shared_ptr<receMessage> out_msg;
+    ret = msghandle->MSG_SendMessage(0, IR_AUTO_FOCU_DATA_CODE, json_data, 1, 100, out_msg);
+    if(ret != IR_AUTO_FOCU_DATA_CODE)
+    {
+        ERROR("get reply message is err \n");
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+    DataConfigResponse out_response;
+    JsonParseData<DataConfigResponse>(out_response, out_msg->recv_data);
+    if(std::stoi(out_response.status.value()) != 0)
+    {
+        ERROR(" reply message is status = %s \n", out_response.status->c_str());
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }

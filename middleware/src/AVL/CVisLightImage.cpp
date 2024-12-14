@@ -10,7 +10,7 @@ CVisLightImage::CVisLightImage(void *handle, int ch)
     m_init = 0;
     m_brightness = 0;
     m_contrast = 0;
-    m_auto_focu_enable = 0;
+    m_focu_mode = -1;
 }
 
 CVisLightImage::~CVisLightImage()
@@ -22,7 +22,7 @@ int CVisLightImage::LoadParam()
 {
     int brightness;
     int contrast;
-    int auto_focu_enable;
+    int focu_mode;
     int saturation;
     int sharpness;
 
@@ -32,8 +32,8 @@ int CVisLightImage::LoadParam()
     contrast = m_cconfig->GetValue(VIS_LIGHT_SECTION_CFG, "contrast", (long)50);
     SetContrast(contrast);
 
-    auto_focu_enable = m_cconfig->GetValue(VIS_LIGHT_SECTION_CFG, "auto_focu_enable", (long)0);
-    SetAutoFocuEnabele(auto_focu_enable);
+    focu_mode = m_cconfig->GetValue(VIS_LIGHT_SECTION_CFG, "focu_mode", (long)0);
+    SetFocuMode(focu_mode);
 
     saturation = m_cconfig->GetValue(VIS_LIGHT_SECTION_CFG, "saturation", (long)50);
     SetSaturation(saturation);
@@ -173,20 +173,29 @@ int CVisLightImage::GetContrast(int *value)
     return 0;
 }
 
-int CVisLightImage::SetAutoFocuEnabele(int enable)
+int CVisLightImage::SetFocuMode(int mode)
 {
     if(!m_init)
     {
         return -1;
     }
     int ret = 0;
+    int enable;
     pthread_mutex_lock(&m_Lock);
-    if(enable == m_auto_focu_enable)
+    if(mode == m_focu_mode)
     {
         pthread_mutex_unlock(&m_Lock);
         return 0;
     }
-    JsonConfigExt info(_Code(VIS_AUTO_FOCU_CODE, "autofocus_vis"), "set");
+    if(m_focu_mode == 0)    //0 自动调焦
+    {
+        enable = 1;
+    }
+    else
+    {
+        enable = 0;
+    }
+    JsonConfigExt info(_Code(VIS_AUTO_FOCU_CODE, "focusmode_vis"), "set");
     info.data = DataConfigBody();
     info.data->value = std::to_string(enable); 
     info.data->type = "continue";
@@ -210,13 +219,13 @@ int CVisLightImage::SetAutoFocuEnabele(int enable)
         return -1;
     }
 
-    m_auto_focu_enable = enable;
-    m_cconfig->SetValue(VIS_LIGHT_SECTION_CFG,"auto_focu_enable",(long)m_auto_focu_enable);
+    m_focu_mode = mode;
+    m_cconfig->SetValue(VIS_LIGHT_SECTION_CFG,"focu_mode",(long)m_focu_mode);
 
     return 0;
 }
 
-int CVisLightImage::GetAutoFocuEnabele(int *enable)
+int CVisLightImage::GetFocuMode(int *mode)
 {
     if(!m_init)
     {
@@ -224,7 +233,7 @@ int CVisLightImage::GetAutoFocuEnabele(int *enable)
         return -1;
     }
     pthread_mutex_lock(&m_Lock);
-    *enable = m_auto_focu_enable;
+    *mode = m_focu_mode;
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }

@@ -21,8 +21,8 @@ public:
     int SetContrast(int value);
     int GetContrast(int *value);
 
-    int SetAutoFocuEnabele(int enable);
-    int GetAutoFocuEnabele(int *enable);
+    int SetFocuMode(int mode);
+    int GetFocuMode(int *mode);
 
     int SetSaturation(int value);
     int GetSaturation(int *value);
@@ -35,7 +35,7 @@ private:
     int m_init;
     int m_brightness;
     int m_contrast;
-    int m_auto_focu_enable;
+    int m_focu_mode;
     int m_saturation;
     int m_sharpness;
     pthread_mutex_t m_Lock;

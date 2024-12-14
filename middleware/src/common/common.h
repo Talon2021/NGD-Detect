@@ -110,22 +110,35 @@ static inline void TimerMicroseconds(unsigned long uSec)
 #define JP_NVR_GET_DEVICEINFO       1   //主命令
 #define JP_NVR_SET_DEVICEINFO       2
 
-#define DEVICE_ALL_ABLITY           0XFFFFFFFF
+#define DEVICE_ALL_ABLITY           0XFFFF
 #define DEVICE_SYSTEM_INFO          1
 
 #define JP_NVR_GET_CONFIG           3 //主命令
 #define JP_NVR_SET_CONFIG           4
 
-#define CONFIG_SYSTEM_INFO          1
-#define CONFIG_CAMERA_INFO          2
-#define CONFIG_POSITION_INFO        3
-#define CONFIG_CALIBRATION_INFO     4
-#define CONFIG_PTZ_INFO             5
-#define CONFIG_AREAS_INFO           6
-#define CONFIG_OTHER_INFO           7
-#define CONFIG_NETWORK_INFO         8
-#define CONFIG_ALGO_INFO            9
-#define CONFIG_PTZ_PRESET           10
+#define CONFIG_SYSTEM_TIME_INFO                 2000
+#define CONFIG_CAMERA_IR_IMAGE_INFO             2001
+#define CONFIG_CAMERA_IR_IMAGE_ENHANCE          2002
+#define CONFIG_CAMERA_IR_IMAGE_ZOOM             2003
+#define CONFIG_CAMERA_IR_FOCUSING               2004
+#define CONFIG_CAMERA_IR_CALIBRATIONS           2005
+#define CONFIG_CAMERA_VIS_IMAGE_INFO            2006
+#define CONFIG_CAMERA_VIS_IMAGE_ZOOM            2007
+#define CONFIG_CAMERA_VIS_FOCUING               2008
+#define CONFIG_PTZ_INFO                         2009
+#define CONFIG_PTZ_PRESETS                      2010
+#define CONFIG_ALGORITHM_DETECTION              2011
+#define CONFIG_ALGORITHM_AREAS                  2012
+#define CONFIG_ALGORITHM_IMAGE                  2013
+#define CONFIG_NETWORK_TCP_IP                   2014
+#define CONFIG_DISPLAY_SCREEN_INFO              2015
+#define CONFIG_DISPLAY_SCREEN_CALIBRATION_GUN   2016
+#define CONFIG_DISPLAY_SCREEN_RED_DOT_INFO      2017
+#define CONFIG_OTHER_INFO                       2018
+#define CONFIG_OTHER_PREVIEW                    2019
+#define CONFIG_OTHER_POSITION                   2020
+
+
 
 #define JP_NVR_CONTORL              5 //主命令
 
@@ -135,7 +148,7 @@ static inline void TimerMicroseconds(unsigned long uSec)
 #define CONTORL_RANG_DISTANCE       4
 #define CONTORL_TRACK               5
 #define CONTORL_SHUTTER_CALIBRATION 6
-#define CONTORL_SHUTTER_PTZ         7
+#define CONTORL_PTZ                 7
 #define CONTORL_INFRARED_ELECTRIC_FOCUS  8
 
 #define JP_PTZ_CONTORL              6 //主命令
@@ -155,11 +168,14 @@ static inline void TimerMicroseconds(unsigned long uSec)
 #define SCREE_CONTRAST_CODE            513
 #define GAS_ENHANCEMENT_CODE           514
 #define IR_PIC_BRIGHTNESS_CODE         515
-#define IR_PIC_CONTRAST_CODE           516 
+#define IR_PIC_CONTRAST_CODE           516
+
 #define AUTO_FILL_LIGHT_CODE           520
 #define WIPERS_CODE                    521
 #define CVBS_CODE                      522
+
 #define IR_AUTO_FOCU_CODE              523
+
 #define VIS_AUTO_FOCU_CODE             524
 #define VIS_PIC_BRIGHTNESS_CODE        525
 #define VIS_PIC_CONTRAST_CODE          526
@@ -169,9 +185,11 @@ static inline void TimerMicroseconds(unsigned long uSec)
 #define DEV_RTSP_URL_CODE              531
 #define DEV_VERSION_CODE               530     
 
-#define IR_ELEC_FOCU_CODE              600
-#define FACTORY_RESET_CODE             601
-#define DEV_FORMAT_CODE                602
+#define IR_ELEC_FOCU_DATA_CODE              600
+#define IR_AUTO_FOCU_DATA_CODE              601
+
+#define FACTORY_RESET_CODE             650
+#define DEV_FORMAT_CODE                651
 
 
 /* 线程管理资源 */

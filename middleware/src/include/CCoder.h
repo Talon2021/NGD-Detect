@@ -32,8 +32,8 @@ typedef struct audio_codec_st
 
 typedef struct time_config_st
 {
-    int TimeZone;
-    int TimeFormat;
+    int TimeZone;   //时区 以分为单位
+    int TimeFormat;     // 0: 12小时制 1： 24小时制
     int SummerTimeEnable;
 }time_cfg;
 
@@ -74,6 +74,8 @@ public:
     int SetTimeConfig(time_cfg cfg);
 
     int GetTimeConfig(time_cfg *cfg);
+
+    int SetTime(unsigned int time);
 };
 
 

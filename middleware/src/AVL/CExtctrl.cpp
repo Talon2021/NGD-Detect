@@ -23,65 +23,6 @@ int CExtctrl::LoadParam()
 
     value = m_Cconfig->GetValue(EXT_SECITONCFG, EXT_CVBSKEY, (long)0);
     SetCvbsEnable(value);
-#ifdef PROCESS_CTRL
-    //while(1)
-    {
-        JsonConfigExt info(_Code(DEV_VERSION_CODE, "device_version"), "get");
-        std::string json_data;
-        JsonPackData<JsonConfigExt>(info, json_data);
-        MessageManager *msghandle = MessageManager::getInstance();
-        std::shared_ptr<receMessage> out_msg;
-        ret = msghandle->MSG_SendMessage(0, DEV_VERSION_CODE, json_data, 1, 100, out_msg);
-        if(ret == DEV_VERSION_CODE)
-        {
-            JsonConfigExt out_response;
-            JsonParseData<JsonConfigExt>(out_response, out_msg->recv_data);
-            if(out_response.data->soft_version.has_value())
-            {
-                const std::string& str = out_response.data->soft_version.value();
-                memcpy(m_DevVersion.sort_version, str.c_str(), str.size() + 1);
-            }
-            if(out_response.data->hard_version.has_value())
-            {
-                const std::string& str = out_response.data->hard_version.value();
-                memcpy(m_DevVersion.hart_version, str.c_str(), str.size() + 1);
-            }
-            if(out_response.data->serial_number.has_value())
-            {
-                const std::string& str = out_response.data->serial_number.value();
-                memcpy(m_DevVersion.serial_number, str.c_str(), str.size() + 1);
-            }
-            //break;
-            
-        }
-    }
-    //while(1)
-    {
-        JsonConfigExt info(_Code(DEV_RTSP_URL_CODE, "device_rtsp"), "get");
-        std::string json_data;
-        JsonPackData<JsonConfigExt>(info, json_data);
-        MessageManager *msghandle = MessageManager::getInstance();
-        std::shared_ptr<receMessage> out_msg;
-        ret = msghandle->MSG_SendMessage(0, DEV_RTSP_URL_CODE, json_data, 1, 100, out_msg);
-        if(ret == DEV_RTSP_URL_CODE)
-        {
-            JsonConfigExt out_response;
-            JsonParseData<JsonConfigExt>(out_response, out_msg->recv_data);
-            if(out_response.data->rtsp_url.has_value())
-            {
-               
-                const std::vector<std::string> str = out_response.data->rtsp_url.value();
-                for(int i = 0; i < str.size(); i++)
-                {
-                    memcpy(m_DevVersion.rtsp_url[i], str[i].c_str(), str[i].size() + 1);
-                }
-                
-            }
-            //break;
-        }
-    }
-#endif
-
     return 0;
 }
 

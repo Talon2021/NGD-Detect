@@ -130,14 +130,18 @@ public:
 
     int InfraredImage_GetInfraredImageElectronicZoom(int nch, float *value);
 
-    int InfraredImage_SetInfraredImageAutoFocus(int nch, int enable);
+    int InfraredImage_SetInfraredImageFocusMode(int nch, int mode);
 
-    int InfraredImage_GetInfraredImageAutoFocus(int nch, int *enable);
+    int InfraredImage_GetInfraredImageFocusMode(int nch, int *mode);
 
 
     int InfraredImage_SetGasEnhanced(int nch, int enable);
 
     int InfraredImage_GetGasEnhanced(int nch, int *enable);
+
+    int InfraredImage_SetElectricFocu(int nch, int action);
+
+    int InfraredImage_SetAutoFocuData(int nch, int type);
 
     /*陀螺仪*/
     int Groy_Init(int nch);
@@ -280,6 +284,8 @@ public:
     int Coder_SetTimeConfig(int nch, time_cfg cfg);
 
     int Coder_GetTimeConfig(int nch, time_cfg *cfg);
+
+    int Coder_SetTime(int nch, unsigned int time);
     
     int Ext_SetWipersEnable(int nch, int enable);
 
@@ -293,6 +299,8 @@ public:
 
     int Ext_GetCvbsEnable(int nch, int *enable);
 
+    int Ext_GetDevVersionInfo(int nch, DevInfo_st *info);
+
     int Vis_SetBrightness(int nch, int value);
 
     int Vis_GetBrightness(int nch, int *value);
@@ -301,9 +309,9 @@ public:
 
     int Vis_GetContrast(int nch, int *value);
 
-    int Vis_SetAutoFocuEnabele(int nch, int enable);
+    int Vis_SetFocuMode(int nch, int mode);
 
-    int Vis_GetAutoFocuEnabele(int nch, int *enable);
+    int Vis_GetFocuMode(int nch, int *mode);
 
     int Vis_SetSaturation(int nch, int value);
 

@@ -161,14 +161,14 @@ int AVL_InfraredImage_GetInfraredImageElectronicZoom(int nch, float *value)
    MPU_AVL_CALL(InfraredImage_GetInfraredImageElectronicZoom(nch, value));
 }
 
-int AVL_InfraredImage_SetInfraredImageAutoFocus(int nch, int enable)
+int AVL_InfraredImage_SetInfraredImageFocusMode(int nch, int mode)
 {
-    MPU_AVL_CALL(InfraredImage_SetInfraredImageAutoFocus(nch, enable));
+    MPU_AVL_CALL(InfraredImage_SetInfraredImageFocusMode(nch, mode));
 }
 
-int AVL_InfraredImage_GetInfraredImageAutoFocus(int nch, int *enable)
+int AVL_InfraredImage_GetInfraredImageFocusMode(int nch, int *mode)
 {
-    MPU_AVL_CALL(InfraredImage_GetInfraredImageAutoFocus(nch, enable));
+    MPU_AVL_CALL(InfraredImage_GetInfraredImageFocusMode(nch, mode));
 }
 
 
@@ -180,6 +180,16 @@ int AVL_InfraredImage_SetGasEnhanced(int nch, int enable)
 int AVL_InfraredImage_GetGasEnhanced(int nch, int *enable)
 {
     MPU_AVL_CALL(InfraredImage_GetGasEnhanced(nch, enable));
+}
+
+int AVL_InfraredImage_SetElectricFocu(int nch, int action)
+{
+    MPU_AVL_CALL(InfraredImage_SetElectricFocu(nch, action));
+}
+
+int AVL_InfraredImage_SetAutoFocuData(int nch, int type)
+{
+    MPU_AVL_CALL(InfraredImage_SetAutoFocuData(nch, type));
 }
 
 int AVL_Groy_Init(int nch)
@@ -529,6 +539,11 @@ int AVL_Coder_GetTimeConfig(int nch, time_cfg *cfg)
     MPU_AVL_CALL(Coder_GetTimeConfig(nch, cfg));
 }
 
+int AVL_Coder_SetTime(int nch, unsigned int time)
+{
+    MPU_AVL_CALL(Coder_SetTime(nch, time));
+}
+
 int AVL_Ext_SetWipersEnable(int nch, int enable)
 {
     MPU_AVL_CALL(Ext_SetWipersEnable(nch, enable));
@@ -559,6 +574,11 @@ int AVL_Ext_GetCvbsEnable(int nch, int *enable)
     MPU_AVL_CALL(Ext_GetCvbsEnable(nch, enable));
 }
 
+int AVL_Ext_GetDevVersionInfo(int nch, DevInfo_st *info)
+{
+    MPU_AVL_CALL(Ext_GetDevVersionInfo(nch, info));
+}
+
 int AVL_Vis_SetBrightness(int nch, int value)
 {
     MPU_AVL_CALL(Vis_SetBrightness(nch, value));
@@ -579,14 +599,14 @@ int AVL_Vis_GetContrast(int nch, int *value)
     MPU_AVL_CALL(Vis_GetContrast(nch, value));
 }
 
-int AVL_Vis_SetAutoFocuEnabele(int nch, int enable)
+int AVL_Vis_SetFocuMode(int nch, int mode)
 {
-    MPU_AVL_CALL(Vis_SetAutoFocuEnabele(nch, enable));
+    MPU_AVL_CALL(Vis_SetFocuMode(nch, mode));
 }
 
-int AVL_Vis_GetAutoFocuEnabele(int nch, int *enable)
+int AVL_Vis_GetFocuMode(int nch, int *mode)
 {
-    MPU_AVL_CALL(Vis_GetAutoFocuEnabele(nch, enable));
+    MPU_AVL_CALL(Vis_GetFocuMode(nch, mode));
 }
 
 int AVL_Vis_SetSaturation(int nch, int value)

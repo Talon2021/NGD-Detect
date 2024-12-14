@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/time.h>
 
 #define TIMECFG_SECTION     "Time_Cfg"
 #define TIME_ZONE_KEY       "time_zone"
@@ -154,5 +155,19 @@ int CCoder::GetTimeConfig(time_cfg *cfg)
         return -1;
     }
     memcpy(cfg, &m_TimeCfg, sizeof(time_cfg));
+    return 0;
+}
+
+int CCoder::SetTime(unsigned int time)
+{
+    struct timeval tv;
+    tv.tv_sec = time + (m_TimeCfg.TimeZone * 60);  
+    tv.tv_usec = 0;
+
+    if (settimeofday(&tv, NULL) == -1) 
+    {
+        ERROR("settimeofday is err\n");
+        return -1;
+    }
     return 0;
 }

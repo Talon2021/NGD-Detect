@@ -49,7 +49,7 @@ static int report_alarm_Calback(alarm_data *info)
 
 
 
-static int MPU_CIU_SET_ConfigSystem(NetworkSystemInfo *pcfg)
+static int MPU_CIU_SET_ConfigSystem(NetworkConfigSystemTimeInfo *pcfg)
 {
     int ret = 0;
     time_cfg cfg;
@@ -73,13 +73,12 @@ static int MPU_CIU_SET_ConfigSystem(NetworkSystemInfo *pcfg)
     else
         cfg.TimeZone = hour * 60 + min;
     cfg.TimeFormat = pcfg->time_format;
-    cfg.SummerTimeEnable = pcfg->summer_time_enable;
-    ret |= AVL_Coder_SetLanguage(0, pcfg->language);
+    cfg.SummerTimeEnable = pcfg->summer_time;
     ret |= AVL_Coder_SetTimeConfig(0, cfg);
     return ret;
 }
 
-static int MPU_CIU_GET_ConfigSystem(NetworkSystemInfo *pcfg)
+static int MPU_CIU_GET_ConfigSystem(NetworkConfigSystemTimeInfo *pcfg)
 {
     int ret = 0;
     time_cfg cfg;
@@ -88,332 +87,610 @@ static int MPU_CIU_GET_ConfigSystem(NetworkSystemInfo *pcfg)
         ERROR(" parma is err NULL\n");
         return -1;
     }
-    AVL_Coder_GetLanguage(0, pcfg->language);
     AVL_Coder_GetTimeConfig(0, &cfg);
     if(cfg.TimeZone  > 0)
         snprintf(pcfg->time_zone, sizeof(pcfg->time_zone), "UTC+%02d:%02d", (cfg.TimeZone / 60), (cfg.TimeZone % 60));
     else
         snprintf(pcfg->time_zone, sizeof(pcfg->time_zone), "UTC-%02d:%02d", (cfg.TimeZone / 60), (cfg.TimeZone % 60));
     pcfg->time_format = cfg.TimeFormat;
-    pcfg->summer_time_enable = (bool)cfg.SummerTimeEnable;
+    pcfg->summer_time = (bool)cfg.SummerTimeEnable;
     return ret;
 }
 
-static int MPU_CIU_SET_ConfigCamear(NetworkCameraChipInfo *pcfg)
+static int MPU_CIU_SET_IR_ConfigCamearImage(NetworkConfigCameraIrImageInfos *pcfg)
 {
     int ret = 0;
+    int i = 0;
     if(pcfg == NULL)
     {
         ERROR(" parma is err NULL\n");
         return -1;
     }
-    ret |= AVL_InfraredImage_SetImageBrightness(0, pcfg->brightness);
-    ret |= AVL_InfraredImage_SetImageContrast(0, pcfg->contrast);
-    ret |= AVL_InfraredImage_SetInfraredImagePolarity(0, pcfg->pseudo_color);
-    ret |= AVL_InfraredImage_SetInfraredImageSharpening(0, pcfg->sharpening);
-    ret |= AVL_InfraredImage_SetHotspotTracking(0, pcfg->hot_spot_tracking);
-    ret |= AVL_InfraredImage_ManualDefectRemoval(0, 0, pcfg->bad_pix_threshold);
-    ret |= AVL_InfraredImage_SetInfraredImageElectronicZoom(0, pcfg->electronic_zoom);
-    ret |= AVL_InfraredImage_SetInfraredImageAutoFocus(0, pcfg->inrared_auto_focus);
-    ret |= AVL_InfraredImage_SetGasEnhanced(0, pcfg->gas_enhanced_display);
-    return ret;
-}
-
-static int MPU_CIU_GET_ConfigCamear(NetworkCameraChipInfo *pcfg)
-{
-    if(pcfg == NULL)
+    if(pcfg->deal_num == -1)
     {
-        ERROR(" parma is err NULL\n");
-        return -1;
-    }
-    int opt = 0;
-    AVL_InfraredImage_GetImageBrightness(0, &pcfg->brightness);
-    AVL_InfraredImage_GetImageContrast(0, &pcfg->contrast);
-    AVL_InfraredImage_GetInfraredImagePolarity(0, &pcfg->pseudo_color);
-    AVL_InfraredImage_GetInfraredImageSharpening(0, &pcfg->sharpening);
-    AVL_InfraredImage_GetHotspotTracking(0, (int *)(&pcfg->hot_spot_tracking));
-    AVL_InfraredImage_GetManualDefectRemoval(0, &opt, &pcfg->bad_pix_threshold);
-    AVL_InfraredImage_GetInfraredImageElectronicZoom(0, &pcfg->electronic_zoom);
-    AVL_InfraredImage_GetInfraredImageAutoFocus(0, &pcfg->inrared_auto_focus);
-    ///AVL_InfraredImage_GetAutoVisibleLight(0, &pcfg->visible_light_auto_focus);
-    AVL_InfraredImage_GetGasEnhanced(0, &pcfg->gas_enhanced_display);
-    return 0;
-}
-
-static int MPU_CIU_SET_Ptzinfo(NetworkPtzInfo *pcfg)
-{
-    int ret = 0;
-    target_data data;
-    int mode = 0;
-    int enable = 0;
-    if(pcfg == NULL)
-    {
-        ERROR(" parma is err NULL\n");
-        return -1;
-    }
-    data.mode = pcfg->constant_scan.deflection_mode;
-    data.angle_x = pcfg->constant_scan.pix.x;
-    data.angle_y = pcfg->constant_scan.pix.y;
-    data.target_angle = pcfg->constant_scan.yaw;
-
-    if(pcfg->motor_enable == 0)
-    {
-        AVL_Ptz_SetPtzEnable(0, pcfg->motor_enable);
-        AVL_Ptz_ZeroInit(0);
-        return 0;
-    }
-
-    AVL_Ptz_GetPtzEnable(0, &enable);
-
-    if(pcfg->motor_enable == 1 && enable == 0)
-    {
-        ret |= AVL_Ptz_SetPtzEnable(0, (int)(pcfg->motor_enable));
-        ret |= AVL_Ptz_SetScanMode(0, pcfg->scan_mode);
+        for(i = 0; i < pcfg->num; i++)
+        {
+            ret |= AVL_InfraredImage_SetImageBrightness(i, pcfg->image_info[i].brightness);
+            ret |= AVL_InfraredImage_SetImageContrast(i, pcfg->image_info[i].contrast);
+            ret |= AVL_InfraredImage_SetInfraredImagePolarity(i, pcfg->image_info[i].pseudo_color);
+            ret |= AVL_InfraredImage_SetInfraredImageSharpening(i, pcfg->image_info[i].sharpening);
+        }
     }
     else
     {
-        AVL_Ptz_GetScanMode(0, &mode);
-        if(mode != pcfg->scan_mode)
+        ret |= AVL_InfraredImage_SetImageBrightness(pcfg->deal_num, pcfg->image_info[pcfg->deal_num].brightness);
+        ret |= AVL_InfraredImage_SetImageContrast(pcfg->deal_num, pcfg->image_info[pcfg->deal_num].contrast);
+        ret |= AVL_InfraredImage_SetInfraredImagePolarity(pcfg->deal_num, pcfg->image_info[pcfg->deal_num].pseudo_color);
+        ret |= AVL_InfraredImage_SetInfraredImageSharpening(pcfg->deal_num, pcfg->image_info[pcfg->deal_num].sharpening);
+    }
+    return ret;
+}
+
+static int MPU_CIU_GET_IR_ConfigCamearImage(NetworkConfigCameraIrImageInfos *pcfg)
+{
+    int i = 0;
+    if(pcfg == NULL)
+    {
+        ERROR(" parma is err NULL\n");
+        return -1;
+    }
+    pcfg->num = MAX_CH_NUM;
+    if(pcfg->deal_num == -1)
+    {
+        for(i = 0; i < pcfg->num; i++)
         {
-            AVL_Ptz_ZeroInit(0);    //切换模式，直接归0
-            ret |= AVL_Ptz_SetPtzEnable(0, (int)(pcfg->motor_enable));
-            ret |= AVL_Ptz_SetScanMode(0, pcfg->scan_mode);
-        }
-        else
-        {
-            ret |= AVL_Ptz_SetPtzEnable(0,(int)(pcfg->motor_enable)); //打开
+            AVL_InfraredImage_GetImageBrightness(i, &(pcfg->image_info[i].brightness));
+            AVL_InfraredImage_GetImageContrast(i, &(pcfg->image_info[i].contrast));
+            AVL_InfraredImage_GetInfraredImagePolarity(i, &(pcfg->image_info[i].pseudo_color));
+            AVL_InfraredImage_GetInfraredImageSharpening(i, &(pcfg->image_info[i].sharpening));
         }
     }
-    //ret |= AVL_Ptz_SetPtzAngle(0, 0, pcfg->pitch);
-    ret |= AVL_Ptz_SetStep(0, pcfg->step);
-    if(pcfg->scan_mode == 1)
-        ret |= AVL_Ptz_SetFanScanAngle(0, pcfg->fan_scanning.start_angle, pcfg->fan_scanning.end_angle);
-    if(pcfg->scan_mode == 2 || pcfg->scan_mode == 3)
-        ret |= AVL_Ptz_SetTargetLocation(0, data);
+    else
+    {
+        AVL_InfraredImage_GetImageBrightness(pcfg->deal_num, &(pcfg->image_info[i].brightness));
+        AVL_InfraredImage_GetImageContrast(pcfg->deal_num, &(pcfg->image_info[i].contrast));
+        AVL_InfraredImage_GetInfraredImagePolarity(pcfg->deal_num, &(pcfg->image_info[i].pseudo_color));
+        AVL_InfraredImage_GetInfraredImageSharpening(pcfg->deal_num, &(pcfg->image_info[i].sharpening));
+    }
+    return 0;
+}
+
+static int MPU_CIU_SET_IR_EleZoomConfig(NetworkConfigCameraIrImageZooms *pcfg)
+{
+    if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+    int i = 0;
+    
+    if(pcfg->deal_num == -1)
+    {
+        for(i = 0; i < pcfg->num; i++)
+        {
+            ret = AVL_InfraredImage_SetInfraredImageElectronicZoom(i, pcfg->image_zoom[i].electronic);
+        }
+    }
+    else
+    {
+        ret = AVL_InfraredImage_SetInfraredImageElectronicZoom(pcfg->deal_num, pcfg->image_zoom[i].electronic);
+    }
+    return ret;
+}
+
+static int MPU_CIU_GET_IR_EleZoomConfig(NetworkConfigCameraIrImageZooms *pcfg)
+{
+    if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+    int i = 0;
+    pcfg->num = MAX_CH_NUM;
+    if(pcfg->deal_num == -1)
+    {
+        for(i = 0; i < pcfg->num; i++)
+        {
+            ret = AVL_InfraredImage_GetInfraredImageElectronicZoom(i, &(pcfg->image_zoom[i].electronic));
+        }
+    }
+    else
+    {
+        ret = AVL_InfraredImage_GetInfraredImageElectronicZoom(pcfg->deal_num, &(pcfg->image_zoom[pcfg->deal_num].electronic));
+    }
     
     return ret;
 }
 
-static int MPU_CIU_GET_Ptzinfo(NetworkPtzInfo *pcfg)
+static int MPU_CIU_SET_IR_FocuConfig(NetworkConfigCameraIrFocusings *pcfg)
 {
-    int ret = 0;
     if(pcfg == NULL)
     {
-        ERROR(" parma is err NULL\n");
+        ERROR("the param is err \n");
         return -1;
     }
-    double yaw = 0;
-    pcfg->constant_scan.deflection_mode = NETWORK_CONSTAN_SCAN_DEFLECTION_ANGLE;
-    AVL_Ptz_GetPtzEnable(0, (int *)(&pcfg->motor_enable));
-    AVL_Ptz_GetScanMode(0, &pcfg->scan_mode);
-    AVL_Ptz_GetPtzAngle(0, &yaw, &pcfg->pitch);
-    AVL_Ptz_GetStep(0, &pcfg->step);
-    AVL_Ptz_GetScanSpeed(0, (unsigned short *)&pcfg->speed);
-    AVL_Ptz_GetFanScanAngle(0, &pcfg->fan_scanning.start_angle, &pcfg->fan_scanning.end_angle);
-    pcfg->constant_scan.yaw = yaw;
-    return ret;
-}
-
-static int MPU_CIU_SET_AreaConfig(NetworkAreas *pcfg)
-{
     int ret = 0;
-    if(pcfg == NULL)
+    int i = 0;
+    if(pcfg->deal_num == -1)
     {
-        ERROR(" parma is err NULL\n");
-        return -1;
-    }
-    area_information area[NET_AREA_NUM_MAX] = {0};
-    for(int i = 0; i < pcfg->area_num; i++)
-    {
-        memcpy(area[i].area_name, pcfg->area[i].area_name, NET_AREA_NAME_SIAE);
-        area[i].type = 0;
-        area[i].enable = pcfg->area[i].enable;
-        area[i].point_num = pcfg->area[i].point_num;
-        for(int j = 0; j < pcfg->area[i].point_num; j++)
+        for(i = 0; i < pcfg->num; i++)
         {
-            area[i].point[j].x = pcfg->area[i].point[j].x;
-            area[i].point[j].y = pcfg->area[i].point[j].y;
+            ret = AVL_InfraredImage_SetInfraredImageFocusMode(i, pcfg->focusing[i].focusing_mode);
+            AVL_InfraredImage_SetAutoFocuData(i,1);
         }
     }
-    ret = AVL_Area_SetAllAreaPoint(0, area, pcfg->area_num);
-    return ret;       
+    else
+    {
+        ret = AVL_InfraredImage_SetInfraredImageFocusMode(pcfg->deal_num, pcfg->focusing[i].focusing_mode);
+        AVL_InfraredImage_SetAutoFocuData(0,1);
+    }
+    return ret;
 }
 
-static int MPU_CIU_GET_AreaConfig(NetworkAreas *pcfg)
+static int MPU_CIU_GET_IR_FocuConfig(NetworkConfigCameraIrFocusings *pcfg)
 {
-    int ret = 0;
     if(pcfg == NULL)
     {
-        ERROR(" parma is err NULL\n");
+        ERROR("the param is err \n");
         return -1;
     }
-    area_information area_all[NET_AREA_NUM_MAX];
-    int num = 0; 
-    ret  = AVL_Area_GetAreaPoint(0, area_all, &num);
-    if(ret != 0)
+    int ret = 0;
+    int i = 0;
+    pcfg->num = MAX_CH_NUM;
+    if(pcfg->deal_num == -1)
     {
-        ERROR("AVL_Area_GetAreaPoint is err ret = %d\n",ret);
-        return -1;
-    }
-    pcfg->area_num = num;
-    for(int i = 0; i < pcfg->area_num; i++)
-    {
-        memcpy(pcfg->area[i].area_name, area_all[i].area_name, NET_AREA_NAME_SIAE);
-        pcfg->area[i].enable = area_all[i].enable;
-        pcfg->area[i].point_num = area_all[i].point_num;
-        pcfg->area[i].point_num_max = 8;
-        fprintf(stderr," name = %s enable = %d point num = %d max num = %d \n", pcfg->area[i].area_name, pcfg->area[i].enable, pcfg->area[i].point_num, pcfg->area[i].point_num_max);
-        fprintf(stderr, "area poing : ");
-        for(int j = 0; j < pcfg->area[i].point_num; j++)
+        for(i = 0; i < pcfg->num; i++)
         {
-            pcfg->area[i].point[j].x = area_all[i].point[j].x;
-            pcfg->area[i].point[j].y = area_all[i].point[j].y;
-            fprintf(stderr, "x = %d y = %d",pcfg->area[i].point[j].x, pcfg->area[i].point[j].y);
+            ret = AVL_InfraredImage_GetInfraredImageFocusMode(i, &pcfg->focusing[i].focusing_mode);
         }
-        fprintf(stderr, "\n");
     }
-    return ret;     
+    else
+    {
+        ret = AVL_InfraredImage_GetInfraredImageFocusMode(pcfg->deal_num, &pcfg->focusing[pcfg->deal_num].focusing_mode);
+    }
+    return ret;
 }
 
-static int MPU_CIU_SET_OtherConfigInfo(NetworkOtherConfig *pcfg)
+static int MPU_CIU_SET_IR_CalibrationConfig(NetworkConfigCameraIrCalibrations *pcfg)
 {
-    int ret = 0;
+    
     if(pcfg == NULL)
     {
-        ERROR(" parma is err NULL\n");
+        ERROR("the param is err \n");
         return -1;
     }
-    AVL_Ext_SetWipersEnable(0, pcfg->wipers_enable);
-    AVL_Ext_SetAutoLightEnable(0, pcfg->fill_light_ctrl);
-    AVL_Ext_SetCvbsEnable(0, pcfg->cvbs_enable);
+    int ret = 0;
 
     return ret;
 }
 
-static int MPU_CIU_GET_OtherConfigInfo(NetworkOtherConfig *pcfg)
+static int MPU_CIU_GET_IR_CalibrationConfig(NetworkConfigCameraIrCalibrations *pcfg)
 {
+    
     if(pcfg == NULL)
     {
-        ERROR(" parma is err NULL\n");
+        ERROR("the param is err \n");
         return -1;
     }
-    AVL_Ext_GetWipersEnable(0, (int *)&pcfg->wipers_enable);
-    AVL_Ext_GetAutoLightEnable(0, (int *)&pcfg->fill_light_ctrl);
-    AVL_Ext_GetCvbsEnable(0, (int *)&pcfg->cvbs_enable);
-    printf("pcfg->wipers_enable = %d ,pcfg->fill_light_ctrl = %d pcfg->cvbs_enable = %d \n", pcfg->wipers_enable, pcfg->fill_light_ctrl, pcfg->cvbs_enable);
-    return 0;
-}
-
-static int MPU_CIU_SET_NetConfig(NetworkNetworkInfo *pcfg)
-{
     int ret = 0;
-    if(pcfg == NULL)
-    {
-        ERROR(" parma is err NULL\n");
-        return -1;
-    }
-    if(!pcfg->ipv4_enable)
-    {
-        ERROR(" Currently only supports ipv4\n");
-        return -1;
-    }
-    ret |= MPU_NET_SetIPAddress(pcfg->ipv4_addr);
-    ret |= MPU_NET_SetGateway(pcfg->ipv4_gateway);
-    ret |= MPU_NET_SetSubnetMask(pcfg->ipv4_mask);
-    ret |= MPU_NET_SetDns(pcfg->dns, NULL);
-    sleep(3);
-    mysystem("reboot");
+
     return ret;
 }
 
-static int MPU_CIU_GET_NetConfig(NetworkNetworkInfo *pcfg)
+static int MPU_CIU_SET_VIS_ImageConfig(NetworkConfigCameraVisImageInfos *pcfg)
 {
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
     int ret = 0;
-    if(pcfg == NULL)
-    {
-        ERROR(" parma is err NULL\n");
-        return -1;
-    }
-    pcfg->ipv6_enable = false;
-    pcfg->ipv4_enable = true;
-    pcfg->dhcp_enable = (bool)MPU_NET_GetDhcpEnable();
-    MPU_NET_GetIPAddress(pcfg->ipv4_addr);
-    MPU_NET_GetGateway(pcfg->ipv4_gateway);
-    MPU_NET_GetSubnetMask(pcfg->ipv4_mask);
-    MPU_NET_GetDns(pcfg->dns, NULL); //默认把网关当dns使用
-    //printf("pcfg->ipv4_mask = %s \n",pcfg->ipv4_mask);
-
-    return 0;
+    ret |= AVL_Vis_SetBrightness(pcfg->deal_num, pcfg->image_info[pcfg->deal_num].brightness);
+    ret |= AVL_Vis_SetContrast(pcfg->deal_num, pcfg->image_info[pcfg->deal_num].contrast);
+    ret |= AVL_Vis_SetSaturation(pcfg->deal_num, pcfg->image_info[pcfg->deal_num].saturation);
+    ret |= AVL_Vis_SetSharpness(pcfg->deal_num, pcfg->image_info[pcfg->deal_num].sharpening);
+    return ret;
 }
 
-static int MPU_CIU_SET_AlgoConfig(NetworkAlgorithm *pcfg)
+static int MPU_CIU_GET_VIS_ImageConfig(NetworkConfigCameraVisImageInfos *pcfg)
 {
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
     int ret = 0;
-    if(pcfg == NULL)
+    int i = 0;
+    pcfg->num = MAX_CH_NUM;
+    for(i = 0; i < pcfg->num; i++)
     {
-        ERROR(" parma is err NULL\n");
-        return -1;
+        ret |= AVL_Vis_GetBrightness(i, &pcfg->image_info[i].brightness);
+        ret |= AVL_Vis_GetContrast(i, &pcfg->image_info[i].contrast);
+        ret |= AVL_Vis_GetSaturation(i, &pcfg->image_info[i].saturation);
+        ret |= AVL_Vis_GetSharpness(i, &pcfg->image_info[i].sharpening);
     }
-    AVL_Alg_SetDetectEnable(0,pcfg->detection_enable);
-    AVL_Alg_SetTrackEnable(0,pcfg->tracking_enable);
-    AVL_Alg_SetBehaviorEnable(0,pcfg->action_analyze_enable);
-    return 0;
+
+    return ret;
 }
 
-static int MPU_CIU_GET_AlgoConfig(NetworkAlgorithm *pcfg)
+static int MPU_CIU_SET_VIS_EleZoomConfig(NetworkConfigCameraVisImageZooms *pcfg)    //使用红外接口
 {
-    if(pcfg == NULL)
+     if(pcfg == NULL)
     {
-        ERROR(" parma is err NULL\n");
+        ERROR("the param is err \n");
         return -1;
     }
-    int all_alg_enable = 0;
-    AVL_Alg_GetAlgEnable(0, &all_alg_enable);
-    if(get_bit(&all_alg_enable, 0))
+    int ret = 0;
+    int i = 0;
+    
+    if(pcfg->deal_num == -1)
     {
-        pcfg->detection_enable = true;
+        for(i = 0; i < pcfg->num; i++)
+        {
+            ret = AVL_InfraredImage_SetInfraredImageElectronicZoom(i, pcfg->image_zoom[i].electronic);
+        }
     }
-    if(get_bit(&all_alg_enable, 1))
+    else
     {
-        pcfg->tracking_enable = true;
+        ret = AVL_InfraredImage_SetInfraredImageElectronicZoom(pcfg->deal_num, pcfg->image_zoom[i].electronic);
     }
-    if(get_bit(&all_alg_enable, 2))
-    {
-        pcfg->action_analyze_enable = true;
-    }
-    return 0;
+    return ret;
 }
 
-static int MPU_CIU_SET_PtzConfig(NetworkPresets *pcfg)
+static int MPU_CIU_GET_VIS_EleZoomConfig(NetworkConfigCameraVisImageZooms *pcfg)
 {
-    if(pcfg == NULL)
+     if(pcfg == NULL)
     {
-        ERROR("set ptz is err \n");
+        ERROR("the param is err \n");
         return -1;
     }
-    traget_preset preset[256] = {0};
-    for(int i = 0; i < pcfg->preset_num; i++)
+    int ret = 0;
+    int i = 0;
+    pcfg->num = MAX_CH_NUM;
+    if(pcfg->deal_num == -1)
     {
-        preset[i].enable = 1;
-        preset[i].num = pcfg->preset[i].num;
-        memcpy(preset[i].name, pcfg->preset[i].name, sizeof(pcfg->preset[i].name));
+        for(i = 0; i < pcfg->num; i++)
+        {
+            ret = AVL_InfraredImage_GetInfraredImageElectronicZoom(i, &(pcfg->image_zoom[i].electronic));
+        }
     }
-    AVL_Ptz_SetPresetEx(0, preset, pcfg->preset_num);
-    return 0;
+    else
+    {
+        ret = AVL_InfraredImage_GetInfraredImageElectronicZoom(pcfg->deal_num, &(pcfg->image_zoom[pcfg->deal_num].electronic));
+    }
+
+    return ret;
 }
 
-static int MPU_CIU_GET_PtzConfig(NetworkPresets *pcfg)
+static int MPU_CIU_SET_VIS_FocuConfig(NetworkConfigCameraVisFocusings *pcfg)
 {
-    traget_preset preset[256] = {0};
-    int num = 0;
-    AVL_Ptz_GetPreset(0, &preset[0], &num);
-    pcfg->preset_num = num;
-    for(int i = 0; i < pcfg->preset_num; i++)
+     if(pcfg == NULL)
     {
-        pcfg->preset[i].num = preset[i].num;
-        memcpy(pcfg->preset[i].name, preset[i].name, sizeof(pcfg->preset[i].name));
+        ERROR("the param is err \n");
+        return -1;
     }
-    return 0;
+    int ret = 0;
+    ret = AVL_Vis_SetFocuMode(pcfg->deal_num, pcfg->focusing[pcfg->deal_num].focusing_mode);
+    return ret;
+}
+
+static int MPU_CIU_GET_VIS_FocuConfig(NetworkConfigCameraVisFocusings *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+    ret = AVL_Vis_GetFocuMode(pcfg->deal_num, &(pcfg->focusing[pcfg->deal_num].focusing_mode));
+    return ret;
+}
+
+static int MPU_CIU_SET_PtzConfig(NetworkConfigPtzInfo *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+
+    return ret;
+}
+
+static int MPU_CIU_GET_PtzConfig(NetworkConfigPtzInfo *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+
+    return ret;
+}
+
+static int MPU_CIU_SET_PtzPresetsConfig(NetworkConfigPtzPresets *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+    int i = 0;
+    traget_preset presetInfo[256] = {0};
+    for(i = 0; i < pcfg->preset_num; i++)
+    {
+        memcpy(presetInfo[i].name, pcfg->preset[i].name, NETWORK_PRESET_NAME_MAX_SIZE);
+        presetInfo[i].num = pcfg->preset[i].num;
+        presetInfo[i].enable = 1;
+    }
+    ret = AVL_Ptz_SetPresetEx(0, presetInfo, pcfg->preset_num);
+    return ret;
+}
+
+static int MPU_CIU_GET_PtzPresetsConfig(NetworkConfigPtzPresets *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int i = 0;
+    int ret = 0;
+    traget_preset presetInfo[256] = {0};
+    ret = AVL_Ptz_GetPreset(0, presetInfo, &pcfg->preset_num);
+    for(i = 0; i < pcfg->preset_num; i++)
+    {
+        memcpy(pcfg->preset[i].name, presetInfo[i].name, NETWORK_PRESET_NAME_MAX_SIZE);
+        pcfg->preset[i].num = presetInfo[i].num;
+    }
+    return ret;
+}
+
+static int MPU_CIU_SET_AlgoDetectConfig(NetworkConfigAlgorithmDetection *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+
+    return ret;
+}
+
+static int MPU_CIU_GET_AlgoDetectConfig(NetworkConfigAlgorithmDetection *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+
+    return ret;
+}
+
+static int MPU_CIU_SET_AlgoAreaConfig(NetworkConfigAlgorithmAreas *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+
+    return ret;
+}
+
+static int MPU_CIU_GET_AlgoAreaConfig(NetworkConfigAlgorithmAreas *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+
+    return ret;
+}
+
+static int MPU_CIU_SET_AlgoImageConfig(NetworkConfigAlgorithmImage *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+    ret =  AVL_InfraredImage_SetGasEnhanced(0, pcfg->gas_display_enhance);
+    return ret;
+}
+
+static int MPU_CIU_GET_AlgoImageConfig(NetworkConfigAlgorithmImage *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+    ret =  AVL_InfraredImage_GetGasEnhanced(0, &pcfg->gas_display_enhance);
+    return ret;
+}
+
+static int MPU_CIU_SET_TcpIpConfig(NetworkConfigNetworkTcpIp *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+
+    return ret;
+}
+
+static int MPU_CIU_GET_TcpIpConfig(NetworkConfigNetworkTcpIp *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+
+    return ret;
+}
+
+static int MPU_CIU_SET_ScreenInfoConfig(NetworkConfigDisplayScreenInfo *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+
+    return ret;
+}
+
+static int MPU_CIU_GET_ScreenInfoConfig(NetworkConfigDisplayScreenInfo *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+
+    return ret;
+}
+
+static int MPU_CIU_SET_ScreenCalibationConfig(NetworkConfigDisplayScreenCalibrationGun *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+
+    return ret;
+}
+
+static int MPU_CIU_GET_ScreenCalibationConfig(NetworkConfigDisplayScreenCalibrationGun *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+
+    return ret;
+}
+
+static int MPU_CIU_SET_ScreenRedDotConfig(NetworkConfigDisplayScreenRedDotInfo *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+
+    return ret;
+}
+
+static int MPU_CIU_GET_ScreenRedDotConfig(NetworkConfigDisplayScreenRedDotInfo *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+
+    return ret;
+}
+
+static int MPU_CIU_SET_OtherInfoConfig(NetworkConfigOtherInfo *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+    ret = AVL_Ext_SetAutoLightEnable(0, pcfg->fill_light);
+    ret = AVL_Ext_SetWipersEnable(0, pcfg->fan);
+    return ret;
+}
+
+static int MPU_CIU_GET_OtherInfoConfig(NetworkConfigOtherInfo *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+    ret = AVL_Ext_GetAutoLightEnable(0, &pcfg->fill_light);
+    ret = AVL_Ext_GetWipersEnable(0, &pcfg->fan);
+    return ret;
+}
+
+static int MPU_CIU_SET_OtherPreviewConfig(NetworkConfigOtherPreview *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+    ret =  AVL_Ext_SetCvbsEnable(0, pcfg->cvbs);
+    return ret;
+}
+
+static int MPU_CIU_GET_OtherPreviewConfig(NetworkConfigOtherPreview *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+    ret =  AVL_Ext_GetCvbsEnable(0, &pcfg->cvbs);
+    return ret;
+}
+
+static int MPU_CIU_SET_OtherPositionConfig(NetworkConfigOtherPosition *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+
+    return ret;
+}
+
+static int MPU_CIU_GET_OtherPositionConfig(NetworkConfigOtherPosition *pcfg)
+{
+     if(pcfg == NULL)
+    {
+        ERROR("the param is err \n");
+        return -1;
+    }
+    int ret = 0;
+
+    return ret;
 }
 
 int MPU_CIU_Set_ConfigGure(int type, void *buffer, unsigned int  bufflen)
@@ -421,111 +698,245 @@ int MPU_CIU_Set_ConfigGure(int type, void *buffer, unsigned int  bufflen)
     int ret;
     switch (type)
     {
-    case CONFIG_SYSTEM_INFO:
+    case CONFIG_SYSTEM_TIME_INFO:
+    {
+        if(bufflen < sizeof(NetworkConfigSystemTimeInfo))
         {
-            if(bufflen < sizeof(NetworkSystemInfo))
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigSystemTimeInfo *pcfg = (NetworkConfigSystemTimeInfo *)buffer;
+        ret = MPU_CIU_SET_ConfigSystem(pcfg);
+        break;
+    }   
+    case CONFIG_CAMERA_IR_IMAGE_INFO:
+    {
+        if(bufflen < sizeof(NetworkConfigCameraIrImageInfos))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigCameraIrImageInfos *pcfg = (NetworkConfigCameraIrImageInfos *)buffer;
+        ret = MPU_CIU_SET_IR_ConfigCamearImage(pcfg);
+        break;
+    } 
+    case CONFIG_CAMERA_IR_IMAGE_ENHANCE:
+    {
+        if(bufflen < sizeof(NetworkConfigCameraIrImageEnhance))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        ERROR("not subpoort ir enhance\n");
+        ret = -1;
+        break;
+    }
+    case CONFIG_CAMERA_IR_IMAGE_ZOOM:
+    {
+        if(bufflen < sizeof(NetworkConfigCameraIrImageZooms))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigCameraIrImageZooms *pcfg = (NetworkConfigCameraIrImageZooms *)buffer;
+        ret = MPU_CIU_SET_IR_EleZoomConfig(pcfg);
+        break;
+    }
+    case CONFIG_CAMERA_IR_FOCUSING:
+        {
+            if(bufflen < sizeof(NetworkConfigCameraIrFocusings))
             {
                 ret = -1;
                 ERROR("buffer is too small\n");
                 break;
             }
-            NetworkSystemInfo *pcfg = (NetworkSystemInfo *)buffer;
-            ret = MPU_CIU_SET_ConfigSystem(pcfg);
-            break;
-        }   
-    case CONFIG_CAMERA_INFO:
-        {
-            if(bufflen < sizeof(NetworkCameraChipInfo))
-            {
-                ret = -1;
-                ERROR("buffer is too small\n");
-                break;
-            }
-            NetworkCameraChipInfo *pcfg = (NetworkCameraChipInfo *)buffer;
-            ret = MPU_CIU_SET_ConfigCamear(pcfg);
-            break;
-        } 
-    case CONFIG_POSITION_INFO:
-        {
+            NetworkConfigCameraIrFocusings *pcfg = (NetworkConfigCameraIrFocusings *)buffer;
+            ret = MPU_CIU_SET_IR_FocuConfig(pcfg);
             break;
         }
-    case CONFIG_CALIBRATION_INFO:
+    case CONFIG_CAMERA_IR_CALIBRATIONS:
+    {
+        if(bufflen < sizeof(NetworkConfigCameraIrCalibrations))
         {
+            ret = -1;
+            ERROR("buffer is too small\n");
             break;
         }
+        NetworkConfigCameraIrCalibrations *pcfg = (NetworkConfigCameraIrCalibrations *)buffer;
+        ret = MPU_CIU_SET_IR_CalibrationConfig(pcfg);
+    }
+    case CONFIG_CAMERA_VIS_IMAGE_INFO:
+    {
+        if(bufflen < sizeof(NetworkConfigCameraVisImageInfos))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigCameraVisImageInfos *pcfg = (NetworkConfigCameraVisImageInfos *)buffer;
+        ret = MPU_CIU_SET_VIS_ImageConfig(pcfg);
+    }
+    case CONFIG_CAMERA_VIS_IMAGE_ZOOM:
+    {
+        if(bufflen < sizeof(NetworkConfigCameraVisImageZooms))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigCameraVisImageZooms *pcfg = (NetworkConfigCameraVisImageZooms *)buffer;
+        ret = MPU_CIU_SET_VIS_EleZoomConfig(pcfg);
+    }
+    case CONFIG_CAMERA_VIS_FOCUING:
+    {
+        if(bufflen < sizeof(NetworkConfigCameraVisFocusings))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigCameraVisFocusings *pcfg = (NetworkConfigCameraVisFocusings *)buffer;
+        ret = MPU_CIU_SET_VIS_FocuConfig(pcfg);
+    }
     case CONFIG_PTZ_INFO:
+    {
+        if(bufflen < sizeof(NetworkConfigPtzInfo))
         {
-            if(bufflen < sizeof(NetworkPtzInfo))
-            {
-                ret = -1;
-                ERROR("buffer is too small\n");
-                break;
-            }
-            NetworkPtzInfo *pcfg = (NetworkPtzInfo *)buffer;
-            ret = MPU_CIU_SET_Ptzinfo(pcfg);
+            ret = -1;
+            ERROR("buffer is too small\n");
             break;
         }
-    case CONFIG_AREAS_INFO:
+        NetworkConfigPtzInfo *pcfg = (NetworkConfigPtzInfo *)buffer;
+        ret = MPU_CIU_SET_PtzConfig(pcfg);
+    }
+    case CONFIG_PTZ_PRESETS:
+    {
+        if(bufflen < sizeof(NetworkConfigPtzPresets))
         {
-            if(bufflen < sizeof(NetworkAreas))
-            {
-                ret = -1;
-                ERROR("buffer is too small\n");
-                break;
-            }
-            NetworkAreas *pcfg = (NetworkAreas *)buffer;
-            ret = MPU_CIU_SET_AreaConfig(pcfg);
+            ret = -1;
+            ERROR("buffer is too small\n");
             break;
         }
+        NetworkConfigPtzPresets *pcfg = (NetworkConfigPtzPresets *)buffer;
+        ret = MPU_CIU_SET_PtzPresetsConfig(pcfg);
+    }
+    case NETWORK_CONFIG_ALGORITHM_DETECTION:
+    {
+        if(bufflen < sizeof(NetworkConfigAlgorithmDetection))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigAlgorithmDetection *pcfg = (NetworkConfigAlgorithmDetection *)buffer;
+        ret = MPU_CIU_SET_AlgoDetectConfig(pcfg);
+    }
+    case CONFIG_ALGORITHM_AREAS:
+    {
+        if(bufflen < sizeof(NetworkConfigAlgorithmAreas))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigAlgorithmAreas *pcfg = (NetworkConfigAlgorithmAreas *)buffer;
+        ret = MPU_CIU_SET_AlgoAreaConfig(pcfg);
+    }
+    case CONFIG_ALGORITHM_IMAGE:
+    {
+        if(bufflen < sizeof(NetworkConfigAlgorithmImage))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigAlgorithmImage *pcfg = (NetworkConfigAlgorithmImage *)buffer;
+        ret = MPU_CIU_SET_AlgoImageConfig(pcfg);
+    }
+    case CONFIG_NETWORK_TCP_IP:
+    {
+        if(bufflen < sizeof(NetworkConfigNetworkTcpIp))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigNetworkTcpIp *pcfg = (NetworkConfigNetworkTcpIp *)buffer;
+        ret = MPU_CIU_SET_TcpIpConfig(pcfg);
+    }
+    case CONFIG_DISPLAY_SCREEN_INFO:
+    {
+        if(bufflen < sizeof(NetworkConfigDisplayScreenInfo))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigDisplayScreenInfo *pcfg = (NetworkConfigDisplayScreenInfo *)buffer;
+        ret = MPU_CIU_SET_ScreenInfoConfig(pcfg);
+    }
+    case CONFIG_DISPLAY_SCREEN_CALIBRATION_GUN:
+    {
+        if(bufflen < sizeof(NetworkConfigDisplayScreenCalibrationGun))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigDisplayScreenCalibrationGun *pcfg = (NetworkConfigDisplayScreenCalibrationGun *)buffer;
+        ret = MPU_CIU_SET_ScreenCalibationConfig(pcfg);
+    }
+    case CONFIG_DISPLAY_SCREEN_RED_DOT_INFO:
+    {
+        if(bufflen < sizeof(NetworkConfigDisplayScreenRedDotInfo))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigDisplayScreenRedDotInfo *pcfg = (NetworkConfigDisplayScreenRedDotInfo *)buffer;
+        ret = MPU_CIU_SET_ScreenRedDotConfig(pcfg);
+    }
     case CONFIG_OTHER_INFO:
+    {
+        if(bufflen < sizeof(NetworkConfigOtherInfo))
         {
-            if(bufflen < sizeof(NetworkOtherConfig))
-            {
-                ret = -1;
-                ERROR("buffer is too small\n");
-                break;
-            }
-            NetworkOtherConfig *pcfg = (NetworkOtherConfig *)buffer;
-            ret = MPU_CIU_SET_OtherConfigInfo(pcfg);
+            ret = -1;
+            ERROR("buffer is too small\n");
             break;
         }
-    case CONFIG_NETWORK_INFO:
+        NetworkConfigOtherInfo *pcfg = (NetworkConfigOtherInfo *)buffer;
+        ret = MPU_CIU_SET_OtherInfoConfig(pcfg);
+    }
+    case CONFIG_OTHER_PREVIEW:
+    {
+        if(bufflen < sizeof(NetworkConfigOtherPreview))
         {
-            if(bufflen < sizeof(NetworkNetworkInfo))
-            {
-                ret = -1;
-                ERROR("buffer is too small\n");
-                break;
-            }
-            NetworkNetworkInfo *pcfg = (NetworkNetworkInfo *)buffer;
-            ret = MPU_CIU_SET_NetConfig(pcfg);
+            ret = -1;
+            ERROR("buffer is too small\n");
             break;
         }
-    case CONFIG_ALGO_INFO:
+        NetworkConfigOtherPreview *pcfg = (NetworkConfigOtherPreview *)buffer;
+        ret = MPU_CIU_SET_OtherPreviewConfig(pcfg);
+    }
+    case CONFIG_OTHER_POSITION:
+    {
+        if(bufflen < sizeof(NetworkConfigOtherPosition))
         {
-            if(bufflen < sizeof(NetworkAlgorithm))
-            {
-                ret = -1;
-                ERROR("buffer is too small\n");
-                break;
-            }
-            NetworkAlgorithm *pcfg = (NetworkAlgorithm *)buffer;
-            ret = MPU_CIU_SET_AlgoConfig(pcfg);
+            ret = -1;
+            ERROR("buffer is too small\n");
             break;
         }
-    case CONFIG_PTZ_PRESET:
-        {
-            if(bufflen < sizeof(NetworkPresets))
-            {
-                ret = -1;
-                ERROR("buffer is too small\n");
-                break;
-            }
-            NetworkPresets *pcfg = (NetworkPresets *)buffer;
-            ret = MPU_CIU_SET_PtzConfig(pcfg);
-            break;
-        }
+        NetworkConfigOtherPosition *pcfg = (NetworkConfigOtherPosition *)buffer;
+        ret = MPU_CIU_SET_OtherPositionConfig(pcfg);
+    }
     default:
+        ERROR("the type is err \n");
+        ret = -1;
         break;
     }
     return ret;
@@ -537,117 +948,252 @@ int MPU_CIU_Get_ConfigGure(int type, void *buffer, unsigned int bufflen)
     int ret;
     switch (type)
     {
-    case CONFIG_SYSTEM_INFO:
+    case CONFIG_SYSTEM_TIME_INFO:
+    {
+        if(bufflen < sizeof(NetworkConfigSystemTimeInfo))
         {
-            if(bufflen < sizeof(NetworkSystemInfo))
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigSystemTimeInfo *pcfg = (NetworkConfigSystemTimeInfo *)buffer;
+        ret = MPU_CIU_GET_ConfigSystem(pcfg);
+        break;
+    }   
+    case CONFIG_CAMERA_IR_IMAGE_INFO:
+    {
+        if(bufflen < sizeof(NetworkConfigCameraIrImageInfos))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigCameraIrImageInfos *pcfg = (NetworkConfigCameraIrImageInfos *)buffer;
+        ret = MPU_CIU_GET_IR_ConfigCamearImage(pcfg);
+        break;
+    } 
+    case CONFIG_CAMERA_IR_IMAGE_ENHANCE:
+    {
+        if(bufflen < sizeof(NetworkConfigCameraIrImageEnhance))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        ERROR("not subpoort ir enhance\n");
+        ret = -1;
+        break;
+    }
+    case CONFIG_CAMERA_IR_IMAGE_ZOOM:
+    {
+        if(bufflen < sizeof(NetworkConfigCameraIrImageZooms))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigCameraIrImageZooms *pcfg = (NetworkConfigCameraIrImageZooms *)buffer;
+        ret = MPU_CIU_GET_IR_EleZoomConfig(pcfg);
+        break;
+    }
+    case CONFIG_CAMERA_IR_FOCUSING:
+        {
+            if(bufflen < sizeof(NetworkConfigCameraIrFocusings))
             {
                 ret = -1;
                 ERROR("buffer is too small\n");
                 break;
             }
-            NetworkSystemInfo *pcfg = (NetworkSystemInfo *)buffer;
-            ret = MPU_CIU_GET_ConfigSystem(pcfg);
-            break;
-        }   
-    case CONFIG_CAMERA_INFO:
-        {
-            if(bufflen < sizeof(NetworkCameraChipInfo))
-            {
-                ret = -1;
-                ERROR("buffer is too small\n");
-                break;
-            }
-            NetworkCameraChipInfo *pcfg = (NetworkCameraChipInfo *)buffer;
-            ret = MPU_CIU_GET_ConfigCamear(pcfg);
+            NetworkConfigCameraIrFocusings *pcfg = (NetworkConfigCameraIrFocusings *)buffer;
+            ret = MPU_CIU_GET_IR_FocuConfig(pcfg);
             break;
         }
-    case CONFIG_POSITION_INFO:
+    case CONFIG_CAMERA_IR_CALIBRATIONS:
+    {
+        if(bufflen < sizeof(NetworkConfigCameraIrCalibrations))
         {
+            ret = -1;
+            ERROR("buffer is too small\n");
             break;
         }
-    case CONFIG_CALIBRATION_INFO:
+        NetworkConfigCameraIrCalibrations *pcfg = (NetworkConfigCameraIrCalibrations *)buffer;
+        ret = MPU_CIU_GET_IR_CalibrationConfig(pcfg);
+    }
+    case CONFIG_CAMERA_VIS_IMAGE_INFO:
+    {
+        if(bufflen < sizeof(NetworkConfigCameraVisImageInfos))
         {
+            ret = -1;
+            ERROR("buffer is too small\n");
             break;
-        } 
+        }
+        NetworkConfigCameraVisImageInfos *pcfg = (NetworkConfigCameraVisImageInfos *)buffer;
+        ret = MPU_CIU_GET_VIS_ImageConfig(pcfg);
+    }
+    case CONFIG_CAMERA_VIS_IMAGE_ZOOM:
+    {
+        if(bufflen < sizeof(NetworkConfigCameraVisImageZooms))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigCameraVisImageZooms *pcfg = (NetworkConfigCameraVisImageZooms *)buffer;
+        ret = MPU_CIU_GET_VIS_EleZoomConfig(pcfg);
+    }
+    case CONFIG_CAMERA_VIS_FOCUING:
+    {
+        if(bufflen < sizeof(NetworkConfigCameraVisFocusings))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigCameraVisFocusings *pcfg = (NetworkConfigCameraVisFocusings *)buffer;
+        ret = MPU_CIU_GET_VIS_FocuConfig(pcfg);
+    }
     case CONFIG_PTZ_INFO:
+    {
+        if(bufflen < sizeof(NetworkConfigPtzInfo))
         {
-           if(bufflen < sizeof(NetworkPtzInfo))
-            {
-                ret = -1;
-                ERROR("buffer is too small\n");
-                break;
-            }
-            NetworkPtzInfo *pcfg = (NetworkPtzInfo *)buffer;
-            ret = MPU_CIU_GET_Ptzinfo(pcfg);
+            ret = -1;
+            ERROR("buffer is too small\n");
             break;
         }
-    case CONFIG_AREAS_INFO:
+        NetworkConfigPtzInfo *pcfg = (NetworkConfigPtzInfo *)buffer;
+        ret = MPU_CIU_GET_PtzConfig(pcfg);
+    }
+    case CONFIG_PTZ_PRESETS:
+    {
+        if(bufflen < sizeof(NetworkConfigPtzPresets))
         {
-            if(bufflen < sizeof(NetworkAreas))
-            {
-                ret = -1;
-                ERROR("buffer is too small\n");
-                break;
-            }
-            NetworkAreas *pcfg = (NetworkAreas *)buffer;
-            ret = MPU_CIU_GET_AreaConfig(pcfg);
+            ret = -1;
+            ERROR("buffer is too small\n");
             break;
         }
+        NetworkConfigPtzPresets *pcfg = (NetworkConfigPtzPresets *)buffer;
+        ret = MPU_CIU_GET_PtzPresetsConfig(pcfg);
+    }
+    case NETWORK_CONFIG_ALGORITHM_DETECTION:
+    {
+        if(bufflen < sizeof(NetworkConfigAlgorithmDetection))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigAlgorithmDetection *pcfg = (NetworkConfigAlgorithmDetection *)buffer;
+        ret = MPU_CIU_GET_AlgoDetectConfig(pcfg);
+    }
+
+    case CONFIG_ALGORITHM_AREAS:
+    {
+        if(bufflen < sizeof(NetworkConfigAlgorithmAreas))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigAlgorithmAreas *pcfg = (NetworkConfigAlgorithmAreas *)buffer;
+        ret = MPU_CIU_GET_AlgoAreaConfig(pcfg);
+    }
+    case CONFIG_ALGORITHM_IMAGE:
+    {
+        if(bufflen < sizeof(NetworkConfigAlgorithmImage))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigAlgorithmImage *pcfg = (NetworkConfigAlgorithmImage *)buffer;
+        ret = MPU_CIU_GET_AlgoImageConfig(pcfg);
+    }
+    case CONFIG_NETWORK_TCP_IP:
+    {
+        if(bufflen < sizeof(NetworkConfigNetworkTcpIp))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigNetworkTcpIp *pcfg = (NetworkConfigNetworkTcpIp *)buffer;
+        ret = MPU_CIU_GET_TcpIpConfig(pcfg);
+    }
+    case CONFIG_DISPLAY_SCREEN_INFO:
+    {
+        if(bufflen < sizeof(NetworkConfigDisplayScreenInfo))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigDisplayScreenInfo *pcfg = (NetworkConfigDisplayScreenInfo *)buffer;
+        ret = MPU_CIU_GET_ScreenInfoConfig(pcfg);
+    }
+    case CONFIG_DISPLAY_SCREEN_CALIBRATION_GUN:
+    {
+        if(bufflen < sizeof(NetworkConfigDisplayScreenCalibrationGun))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigDisplayScreenCalibrationGun *pcfg = (NetworkConfigDisplayScreenCalibrationGun *)buffer;
+        ret = MPU_CIU_GET_ScreenCalibationConfig(pcfg);
+    }
+    case CONFIG_DISPLAY_SCREEN_RED_DOT_INFO:
+    {
+        if(bufflen < sizeof(NetworkConfigDisplayScreenRedDotInfo))
+        {
+            ret = -1;
+            ERROR("buffer is too small\n");
+            break;
+        }
+        NetworkConfigDisplayScreenRedDotInfo *pcfg = (NetworkConfigDisplayScreenRedDotInfo *)buffer;
+        ret = MPU_CIU_GET_ScreenRedDotConfig(pcfg);
+    }
     case CONFIG_OTHER_INFO:
+    {
+        if(bufflen < sizeof(NetworkConfigOtherInfo))
         {
-            if(bufflen < sizeof(NetworkOtherConfig))
-            {
-                ret = -1;
-                ERROR("buffer is too small\n");
-                break;
-            }
-            NetworkOtherConfig *pcfg = (NetworkOtherConfig *)buffer;
-            ret = MPU_CIU_GET_OtherConfigInfo(pcfg);
+            ret = -1;
+            ERROR("buffer is too small\n");
             break;
         }
-    case CONFIG_NETWORK_INFO:
+        NetworkConfigOtherInfo *pcfg = (NetworkConfigOtherInfo *)buffer;
+        ret = MPU_CIU_GET_OtherInfoConfig(pcfg);
+    }
+    case CONFIG_OTHER_PREVIEW:
+    {
+        if(bufflen < sizeof(NetworkConfigOtherPreview))
         {
-            if(bufflen < sizeof(NetworkNetworkInfo))
-            {
-                ret = -1;
-                ERROR("buffer is too small\n");
-                break;
-            }
-            NetworkNetworkInfo *pcfg = (NetworkNetworkInfo *)buffer;
-            ret = MPU_CIU_GET_NetConfig(pcfg);
+            ret = -1;
+            ERROR("buffer is too small\n");
             break;
         }
-    case CONFIG_ALGO_INFO:
+        NetworkConfigOtherPreview *pcfg = (NetworkConfigOtherPreview *)buffer;
+        ret = MPU_CIU_GET_OtherPreviewConfig(pcfg);
+    }
+    case CONFIG_OTHER_POSITION:
+    {
+        if(bufflen < sizeof(NetworkConfigOtherPosition))
         {
-            if(bufflen < sizeof(NetworkAlgorithm))
-            {
-                ret = -1;
-                ERROR("buffer is too small\n");
-                break;
-            }
-            NetworkAlgorithm *pcfg = (NetworkAlgorithm *)buffer;
-            ret = MPU_CIU_GET_AlgoConfig(pcfg);
+            ret = -1;
+            ERROR("buffer is too small\n");
             break;
         }
-    case CONFIG_PTZ_PRESET:
-        {
-            if(bufflen < sizeof(NetworkPresets))
-            {
-                ret = -1;
-                ERROR("buffer is too small\n");
-                break;
-            }
-            NetworkPresets *pcfg = (NetworkPresets *)buffer;
-            ret = MPU_CIU_GET_PtzConfig(pcfg);
-            break;
-        }
+        NetworkConfigOtherPosition *pcfg = (NetworkConfigOtherPosition *)buffer;
+        ret = MPU_CIU_GET_OtherPositionConfig(pcfg);
+    }
     default:
+        ERROR("the type is err \n");
+        ret = -1;
         break;
     }
     return ret;
 }
 
-int MPU_CIU_Get_ALL_ConfigGure(unsigned int major, unsigned int minor, void *buffer, int bufflen)
+int MPU_CIU_Get_ALL_ConfigGure(unsigned int major, unsigned int minor, void *buffer, int bufflen, void *reserve, int reserveLen)
 {
     int ret  = 0;
     DEBUG("xh test pro major = %d minjor = %d buffer = %p bufflen = %d \n", major, minor, buffer, bufflen);
@@ -665,7 +1211,7 @@ int MPU_CIU_Get_ALL_ConfigGure(unsigned int major, unsigned int minor, void *buf
         }
     case JP_NVR_CONTORL:
         {
-            ret = MPU_CIU_CTRL_MODLES(minor, buffer, bufflen);
+            ret = MPU_CIU_CTRL_MODLES(minor, buffer, bufflen, reserve, reserveLen);
             break;
         }
     
@@ -675,9 +1221,9 @@ int MPU_CIU_Get_ALL_ConfigGure(unsigned int major, unsigned int minor, void *buf
     return ret;
 }
 
-int MPU_CIU_Set_ALL_ConfigGure(unsigned int major, unsigned int minor, void *buffer, int bufflen)
+int MPU_CIU_Set_ALL_ConfigGure(unsigned int major, unsigned int minor, void *buffer, int bufflen, void *reserve, int reserveLen)
 {
-     DEBUG("xh test pro major = %d minjor = %d buffer = %p bufflen = %d \n", major, minor, buffer, bufflen);
+    DEBUG("xh test pro major = %d minjor = %d buffer = %p bufflen = %d \n", major, minor, buffer, bufflen);
     int ret  = 0;
     switch (major)
     {
@@ -693,7 +1239,7 @@ int MPU_CIU_Set_ALL_ConfigGure(unsigned int major, unsigned int minor, void *buf
         }
     case JP_NVR_CONTORL:
         {
-            ret = MPU_CIU_CTRL_MODLES(minor, buffer, bufflen);
+            ret = MPU_CIU_CTRL_MODLES(minor, buffer, bufflen, reserve, reserveLen);
             break;
         }
     
@@ -706,40 +1252,71 @@ int MPU_CIU_Set_ALL_ConfigGure(unsigned int major, unsigned int minor, void *buf
 static int NETWORK_GetConfig_cb(NetworkConfigType type, void *buffer, int bufferlen)
 {
     int ret = 0;
-    fprintf(stderr,"xh test type = %d buffer = %d \n",type, bufferlen);
     switch (type)
     {
-    case NETWORK_CONFIG_SYSTEM_INFO:
-        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_GET_CONFIG, CONFIG_SYSTEM_INFO, buffer, bufferlen);
+    case NETWORK_CONFIG_SYSTEM_TIME_INFO:
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_SYSTEM_TIME_INFO, buffer, bufferlen, NULL, 0);
         break;
-    case NETWORK_CONFIG_CAMERA_CHIP_INFO:
-        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_GET_CONFIG, CONFIG_CAMERA_INFO, buffer, bufferlen);
+    case NETWORK_CONFIG_CAMERA_IR_IMAGE_INFO:
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_CAMERA_IR_IMAGE_INFO, buffer, bufferlen, NULL, 0);
         break;
-    case NETWORK_CONFIG_POSITION:
-        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_GET_CONFIG, CONFIG_POSITION_INFO, buffer, bufferlen);
+    case NETWORK_CONFIG_CAMERA_IR_IMAGE_ENHANCE:
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_CAMERA_IR_IMAGE_ENHANCE, buffer, bufferlen, NULL, 0);
         break;
-    case NETWORK_CONFIG_CALIBRATION_GUN:
-        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_GET_CONFIG, CONFIG_CALIBRATION_INFO, buffer, bufferlen);
+    case NETWORK_CONFIG_CAMERA_IR_IMAGE_ZOOM:
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_CAMERA_IR_IMAGE_ZOOM, buffer, bufferlen, NULL, 0);
+        break;
+    case NETWORK_CONFIG_CAMERA_IR_FOCUSING:
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_CAMERA_IR_FOCUSING, buffer, bufferlen, NULL, 0);
+        break;
+    case NETWORK_CONFIG_CAMERA_IR_CALIBRATIONS:
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_CAMERA_IR_CALIBRATIONS, buffer, bufferlen, NULL, 0);
+        break;
+    case NETWORK_CONFIG_CAMERA_VIS_IMAGE_INFO:
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_CAMERA_VIS_IMAGE_ZOOM, buffer, bufferlen, NULL, 0);
+        break;
+    case NETWORK_CONFIG_CAMERA_VIS_IMAGE_ZOOM:
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_OTHER_INFO, buffer, bufferlen, NULL, 0);
+        break;
+    case NETWORK_CONFIG_CAMERA_VIS_FOCUSING:
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_CAMERA_VIS_FOCUING, buffer, bufferlen, NULL, 0);
         break;
     case NETWORK_CONFIG_PTZ_INFO:
-        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_GET_CONFIG, CONFIG_PTZ_INFO, buffer, bufferlen);
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_PTZ_INFO, buffer, bufferlen, NULL, 0);
         break;
-    case NETWORK_CONFIG_AREAS:
-        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_GET_CONFIG, CONFIG_AREAS_INFO, buffer, bufferlen);
+    case NETWORK_CONFIG_PTZ_PRESETS:
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_PTZ_PRESETS, buffer, bufferlen, NULL, 0);
         break;
-    case NETWORK_CONFIG_OTHER_INFO:
-        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_GET_CONFIG, CONFIG_OTHER_INFO, buffer, bufferlen);
+     case NETWORK_CONFIG_ALGORITHM_DETECTION:
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_ALGORITHM_DETECTION, buffer, bufferlen, NULL, 0);
         break;
-    case NETWORK_CONFIG_NETWORK:
-        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_GET_CONFIG, CONFIG_NETWORK_INFO, buffer, bufferlen);
+     case NETWORK_CONFIG_ALGORITHM_AREAS:
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_ALGORITHM_AREAS, buffer, bufferlen, NULL, 0);
         break;
-    case NETWORK_CONFIG_ALGORITHM:
-        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_GET_CONFIG, CONFIG_ALGO_INFO, buffer, bufferlen);
+     case NETWORK_CONFIG_NETWORK_TCP_IP:
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_NETWORK_TCP_IP, buffer, bufferlen, NULL, 0);
         break;
-    case NETWORK_CONFIG_PRESETS:
-        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_GET_CONFIG, CONFIG_PTZ_PRESET, buffer, bufferlen);
+     case NETWORK_CONFIG_DISPLAY_SCREEN_INFO:
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_DISPLAY_SCREEN_INFO, buffer, bufferlen, NULL, 0);
+        break;
+     case NETWORK_CONFIG_DISPLAY_SCREEN_CALIBRATION_GUN:
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_DISPLAY_SCREEN_CALIBRATION_GUN, buffer, bufferlen, NULL, 0);
+        break;
+     case NETWORK_CONFIG_DISPLAY_SCREEN_RED_DOT_INFO:
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_DISPLAY_SCREEN_RED_DOT_INFO, buffer, bufferlen, NULL, 0);
+        break;
+     case NETWORK_CONFIG_OTHER_INFO:
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_OTHER_INFO, buffer, bufferlen, NULL, 0);
+        break;
+     case NETWORK_CONFIG_OTHER_PREVIEW:
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_OTHER_PREVIEW, buffer, bufferlen, NULL, 0);
+        break;
+     case NETWORK_CONFIG_OTHER_POSITION:
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_OTHER_POSITION, buffer, bufferlen, NULL, 0);
         break;
     default:
+        ERROR(" the prarm is not support \n");
+        ret = -1;
         break;
     }
     return ret;
@@ -750,37 +1327,69 @@ static int NETWORK_SetConfig_cb(NetworkConfigType type, void *buffer, int buffer
     int ret = 0;
     switch (type)
     {
-    case NETWORK_CONFIG_SYSTEM_INFO:
-        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_SYSTEM_INFO, buffer, bufferlen);
+    case NETWORK_CONFIG_SYSTEM_TIME_INFO:
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_SYSTEM_TIME_INFO, buffer, bufferlen, NULL, 0);
         break;
-    case NETWORK_CONFIG_CAMERA_CHIP_INFO:
-        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_CAMERA_INFO, buffer, bufferlen);
+    case NETWORK_CONFIG_CAMERA_IR_IMAGE_INFO:
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_CAMERA_IR_IMAGE_INFO, buffer, bufferlen, NULL, 0);
         break;
-    case NETWORK_CONFIG_POSITION:
-        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_POSITION_INFO, buffer, bufferlen);
+    case NETWORK_CONFIG_CAMERA_IR_IMAGE_ENHANCE:
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_CAMERA_IR_IMAGE_ENHANCE, buffer, bufferlen, NULL, 0);
         break;
-    case NETWORK_CONFIG_CALIBRATION_GUN:
-        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_CALIBRATION_INFO, buffer, bufferlen);
+    case NETWORK_CONFIG_CAMERA_IR_IMAGE_ZOOM:
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_CAMERA_IR_IMAGE_ZOOM, buffer, bufferlen, NULL, 0);
+        break;
+    case NETWORK_CONFIG_CAMERA_IR_FOCUSING:
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_CAMERA_IR_FOCUSING, buffer, bufferlen, NULL, 0);
+        break;
+    case NETWORK_CONFIG_CAMERA_IR_CALIBRATIONS:
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_CAMERA_IR_CALIBRATIONS, buffer, bufferlen, NULL, 0);
+        break;
+    case NETWORK_CONFIG_CAMERA_VIS_IMAGE_INFO:
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_CAMERA_VIS_IMAGE_ZOOM, buffer, bufferlen, NULL, 0);
+        break;
+    case NETWORK_CONFIG_CAMERA_VIS_IMAGE_ZOOM:
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_OTHER_INFO, buffer, bufferlen, NULL, 0);
+        break;
+    case NETWORK_CONFIG_CAMERA_VIS_FOCUSING:
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_CAMERA_VIS_FOCUING, buffer, bufferlen, NULL, 0);
         break;
     case NETWORK_CONFIG_PTZ_INFO:
-        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_PTZ_INFO, buffer, bufferlen);
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_PTZ_INFO, buffer, bufferlen, NULL, 0);
         break;
-    case NETWORK_CONFIG_AREAS:
-        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_AREAS_INFO, buffer, bufferlen);
+    case NETWORK_CONFIG_PTZ_PRESETS:
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_PTZ_PRESETS, buffer, bufferlen, NULL, 0);
         break;
-    case NETWORK_CONFIG_OTHER_INFO:
-        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_OTHER_INFO, buffer, bufferlen);
+     case NETWORK_CONFIG_ALGORITHM_DETECTION:
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_ALGORITHM_DETECTION, buffer, bufferlen, NULL, 0);
         break;
-    case NETWORK_CONFIG_NETWORK:
-        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_NETWORK_INFO, buffer, bufferlen);
+     case NETWORK_CONFIG_ALGORITHM_AREAS:
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_ALGORITHM_AREAS, buffer, bufferlen, NULL, 0);
         break;
-    case NETWORK_CONFIG_ALGORITHM:
-        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_ALGO_INFO, buffer, bufferlen);
+     case NETWORK_CONFIG_NETWORK_TCP_IP:
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_NETWORK_TCP_IP, buffer, bufferlen, NULL, 0);
         break;
-    case NETWORK_CONFIG_PRESETS:
-        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_PTZ_PRESET, buffer, bufferlen);
+     case NETWORK_CONFIG_DISPLAY_SCREEN_INFO:
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_DISPLAY_SCREEN_INFO, buffer, bufferlen, NULL, 0);
+        break;
+     case NETWORK_CONFIG_DISPLAY_SCREEN_CALIBRATION_GUN:
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_DISPLAY_SCREEN_CALIBRATION_GUN, buffer, bufferlen, NULL, 0);
+        break;
+     case NETWORK_CONFIG_DISPLAY_SCREEN_RED_DOT_INFO:
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_DISPLAY_SCREEN_RED_DOT_INFO, buffer, bufferlen, NULL, 0);
+        break;
+     case NETWORK_CONFIG_OTHER_INFO:
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_OTHER_INFO, buffer, bufferlen, NULL, 0);
+        break;
+     case NETWORK_CONFIG_OTHER_PREVIEW:
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_OTHER_PREVIEW, buffer, bufferlen, NULL, 0);
+        break;
+     case NETWORK_CONFIG_OTHER_POSITION:
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_OTHER_POSITION, buffer, bufferlen, NULL, 0);
         break;
     default:
+        ERROR(" the prarm is not support \n");
+        ret = -1;
         break;
     }
     return ret;

@@ -7,57 +7,62 @@
 #include <sys/time.h>
 #include "CConfig.h"
 #include <unistd.h>
-static int MPU_CIU_GET_DevAblity(NetworkSupportFunction *pcfg)
+#include "mpu_avl_api.h"
+static int MPU_CIU_GET_DevAblity(NetworkAbilitySupportFunction *pcfg)
 {
+    int i = 0;
     if(pcfg == NULL)
     {
         ERROR(" parma is err NULL\n");
         return -1;
     }
-    pcfg->system_function.language_support_mask = 0;
-    pcfg->system_function.position_function_support = false;
-    pcfg->system_function.ptz_function_support = true;
-    pcfg->system_function.area_function_support = true;
-    pcfg->system_function.onvif_protocol_support = true;
-    pcfg->system_function.ipv6_protocol_support =false;
-    pcfg->camera_chip_function.brightness_support = 99;
-    pcfg->camera_chip_function.contrast_support = 99;
-    pcfg->camera_chip_function.pseudo_color_support_mask = (1 << 0) | (1 << 1) | (1 << 2) | (1 << 3) | (1 << 4) | (1 << 5) | (1 << 6) | (1 << 7);
-    pcfg->camera_chip_function.sharpening_support = 7;
-    pcfg->camera_chip_function.central_enhance_support = false;
-    pcfg->camera_chip_function.detail_enhance_support = 0;
-    pcfg->camera_chip_function.electronic_zoom_support = 0;
-    pcfg->camera_chip_function.target_recognition_support = false;
-    pcfg->camera_chip_function.background_calibration_support = false;
-    pcfg->camera_chip_function.hot_spot_tracking_support = true;
-    pcfg->camera_chip_function.picture_in_picture_support_mask = 0;
-    pcfg->camera_chip_function.outdoor_mode_support = false;
-    pcfg->camera_chip_function.fusion_mode_support_mask = false;
-    pcfg->camera_chip_function.shutter_calibration_support = false;
-    pcfg->camera_chip_function.bad_pix_threshold_support.support_state = true;
-    pcfg->camera_chip_function.bad_pix_threshold_support.min = 20;
-    pcfg->camera_chip_function.bad_pix_threshold_support.max = 32;
-    pcfg->camera_chip_function.inrared_auto_focus_support = true;
-    pcfg->camera_chip_function.visible_light_auto_focus_support = true;
-    pcfg->camera_chip_function.gas_enhanced_display_support = true;
-    pcfg->calibration_gun_function.support_state = false;
-    pcfg->calibration_gun_function.gun_type_support = false;
-    pcfg->calibration_gun_function.graticule_style_support_mask = 0;
-    pcfg->calibration_gun_function.color_support_mask = 0;
-    pcfg->other_function.defog_by_heat_support = true;
-    pcfg->other_function.heat_support = true;
-    pcfg->other_function.fan_support = true;
-    pcfg->other_function.electronic_compass_support = false;
-    pcfg->other_function.red_dot_support = false;
-    pcfg->other_function.hdmi_support = false;
-    pcfg->other_function.wipers_support = true;
-    pcfg->other_function.fill_light_support = true;
-    pcfg->other_function.cvbs_support = true;
-    pcfg->algorithm_function.object_detection_support = true;
-    pcfg->algorithm_function.tracking_support = true;
-    pcfg->algorithm_function.action_analyze_support = false;
-    pcfg->algorithm_function.splicing_support = true;
-    pcfg->algorithm_function.fire_point_support = false;
+    /* IR*/
+    memset(pcfg, 0, sizeof(NetworkAbilitySupportFunction));
+    pcfg->camera_ir_funcs.num = 1;
+    for(i = 0; i < pcfg->camera_ir_funcs.num; i++)
+    {
+        pcfg->camera_ir_funcs.camera_ir[i].support_state = 1;
+        pcfg->camera_ir_funcs.camera_ir[i].camera_ir_image_info.brightness_support = 10;
+        pcfg->camera_ir_funcs.camera_ir[i].camera_ir_image_info.contrast_support = 10;
+        pcfg->camera_ir_funcs.camera_ir[i].camera_ir_image_info.pseudo_color_support_mask = (1 << NETWORK_PSEUDO_COLOR_WHITE_HOT)\
+                                                                                           |(1 << NETWORK_PSEUDO_COLOR_BLACK_HOT)\
+                                                                                           |(1 << NETWORK_PSEUDO_COLOR_IRON_RED)\
+                                                                                           |(1 << NETWORK_PSEUDO_COLOR_IRONBOW_REVERSE)\
+                                                                                           |(1 << NETWORK_PSEUDO_COLOR_LAVA_FORWARD)\
+                                                                                           |(1 << NETWORK_PSEUDO_COLOR_LAVA_REVERSE)\
+                                                                                           |(1 << NETWORK_PSEUDO_COLOR_RAINBOW)\
+                                                                                           |(1 << NETWORK_PSEUDO_COLOR_RAINBOW_REVERSE)\
+                                                                                           |(1 << NETWORK_PSEUDO_COLOR_RAINBOWHC_FORWARD)\
+                                                                                           |(1 << NETWORK_PSEUDO_COLOR_RAINBOWHC_REVERSE);
+        pcfg->camera_ir_funcs.camera_ir[i].camera_ir_image_info.sharpening_support = 10;
+        pcfg->camera_ir_funcs.camera_ir[i].camera_ir_image_info.saturation_support = 10;
+        pcfg->camera_ir_funcs.camera_ir[i].camera_ir_image_enhance.central_enhance_support = 0;
+        pcfg->camera_ir_funcs.camera_ir[i].camera_ir_image_enhance.detail_enhance_support = 0;
+        pcfg->camera_ir_funcs.camera_ir[i].camera_ir_calibration.background_calibration_support = 0;
+        pcfg->camera_ir_funcs.camera_ir[i].camera_ir_calibration.shutter_calibration_support = 0;
+        pcfg->camera_ir_funcs.camera_ir[i].camera_ir_calibration.bad_pix_threshold_support.support_state = 0;
+        pcfg->camera_ir_funcs.camera_ir[i].camera_ir_image_zoom.electronic_zoom_support = 4;
+        pcfg->camera_ir_funcs.camera_ir[i].camera_ir_focusing.focusing_mode_support_mask = (1 << NETWORK_FOCUSING_MODE_AUTO)\
+                                                                                          |(1 << NETWORK_FOCUSING_MODE_ELECTRIC);
+    }
+    /*VIS*/
+    pcfg->camera_vis_funcs.num = 1;
+    for(i = 0; i < pcfg->camera_vis_funcs.num; i++)
+    {
+        pcfg->camera_vis_funcs.camera_vis[i].camera_vis_image_info.brightness_support = 10;
+        pcfg->camera_vis_funcs.camera_vis[i].camera_vis_image_info.contrast_support = 10;
+        pcfg->camera_vis_funcs.camera_vis[i].camera_vis_image_info.sharpening_support = 10;
+        pcfg->camera_vis_funcs.camera_vis[i].camera_vis_image_info.saturation_support = 10;
+        pcfg->camera_vis_funcs.camera_vis[i].camera_vis_image_zoom.electronic_zoom_support = 4;
+        pcfg->camera_vis_funcs.camera_vis[i].camera_vis_focusing.focusing_mode_support_mask = (1 << NETWORK_FOCUSING_MODE_AUTO);
+    }
+    pcfg->ptz_func.preset_support = 1;
+    pcfg->algorithm_func.algorithm_detection.gas_detection_support = 1;
+    pcfg->display_screen_func.display_info.language_support_mask = (1 << NETWORK_LANGUAGE_CHINESE);
+    pcfg->other_func.preview.cvbs_support = 1;
+    pcfg->other_func.other_info.wipers_support = 1;
+    pcfg->other_func.other_info.fill_light_support = 1;
+   
     return 0;
 
 }
@@ -70,60 +75,43 @@ static int MPU_CIU_GET_DevSystem(NetworkSystem *pcfg)
         ERROR(" parma is err NULL\n");
         return -1;
     }
-    char *softVersion = "1.0.0-00-240914";
-    char *hardVersion = "1.0.0-00-240914";
-    char *serialNumbae = "123456";
+   
     struct timeval curTime = {0};
     char addr[32] = {0};
+    DevInfo_st info;
+    AVL_Ext_GetDevVersionInfo(0, &info);
     switch (pcfg->type)
     {
     case NETWORK_SYSTEM_REBOOT:
-        mysystem("sync");
-        mysystem("reboot");
-        break;
     case NETWORK_SYSTEM_RESET:
-        mysystem("rm /etc/config.ini");
-        mysystem("sync");
-        mysystem("reboot");
-        break;
     case NETWORK_SYSTEM_FORMAT:
-        mysystem("rm -rf /userdata/");
-        mysystem("sync");
+        ret = -1;
         break;
     case NETWORK_SYSTEM_DEVICE_INFO:
-#if 0
-        CConfig *p_config = new CConfig();
-
-        p_config->LoadFile("/oem/app/edvr/DeviceVersion.ini");
-        snprintf(pcfg->out.device_info.soft_version, sizeof(pcfg->out.device_info.soft_version),"%d.%d.%d-%02d-%d",
-                            p_config->GetValue("Software", "Major_version", (long)1),
-                            p_config->GetValue("Software", "Minor_version", (long)0),
-                            p_config->GetValue("Software", "Reversion", (long)0),
-                            p_config->GetValue("Software", "Province", (long)0),
-                            p_config->GetValue("Software", "BuildDate", (long)0));
-        
-        snprintf(pcfg->out.device_info.hard_version, sizeof(pcfg->out.device_info.hard_version),"%d.%d.%d-%02d-%d",
-                            p_config->GetValue("DSPSoftware", "Major_version", (long)1),
-                            p_config->GetValue("DSPSoftware", "Minor_version", (long)0),
-                            p_config->GetValue("DSPSoftware", "Reversion", (long)0),
-                            p_config->GetValue("DSPSoftware", "Province", (long)0),
-                            p_config->GetValue("DSPSoftware", "BuildDate", (long)0));
-       
-        memcpy(pcfg->out.device_info.serial_number, serialNumbae, sizeof(pcfg->out.device_info.serial_number));
-        delete p_config;
-#endif
-        
+        memcpy(pcfg->out.device_info.soft_version, info.sort_version, sizeof(pcfg->out.device_info.soft_version));
+        memcpy(pcfg->out.device_info.hard_version, info.hart_version, sizeof(pcfg->out.device_info.hard_version));
+        memcpy(pcfg->out.device_info.serial_number, info.serial_number, sizeof(pcfg->out.device_info.serial_number));
         break;
     case NETWORK_SYSTEM_SET_TIME:
+        ret = -1;
         break;
     case NETWORK_SYSTEM_GET_RTSP_URL:
-    //rtsp://192.168.110.50/live/main_stream
-
-        get_localip("eth0", addr);
-        snprintf(pcfg->out.rtsp_url, sizeof(pcfg->out.rtsp_url), "rtsp://%s/live/main_stream",addr);
-        //底层获取
+        if(pcfg->cam == 0)
+        {
+            memcpy(pcfg->out.rtsp_url.main_stream, info.ir_rtsp_url[0], sizeof(pcfg->out.rtsp_url.main_stream));
+            memcpy(pcfg->out.rtsp_url.sub_stream, info.ir_rtsp_url[1], sizeof(pcfg->out.rtsp_url.sub_stream));
+            memcpy(pcfg->out.rtsp_url.third_stream, info.ir_rtsp_url[2], sizeof(pcfg->out.rtsp_url.third_stream));
+        }
+        else if(pcfg->cam == 1)
+        {
+            memcpy(pcfg->out.rtsp_url.main_stream, info.vis_rtsp_url[0], sizeof(pcfg->out.rtsp_url.main_stream));
+            memcpy(pcfg->out.rtsp_url.sub_stream, info.vis_rtsp_url[1], sizeof(pcfg->out.rtsp_url.sub_stream));
+            memcpy(pcfg->out.rtsp_url.third_stream, info.vis_rtsp_url[2], sizeof(pcfg->out.rtsp_url.third_stream));
+        }
         break;
     default:
+        ERROR("the type is not support \n");
+        ret = -1;
         break;
     }
     return ret;
@@ -137,10 +125,6 @@ static int MPU_CIU_SET_DevSystem(NetworkSystem *pcfg)
         ERROR(" parma is err NULL\n");
         return -1;
     }
-    char *softVersion = "1.0.0-00-240914";
-    char *hardVersion = "1.0.0-00-240914";
-    char *serialNumbae = "123456";
-    struct timeval curTime = {0};
     switch (pcfg->type)
     {
     case NETWORK_SYSTEM_REBOOT:
@@ -157,19 +141,16 @@ static int MPU_CIU_SET_DevSystem(NetworkSystem *pcfg)
         mysystem("sync");
         break;
     case NETWORK_SYSTEM_DEVICE_INFO:
+        ret = -1;
         break;
     case NETWORK_SYSTEM_SET_TIME:
-        curTime.tv_sec = pcfg->in.time;
-        if(settimeofday(&curTime, NULL))
-        {
-            ERROR("set time is err\n");
-            ret = -1;
-        }
+        AVL_Coder_SetTime(0, pcfg->in.time);
         break;
     case NETWORK_SYSTEM_GET_RTSP_URL:
-        //底层获取
+        ret = -1; 
         break;
     default:
+        ERROR("the type is not subport\n");
         break;
     }
     return ret;
@@ -183,14 +164,13 @@ int MPU_CIU_GET_DevConfig(unsigned int type, void *buff, int bufflen)
     {
     case DEVICE_ALL_ABLITY:
         {
-            if(bufflen < sizeof(NetworkSupportFunction))
+            if(bufflen < sizeof(NetworkAbilitySupportFunction))
             {
                 ret = -1;
                 ERROR("buffer is too small\n");
                 break;
             }
-            fprintf(stderr, "xh test param = %p line = %d \n", buff, __LINE__);
-            NetworkSupportFunction *pcfg = (NetworkSupportFunction *)buff;
+            NetworkAbilitySupportFunction *pcfg = (NetworkAbilitySupportFunction *)buff;
             ret = MPU_CIU_GET_DevAblity(pcfg);
             break;
         }
@@ -219,14 +199,7 @@ int MPU_CIU_SET_DevConfig(unsigned int type, void *buff, int bufflen)
     {
     case DEVICE_ALL_ABLITY:
         {
-            if(bufflen < sizeof(NetworkSupportFunction))
-            {
-                ret = -1;
-                ERROR("buffer is too small\n");
-                break;
-            }
-            NetworkSupportFunction *pcfg = (NetworkSupportFunction *)buff;
-            //ret = MPU_CIU_GET_DevAblity(pcfg);
+            ret = -1;
             break;
         }
     case DEVICE_SYSTEM_INFO:
@@ -248,24 +221,23 @@ int MPU_CIU_SET_DevConfig(unsigned int type, void *buff, int bufflen)
 }
 
 
-static int NETWORK_Ability_cb(NetworkSupportFunction *param)
+static int NETWORK_Ability_cb(NetworkAbilitySupportFunction *param)
 {
     int ret = 0;
     
-    ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_GET_DEVICEINFO, DEVICE_ALL_ABLITY, param, sizeof(NetworkSupportFunction));
+    ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_GET_DEVICEINFO, DEVICE_ALL_ABLITY, param, sizeof(NetworkAbilitySupportFunction), NULL, 0);
     return ret;
 }
 
 static int NETWORK_System_cb(NetworkSystem *param)
 {
     int ret = 0;
-    DEBUG("xh test pro\n");
     switch (param->type)
     {
     case NETWORK_SYSTEM_DEVICE_INFO:
     case NETWORK_SYSTEM_GET_RTSP_URL:
     {
-         ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_GET_DEVICEINFO, DEVICE_SYSTEM_INFO, param, sizeof(NetworkSystem));
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_GET_DEVICEINFO, DEVICE_SYSTEM_INFO, param, sizeof(NetworkSystem), NULL, 0);
         break;
     }
     case NETWORK_SYSTEM_REBOOT:
@@ -273,7 +245,7 @@ static int NETWORK_System_cb(NetworkSystem *param)
     case NETWORK_SYSTEM_FORMAT:
     case NETWORK_SYSTEM_SET_TIME:
     {
-        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_DEVICEINFO, DEVICE_SYSTEM_INFO, param, sizeof(NetworkSystem));
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_DEVICEINFO, DEVICE_SYSTEM_INFO, param, sizeof(NetworkSystem), NULL, 0);
         break;
     }
     

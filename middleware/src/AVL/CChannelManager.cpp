@@ -609,7 +609,7 @@ int CChannelManager::InfraredImage_GetInfraredImageElectronicZoom(int nch, float
     return m_infraredImage[nch]->GetInfraredImageElectronicZoom(value);
 }
 
-int CChannelManager::InfraredImage_SetInfraredImageAutoFocus(int nch, int enable)
+int CChannelManager::InfraredImage_SetInfraredImageFocusMode(int nch, int mode)
 {
    if(!m_bInit)
     {
@@ -622,10 +622,10 @@ int CChannelManager::InfraredImage_SetInfraredImageAutoFocus(int nch, int enable
         return -1;
     }
     
-    return m_infraredImage[nch]->SetInfraredImageAutoFocus(enable);
+    return m_infraredImage[nch]->SetInfraredImageFocusMode(mode);
 }
 
-int CChannelManager::InfraredImage_GetInfraredImageAutoFocus(int nch, int *enable)
+int CChannelManager::InfraredImage_GetInfraredImageFocusMode(int nch, int *mode)
 {
     if(!m_bInit)
     {
@@ -638,7 +638,7 @@ int CChannelManager::InfraredImage_GetInfraredImageAutoFocus(int nch, int *enabl
         return -1;
     }
     
-    return m_infraredImage[nch]->GetInfraredImageAutoFocus(enable);
+    return m_infraredImage[nch]->GetInfraredImageFocusMode(mode);
 }
 
 int CChannelManager::InfraredImage_SetGasEnhanced(int nch, int enable)
@@ -671,6 +671,38 @@ int CChannelManager::InfraredImage_GetGasEnhanced(int nch, int *enable)
     }
     
     return m_infraredImage[nch]->GetGasEnhanced(enable);
+}
+
+int CChannelManager::InfraredImage_SetElectricFocu(int nch, int action)
+{
+     if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    
+    return m_infraredImage[nch]->SetElectricFocu(action);
+}
+
+int CChannelManager::InfraredImage_SetAutoFocuData(int nch, int type)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    
+    return m_infraredImage[nch]->SetElectricFocu(type);
 }
 
 /*======================================================================================================================================*/
@@ -1721,6 +1753,21 @@ int CChannelManager::Coder_GetTimeConfig(int nch, time_cfg *cfg)
     return m_coderhannel[nch]->GetTimeConfig(cfg);
 }
 
+int CChannelManager::Coder_SetTime(int nch, unsigned int time)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_coderhannel[nch]->SetTime(time);
+}
+
 int CChannelManager::Ext_SetWipersEnable(int nch, int enable)
 {
     if(!m_bInit)
@@ -1811,6 +1858,21 @@ int CChannelManager::Ext_GetCvbsEnable(int nch, int *enable)
     return m_ExtCtrl[nch]->GetCvbsEnable(enable);
 }
 
+int CChannelManager::Ext_GetDevVersionInfo(int nch, DevInfo_st *info)
+{
+     if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_ExtCtrl[nch]->GetDevVersionInfo(info);
+}
+
 int CChannelManager::Vis_SetBrightness(int nch, int value)
 {
     if(!m_bInit)
@@ -1871,7 +1933,7 @@ int CChannelManager::Vis_GetContrast(int nch, int *value)
     return m_VisLightImage[nch]->GetContrast(value);
 }
 
-int CChannelManager::Vis_SetAutoFocuEnabele(int nch, int enable)
+int CChannelManager::Vis_SetFocuMode(int nch, int mode)
 {
     if(!m_bInit)
     {
@@ -1883,10 +1945,10 @@ int CChannelManager::Vis_SetAutoFocuEnabele(int nch, int enable)
         ERROR("CChannelManager channel_no err channel = %d\n",nch);
         return -1;
     }
-    return m_VisLightImage[nch]->SetAutoFocuEnabele(enable);
+    return m_VisLightImage[nch]->SetFocuMode(mode);
 }
 
-int CChannelManager::Vis_GetAutoFocuEnabele(int nch, int *enable)
+int CChannelManager::Vis_GetFocuMode(int nch, int *mode)
 {
     if(!m_bInit)
     {
@@ -1898,7 +1960,7 @@ int CChannelManager::Vis_GetAutoFocuEnabele(int nch, int *enable)
         ERROR("CChannelManager channel_no err channel = %d\n",nch);
         return -1;
     }
-    return m_VisLightImage[nch]->GetAutoFocuEnabele(enable);
+    return m_VisLightImage[nch]->GetFocuMode(mode);
 }
 
 int CChannelManager::Vis_SetSaturation(int nch, int value)
