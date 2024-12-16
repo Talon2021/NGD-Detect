@@ -39,7 +39,7 @@ class MessageHandler {
 public:
      MessageHandler();
     ~MessageHandler();
-    int sendMessage(MessagePro &msg, std::shared_ptr<receMessage> out_msg);
+    int sendMessage(MessagePro &msg, std::shared_ptr<receMessage> &out_msg);
 
     void startReceiver();
     void stopReceiver();

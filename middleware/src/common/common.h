@@ -192,6 +192,8 @@ static inline void TimerMicroseconds(unsigned long uSec)
 #define DEV_FORMAT_CODE                651
 
 
+#define MQTTMSGTIMEOUT                  200
+
 /* 线程管理资源 */
 typedef struct
 {

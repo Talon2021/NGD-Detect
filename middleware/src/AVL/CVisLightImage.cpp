@@ -48,8 +48,9 @@ int CVisLightImage::Init()
 {
     m_cconfig = CConfig::GetInstance();
     pthread_mutex_init(&m_Lock, NULL);
-    LoadParam();
     m_init = 1;
+    LoadParam();
+   
     
     return 0;
 }
@@ -82,7 +83,7 @@ int CVisLightImage::SetBrightness(int value)
     JsonPackData<JsonConfigExt>(info, json_data);
     MessageManager *msghandle = MessageManager::getInstance();
     std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, VIS_PIC_BRIGHTNESS_CODE, json_data, 1, 100, out_msg);
+    ret = msghandle->MSG_SendMessage(0, VIS_PIC_BRIGHTNESS_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
     if(ret != VIS_PIC_BRIGHTNESS_CODE)
     {
         ERROR("get reply message is err \n");
@@ -138,7 +139,7 @@ int CVisLightImage::SetContrast(int value)
     JsonPackData<JsonConfigExt>(info, json_data);
     MessageManager *msghandle = MessageManager::getInstance();
     std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, VIS_PIC_CONTRAST_CODE, json_data, 1, 100, out_msg);
+    ret = msghandle->MSG_SendMessage(0, VIS_PIC_CONTRAST_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
     if(ret != VIS_PIC_CONTRAST_CODE)
     {
         ERROR("get reply message is err \n");
@@ -203,7 +204,7 @@ int CVisLightImage::SetFocuMode(int mode)
     JsonPackData<JsonConfigExt>(info, json_data);
     MessageManager *msghandle = MessageManager::getInstance();
     std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, VIS_AUTO_FOCU_CODE, json_data, 1, 100, out_msg);
+    ret = msghandle->MSG_SendMessage(0, VIS_AUTO_FOCU_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
     if(ret != VIS_AUTO_FOCU_CODE)
     {
         ERROR("get reply message is err \n");
@@ -221,7 +222,7 @@ int CVisLightImage::SetFocuMode(int mode)
 
     m_focu_mode = mode;
     m_cconfig->SetValue(VIS_LIGHT_SECTION_CFG,"focu_mode",(long)m_focu_mode);
-
+     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
 
@@ -259,7 +260,7 @@ int CVisLightImage::SetSaturation(int value)
     JsonPackData<JsonConfigExt>(info, json_data);
     MessageManager *msghandle = MessageManager::getInstance();
     std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, VIS_PIC_STAURATION_CODE, json_data, 1, 100, out_msg);
+    ret = msghandle->MSG_SendMessage(0, VIS_PIC_STAURATION_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
     if(ret != VIS_PIC_STAURATION_CODE)
     {
         ERROR("get reply message is err \n");
@@ -276,6 +277,7 @@ int CVisLightImage::SetSaturation(int value)
     }
     m_saturation = value;
     m_cconfig->SetValue(VIS_LIGHT_SECTION_CFG,"saturation",(long)m_saturation);
+    pthread_mutex_unlock(&m_Lock);
     return 0;
 }
 
@@ -311,7 +313,7 @@ int CVisLightImage::SetSharpness(int value)
     JsonPackData<JsonConfigExt>(info, json_data);
     MessageManager *msghandle = MessageManager::getInstance();
     std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, VIS_PIC_SHARPNESS_CODE, json_data, 1, 100, out_msg);
+    ret = msghandle->MSG_SendMessage(0, VIS_PIC_SHARPNESS_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
     if(ret != VIS_PIC_SHARPNESS_CODE)
     {
         ERROR("get reply message is err \n");
@@ -328,6 +330,7 @@ int CVisLightImage::SetSharpness(int value)
     }
     m_sharpness = value;
     m_cconfig->SetValue(VIS_LIGHT_SECTION_CFG,"sharpness",(long)m_sharpness);
+     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
 

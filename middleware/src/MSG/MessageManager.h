@@ -29,7 +29,7 @@ public:
 
     int MSG_SetAlarmCallback(MSG_ALARMCALLBACK cb);
 
-    int MSG_SendMessage(int ch, int code, std::string data, int wait_flag, int time_out, std::shared_ptr<receMessage> out_msg);
+    int MSG_SendMessage(int ch, int code, std::string data, int wait_flag, int time_out, std::shared_ptr<receMessage> &out_msg);
 private:
 
     void GetMessageThread(int arg); 

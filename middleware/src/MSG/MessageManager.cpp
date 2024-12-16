@@ -65,7 +65,7 @@ int MessageManager::MSG_SetAlarmCallback(MSG_ALARMCALLBACK cb)
     return 0;
 }
 
-int MessageManager::MSG_SendMessage(int ch, int code, std::string data, int wait_flag, int time_out, std::shared_ptr<receMessage> out_msg)
+int MessageManager::MSG_SendMessage(int ch, int code, std::string data, int wait_flag, int time_out, std::shared_ptr<receMessage> &out_msg)
 {
     int ret = 0;
     MessagePro msg;
@@ -73,6 +73,6 @@ int MessageManager::MSG_SendMessage(int ch, int code, std::string data, int wait
     msg.is_wait = wait_flag;
     msg.time_out_ms = time_out;
     msg.data = data;
-    m_messagehandle[ch]->sendMessage(msg, out_msg);
+    ret = m_messagehandle[ch]->sendMessage(msg, out_msg);
     return ret;
 }

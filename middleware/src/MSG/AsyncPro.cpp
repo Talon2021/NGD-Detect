@@ -18,11 +18,13 @@ void MessageHandler::receiveMessages()
         }
         if(ret == MQTT_SUCCESS)
         {
+            memset(tmp_msg, 0, sizeof(tmp_msg));
+            memset(tmp_topic, 0, sizeof(tmp_topic));
             printf("received Topic=%s, Message=%s message_len = %d\n", m_mqtt_handle->received_topic, m_mqtt_handle->received_message,m_mqtt_handle->received_message_len);
             memcpy(tmp_msg, m_mqtt_handle->received_message, m_mqtt_handle->received_message_len);
             memcpy(tmp_topic, m_mqtt_handle->received_topic, m_mqtt_handle->received_topic_len);
             json_t j;
-            j = json_t::parse(tmp_msg, nullptr,false);
+            j = json_t::parse(tmp_msg, nullptr, false);
             if(j.is_discarded())
             {
                 ERROR("json::parse error!\n");
@@ -30,14 +32,15 @@ void MessageHandler::receiveMessages()
             }
             if(!j["code"].is_null())
             {
-                msg.id = j["code"];
+                msg.id = j["code"]["enum"];
+                fprintf(stderr,"msg id = %d \n", msg.id);
             }
         }
         else if(ret == MQTT_DISCONNECTED)
         {
             ERROR("mqtt is disconnect\n");
             mqtt_connect(m_mqtt_handle, NULL, NULL);
-            mqtt_subscribe(m_mqtt_handle, "pre", QOS_EXACTLY_ONCE);
+            mqtt_subscribe(m_mqtt_handle, "pre", QOS_AT_MOST_ONCE);
             continue;
         }
         else
@@ -60,11 +63,13 @@ void MessageHandler::receiveMessages()
                 condition_data->processed = true;
                
                 //组装数据
+                printf("msg push neibu\n");
                 receive_inline_queue.push(message);
                 condition_data->cv.notify_one();
             }
             else
             {
+                printf("msg push waibu\n");
                 receive_msg_queue.push(message);
             }
         }
@@ -87,12 +92,12 @@ MessageHandler::~MessageHandler()
     }
 }
 
-int MessageHandler::sendMessage(MessagePro &msg, std::shared_ptr<receMessage> out_msg)
+int MessageHandler::sendMessage(MessagePro &msg, std::shared_ptr<receMessage> &out_msg)
 {
     int id = msg.id;
     {
         //std::lock_guard<std::mutex> lock(msg_mutex);
-        mqtt_publish(m_mqtt_handle, "host", const_cast<char*>(msg.data.c_str()), QOS_EXACTLY_ONCE);
+        mqtt_publish(m_mqtt_handle, "host", const_cast<char*>(msg.data.c_str()), QOS_AT_MOST_ONCE);
         //发送消息
     }
     if(msg.is_wait)
@@ -111,13 +116,13 @@ int MessageHandler::sendMessage(MessagePro &msg, std::shared_ptr<receMessage> ou
             std::unique_lock<std::mutex> lock(condition_data->mutex);
             if (condition_data->cv.wait_for(lock, std::chrono::milliseconds(msg.time_out_ms), [&] { return  condition_map[id]->processed; })) 
             {
-                printf("sed is success line = %d\n", __LINE__);
                 receive_inline_queue.pop(out_msg);
+                printf("send msg is success id = %d line =%d \n", id, __LINE__);
                 return id;
             } 
         }
     }
-    printf("sed is success line = %d\n", __LINE__);
+    printf("send msg is success line =%d \n",__LINE__);
     return 0;
 }
 
@@ -160,8 +165,8 @@ int MessageHandler::Init()
         ERROR("mqtt connect is err \n");
         return -1;
     }
-    ret = mqtt_subscribe(m_mqtt_handle, "pre", QOS_EXACTLY_ONCE);
-    ret = mqtt_subscribe(m_mqtt_handle, "vo", QOS_EXACTLY_ONCE);
+    ret = mqtt_subscribe(m_mqtt_handle, "pre", QOS_AT_MOST_ONCE);
+    ret = mqtt_subscribe(m_mqtt_handle, "vo", QOS_AT_MOST_ONCE);
     startReceiver();    
     
     return 0;

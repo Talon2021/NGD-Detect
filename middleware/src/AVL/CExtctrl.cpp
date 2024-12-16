@@ -79,7 +79,7 @@ int CExtctrl::SetWipersEnable(int enable)
     JsonPackData<JsonConfigExt>(info, json_data);
     MessageManager *msghandle = MessageManager::getInstance();
     std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, WIPERS_CODE, json_data, 1, 100, out_msg);
+    ret = msghandle->MSG_SendMessage(0, WIPERS_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
     if(ret != WIPERS_CODE)
     {
         ERROR("get reply message is err \n");
@@ -132,7 +132,7 @@ int CExtctrl::SetAutoLightEnable(int enable)
     JsonPackData<JsonConfigExt>(info, json_data);
     MessageManager *msghandle = MessageManager::getInstance();
     std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, AUTO_FILL_LIGHT_CODE, json_data, 1, 100, out_msg);
+    ret = msghandle->MSG_SendMessage(0, AUTO_FILL_LIGHT_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
     if(ret != AUTO_FILL_LIGHT_CODE)
     {
         ERROR("get reply message is err \n");
@@ -185,7 +185,7 @@ int CExtctrl::SetCvbsEnable(int enable)
     JsonPackData<JsonConfigExt>(info, json_data);
     MessageManager *msghandle = MessageManager::getInstance();
     std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, CVBS_CODE, json_data, 1, 100, out_msg);
+    ret = msghandle->MSG_SendMessage(0, CVBS_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
     if(ret != CVBS_CODE)
     {
         ERROR("get reply message is err \n");
@@ -226,7 +226,7 @@ int CExtctrl::CtrlDevFactoryReset()
     JsonPackData<JsonConfigExt>(info, json_data);
     MessageManager *msghandle = MessageManager::getInstance();
     std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, FACTORY_RESET_CODE, json_data, 1, 100, out_msg);
+    ret = msghandle->MSG_SendMessage(0, FACTORY_RESET_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
     if(ret != FACTORY_RESET_CODE)
     {
         ERROR("get reply message is err \n");
@@ -256,7 +256,7 @@ int CExtctrl::CtrlDevClear()
     JsonPackData<JsonConfigExt>(info, json_data);
     MessageManager *msghandle = MessageManager::getInstance();
     std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, DEV_FORMAT_CODE, json_data, 1, 100, out_msg);
+    ret = msghandle->MSG_SendMessage(0, DEV_FORMAT_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
     if(ret != DEV_FORMAT_CODE)
     {
         ERROR("get reply message is err \n");

@@ -136,14 +136,17 @@ int CCInfraredImage::SetImageBrightness(int value)
     JsonPackData<JsonConfigExt>(info, json_data);
     MessageManager *msghandle = MessageManager::getInstance();
     std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, IR_PIC_BRIGHTNESS_CODE, json_data, 1, 100, out_msg);
+    ret = msghandle->MSG_SendMessage(0, IR_PIC_BRIGHTNESS_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
     if(ret != IR_PIC_BRIGHTNESS_CODE)
     {
         ERROR("get reply message is err \n");
         pthread_mutex_unlock(&m_Lock);
         return -1;
     }
+
+    std::cout<<"recv ir brightness = " <<out_msg->recv_data<<std::endl;
     DataConfigResponse out_response;
+   
     JsonParseData<DataConfigResponse>(out_response, out_msg->recv_data);
     if(std::stoi(out_response.status.value()) != 0)
     {
@@ -220,7 +223,7 @@ int CCInfraredImage::SetImageContrast(int value)
     JsonPackData<JsonConfigExt>(info, json_data);
     MessageManager *msghandle = MessageManager::getInstance();
     std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, IR_PIC_CONTRAST_CODE, json_data, 1, 100, out_msg);
+    ret = msghandle->MSG_SendMessage(0, IR_PIC_CONTRAST_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
     if(ret != IR_PIC_CONTRAST_CODE)
     {
         ERROR("get reply message is err \n");
@@ -485,7 +488,7 @@ int CCInfraredImage::SetInfraredImagePolarity(int value)
     JsonPackData<JsonConfigExt>(info, json_data);
     MessageManager *msghandle = MessageManager::getInstance();
     std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, IR_PSEUDO_CONFIG_CODE, json_data, 1, 100, out_msg);
+    ret = msghandle->MSG_SendMessage(0, IR_PSEUDO_CONFIG_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
     if(ret != IR_PSEUDO_CONFIG_CODE)
     {
         ERROR("get reply message is err \n");
@@ -641,7 +644,7 @@ int CCInfraredImage::SetInfraredImageElectronicZoom(float value)
     JsonPackData<JsonConfigExt>(info, json_data);
     MessageManager *msghandle = MessageManager::getInstance();
     std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, IR_ZOOM_CONFIG_CODE, json_data, 1, 100, out_msg);
+    ret = msghandle->MSG_SendMessage(0, IR_ZOOM_CONFIG_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
     if(ret != IR_ZOOM_CONFIG_CODE)
     {
         ERROR("get reply message is err \n");
@@ -716,7 +719,7 @@ int CCInfraredImage::SetInfraredImageFocusMode(int mode)
         JsonPackData<JsonConfigExt>(info, json_data);
         MessageManager *msghandle = MessageManager::getInstance();
         std::shared_ptr<receMessage> out_msg;
-        ret = msghandle->MSG_SendMessage(0, IR_AUTO_FOCU_CODE, json_data, 1, 100, out_msg);
+        ret = msghandle->MSG_SendMessage(0, IR_AUTO_FOCU_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
         if(ret != IR_AUTO_FOCU_CODE)
         {
             ERROR("get reply message is err \n");
@@ -773,7 +776,7 @@ int CCInfraredImage::SetGasEnhanced(int enable)
     JsonPackData<JsonConfigExt>(info, json_data);
     MessageManager *msghandle = MessageManager::getInstance();
     std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, GAS_ENHANCEMENT_CODE, json_data, 1, 100, out_msg);
+    ret = msghandle->MSG_SendMessage(0, GAS_ENHANCEMENT_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
     if(ret != GAS_ENHANCEMENT_CODE)
     {
         ERROR("get reply message is err \n");
@@ -825,7 +828,7 @@ int CCInfraredImage::SetElectricFocu(int action)
     JsonPackData<JsonConfigExt>(info, json_data);
     MessageManager *msghandle = MessageManager::getInstance();
     std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, IR_ELEC_FOCU_DATA_CODE, json_data, 1, 100, out_msg);
+    ret = msghandle->MSG_SendMessage(0, IR_ELEC_FOCU_DATA_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
     if(ret != IR_ELEC_FOCU_DATA_CODE)
     {
         ERROR("get reply message is err \n");
@@ -870,7 +873,7 @@ int CCInfraredImage::SetAutoFocuData(int type)
     JsonPackData<JsonConfigExt>(info, json_data);
     MessageManager *msghandle = MessageManager::getInstance();
     std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, IR_AUTO_FOCU_DATA_CODE, json_data, 1, 100, out_msg);
+    ret = msghandle->MSG_SendMessage(0, IR_AUTO_FOCU_DATA_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
     if(ret != IR_AUTO_FOCU_DATA_CODE)
     {
         ERROR("get reply message is err \n");
