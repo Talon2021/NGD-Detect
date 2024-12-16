@@ -26,19 +26,19 @@ int CVisLightImage::LoadParam()
     int saturation;
     int sharpness;
 
-    brightness = m_cconfig->GetValue(VIS_LIGHT_SECTION_CFG, "brightness", (long)50);
+    brightness = m_cconfig->GetValue(VIS_LIGHT_SECTION_CFG, "brightness", (long)5);
     SetBrightness(brightness);
 
-    contrast = m_cconfig->GetValue(VIS_LIGHT_SECTION_CFG, "contrast", (long)50);
+    contrast = m_cconfig->GetValue(VIS_LIGHT_SECTION_CFG, "contrast", (long)5);
     SetContrast(contrast);
 
     focu_mode = m_cconfig->GetValue(VIS_LIGHT_SECTION_CFG, "focu_mode", (long)0);
     SetFocuMode(focu_mode);
 
-    saturation = m_cconfig->GetValue(VIS_LIGHT_SECTION_CFG, "saturation", (long)50);
+    saturation = m_cconfig->GetValue(VIS_LIGHT_SECTION_CFG, "saturation", (long)5);
     SetSaturation(saturation);
 
-    sharpness = m_cconfig->GetValue(VIS_LIGHT_SECTION_CFG, "sharpness", (long)50);
+    sharpness = m_cconfig->GetValue(VIS_LIGHT_SECTION_CFG, "sharpness", (long)5);
     SetSharpness(sharpness);
 
 

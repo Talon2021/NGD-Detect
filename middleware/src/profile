@@ -34,7 +34,7 @@ ifeq ($(TYPE),RV1126_PANORAMIC)
 endif
 
 ifeq ($(TYPE),RK3588_NGD_DETECT)
-    HTTP_UPLOAD=no
+    HTTP_UPLOAD=yes
     NET_WLAN=yes
     PROCESS_CTRL=yes
 endif
