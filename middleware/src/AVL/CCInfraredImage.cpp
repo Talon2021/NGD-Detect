@@ -1,8 +1,6 @@
 
 #include "CCInfraredImage.h"
 #include "Cserial.h"
-
-#include "CConfig.h"
 #include <pthread.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,6 +11,9 @@
 #include "MessageManager.h"
 #include "network_common.h"
 #define SERIAL_BUFFER_LEN  8
+
+
+#define IR_CONFIG_SECTION       "infrareImage"
 // void *CCInfraredImage::g_threadImage(void *lpParameter)
 // {
 //     int ret;
@@ -45,6 +46,36 @@ std::map<int, std::string> pseudo_enum = {
     {NETWORK_PSEUDO_COLOR_RAINBOWHC_REVERSE, "rainbowhc_reverse"}
 };
 
+int CCInfraredImage::LoadParam()
+{
+    int value;
+    value = m_cconfig->GetValue(IR_CONFIG_SECTION,"birgthness",(long)50);
+    SetImageBrightness(value);
+
+    value = m_cconfig->GetValue(IR_CONFIG_SECTION,"Contrast",(long)50);
+    SetImageContrast(value);
+
+    value = m_cconfig->GetValue(IR_CONFIG_SECTION,"Sharpening",(long)0);
+    SetInfraredImageSharpening(value);
+
+    value = m_cconfig->GetValue(IR_CONFIG_SECTION,"Polarity",(long)0);
+    SetInfraredImagePolarity(value);
+
+    value = m_cconfig->GetValue(IR_CONFIG_SECTION,"saturation",(long)0);
+    SetImagesaturation(value);
+
+    m_ElectronicZoom = m_cconfig->GetValue(IR_CONFIG_SECTION,"electron_zoom",(long)1);
+    SetInfraredImageElectronicZoom(m_ElectronicZoom);
+
+    m_FocusMode = m_cconfig->GetValue(IR_CONFIG_SECTION,"focus_mode",(long)0);
+    SetInfraredImageFocusMode(m_FocusMode);
+
+    m_GasEnhanced = m_cconfig->GetValue(IR_CONFIG_SECTION,"gas_enhanced",(long)1);
+    SetGasEnhanced(m_GasEnhanced);
+
+    return 0;
+}
+
 CCInfraredImage::CCInfraredImage(void *handle, int ch)
 {
     m_serial = NULL;
@@ -62,39 +93,10 @@ int CCInfraredImage::Init()
     m_serial = new Cserial(G_UART_DEV5, 115200);
     m_serial->init();
     pthread_mutex_init(&m_Lock, NULL);
+    m_cconfig = CConfig::GetInstance();;
     m_init = 1;
-    
-    int value;
-    CConfig *pcfg = CConfig::GetInstance();
-    value = pcfg->GetValue("infrareImage","birgthness_value",(long)50);
-    SetImageBrightness(value);
 
-    value = pcfg->GetValue("infrareImage","Contrast_value",(long)50);
-    SetImageContrast(value);
-
-    // value = pcfg->GetValue("infrareImage","HotspotTracking_enable",(long)0);
-    // SetHotspotTracking(value);
-
-    // value =  pcfg->GetValue("infrareImage","Removal_threshold",(long)26);
-    // ManualDefectRemoval(0, value);
-
-    // value = pcfg->GetValue("infrareImage","Sharpening_value",(long)0);
-    // SetInfraredImageSharpening(value);
-
-    value = pcfg->GetValue("infrareImage","Polarity_value",(long)0);
-    SetInfraredImagePolarity(value);
-
-    // value = pcfg->GetValue("infrareImage","PAL_status",(long)0);
-    // SetInfraredImagePAL(value);
-
-    m_ElectronicZoom = pcfg->GetValue("infrareImage","electron_zoom",(long)1);
-    SetInfraredImageElectronicZoom(m_ElectronicZoom);
-
-    m_FocusMode = pcfg->GetValue("infrareImage","focus_mode",(long)0);
-    SetInfraredImageFocusMode(m_FocusMode);
-
-    m_GasEnhanced = pcfg->GetValue("infrareImage","gas_enhanced",(long)1);
-    SetGasEnhanced(m_GasEnhanced);
+    LoadParam();
     
     return 0;
 }
@@ -128,7 +130,6 @@ int CCInfraredImage::SetImageBrightness(int value)
         return 0;
     }
     int ret = 0;
-#ifdef PROCESS_CTRL
     JsonConfigExt info(_Code(IR_PIC_BRIGHTNESS_CODE, "brightness_ir"), "set");
     info.data = DataConfigBody();
     info.data->value = std::to_string(value);  
@@ -155,35 +156,7 @@ int CCInfraredImage::SetImageBrightness(int value)
         return -1;
     }
 
-    CConfig *pcfg = CConfig::GetInstance();
-    pcfg->SetValue("infrareImage","birgthness_value",(long)value);
-#else
-    char buf[SERIAL_BUFFER_LEN] = {0};
-
-    buf[0] = 0xAA;
-    buf[1] = 0xB0;
-    buf[2] = value;
-    buf[7] = (buf[1] + buf[2] + buf[3] + buf[4] + buf[5] + buf[6]) & 0xff;
-    ret = m_serial->UartWrite(buf, SERIAL_BUFFER_LEN);
-    if(ret != 0){
-        ERROR("write is err\n");
-        pthread_mutex_unlock(&m_Lock);
-        return -1;
-    }
-    CConfig *pcfg = CConfig::GetInstance();
-    pcfg->SetValue("infrareImage","birgthness_value",(long)value);
-    memset(buf, 0, SERIAL_BUFFER_LEN);
-    ret = m_serial->UartRead(buf,SERIAL_BUFFER_LEN,READ_SERIAL_MS);
-    if(ret > 0)
-    {
-        if(buf[0] == 0x55 && buf[1] == 0XC5)
-        {
-            pthread_mutex_unlock(&m_Lock);
-            return 0;
-        }
-        
-    }
-#endif
+    m_cconfig->SetValue(IR_CONFIG_SECTION,"birgthness",(long)value);
     m_brightness = value;
     pthread_mutex_unlock(&m_Lock);
     return 0;
@@ -215,7 +188,6 @@ int CCInfraredImage::SetImageContrast(int value)
         return 0;
     }
     int ret = 0;
-#ifdef PROCESS_CTRL
     JsonConfigExt info(_Code(IR_PIC_CONTRAST_CODE, "contrast_ir"), "set");
     info.data = DataConfigBody();
     info.data->value = std::to_string(value);  
@@ -239,36 +211,7 @@ int CCInfraredImage::SetImageContrast(int value)
         return -1;
     }
 
-    CConfig *pcfg = CConfig::GetInstance();
-    pcfg->SetValue("infrareImage","Contrast_value",(long)value);
-#else
-    char buf[SERIAL_BUFFER_LEN]= {0};
-    buf[0] = 0xAA;
-    buf[1] = 0xB1;
-    buf[2] = value;
-
-    buf[7] = (buf[1] + buf[2] + buf[3] + buf[4] + buf[5] + buf[6]) & 0xff;
-    ret = m_serial->UartWrite(buf, SERIAL_BUFFER_LEN);
-    if(ret != 0){
-        pthread_mutex_unlock(&m_Lock);
-        ERROR("write is err\n");
-        return -1;
-    }
-    CConfig *pcfg = CConfig::GetInstance();
-    pcfg->SetValue("infrareImage","Contrast_value",(long)value);
-    memset(buf, 0, SERIAL_BUFFER_LEN);
-    ret = m_serial->UartRead(buf,SERIAL_BUFFER_LEN,READ_SERIAL_MS);
-    if(ret > 0)
-    {
-        if(buf[0] == 0x55 && buf[1] == 0XC5)
-        {
-            pthread_mutex_unlock(&m_Lock);
-            return 0;
-        }
-        
-    }
-#endif
-
+    m_cconfig->SetValue(IR_CONFIG_SECTION,"Contrast",(long)value);
     m_contrast = value;
     pthread_mutex_unlock(&m_Lock);
     return 0;
@@ -282,6 +225,33 @@ int CCInfraredImage::GetImageContrast(int *value)
     }
     pthread_mutex_lock(&m_Lock);
     *value = m_contrast;
+    pthread_mutex_unlock(&m_Lock);
+    return 0;
+}
+
+int CCInfraredImage::SetImagesaturation(int value)
+{
+    if(!m_init)
+    {
+        return -1;
+    }
+    pthread_mutex_lock(&m_Lock);
+    if(m_saturation == value)
+    {
+        pthread_mutex_unlock(&m_Lock);
+        return 0;
+    }
+    m_cconfig->SetValue(IR_CONFIG_SECTION,"saturation",(long)value);
+    m_saturation = value;
+
+    pthread_mutex_unlock(&m_Lock);
+    return 0;
+}
+
+int CCInfraredImage::GetImagesaturation(int *value)
+{
+    pthread_mutex_lock(&m_Lock);
+    *value = m_saturation;
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -306,8 +276,7 @@ int CCInfraredImage::SetHotspotTracking(int value)
         ERROR("write is err\n");
         return -1;
     }
-    CConfig *pcfg = CConfig::GetInstance();
-    pcfg->SetValue("infrareImage","HotspotTracking_enable",(long)value);
+    m_cconfig->SetValue(IR_CONFIG_SECTION,"HotspotTracking_enable",(long)value);
     memset(buf, 0, SERIAL_BUFFER_LEN);
     ret = m_serial->UartRead(buf,SERIAL_BUFFER_LEN,READ_SERIAL_MS);
     if(ret > 0)
@@ -330,8 +299,7 @@ int CCInfraredImage::GetHotspotTracking(int *value)
         return -1;
     }
     pthread_mutex_lock(&m_Lock);
-    CConfig *pcfg = CConfig::GetInstance();
-    *value = pcfg->GetValue("infrareImage","HotspotTracking_enable",(long)0);
+    *value = m_cconfig->GetValue(IR_CONFIG_SECTION,"HotspotTracking_enable",(long)0);
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -345,29 +313,28 @@ int CCInfraredImage::ManualDefectRemoval(int opt, int value)
     int ret  = 0;
 
     pthread_mutex_lock(&m_Lock);
-    CConfig *pcfg = CConfig::GetInstance();
     char cmd[SERIAL_BUFFER_LEN]= {0};
     switch (opt)
     {
     case 0:
         cmd[1] = 0xc4;
         cmd[2] = value;
-        pcfg->SetValue("infrareImage","Removal_threshold",(long)value);
+        m_cconfig->SetValue(IR_CONFIG_SECTION,"Removal_threshold",(long)value);
         break;
     case 1:
         cmd[1] = 0xb8;
         cmd[2] = value;
-        //pcfg->SetValue("infrareImage","Removal_enable",(long)value);
+        //m_cconfig->SetValue(IR_CONFIG_SECTION,"Removal_enable",(long)value);
         break;
     case 2:
         cmd[1] = 0xb9;
         cmd[2] = value;
-        //pcfg->SetValue("infrareImage","Removal_enable",(long)0);
+        //m_cconfig->SetValue(IR_CONFIG_SECTION,"Removal_enable",(long)0);
         break;
     case 3:
         cmd[1] = 0xba;
         cmd[2] = value;
-        //pcfg->SetValue("infrareImage","Removal_save",(long)value);
+        //m_cconfig->SetValue(IR_CONFIG_SECTION,"Removal_save",(long)value);
         break;
     
     default:
@@ -402,9 +369,7 @@ int CCInfraredImage::GetManualDefectRemoval(int *opt, int *value)
         return -1;
     }
     pthread_mutex_lock(&m_Lock);
-    CConfig *pcfg = CConfig::GetInstance();
-    //*opt = pcfg->GetValue("infrareImage","Removal_enable",(long)0);
-    *value = pcfg->GetValue("infrareImage","Removal_threshold",(long)20);
+    *value = m_cconfig->GetValue(IR_CONFIG_SECTION,"Removal_threshold",(long)20);
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -427,33 +392,13 @@ int CCInfraredImage::SetInfraredImageSharpening(int ddelv)
     }
     int ret;
     pthread_mutex_lock(&m_Lock);
-    ddelv = ddelv > 7 ? 7: ddelv;
-    ddelv = ddelv < 0 ? 0: ddelv;
-    char cmd[SERIAL_BUFFER_LEN]= {0};
-
-    cmd[0] = 0xaa;
-    cmd[1] = 0xbc;
-    cmd[2] = ddelv;
-    cmd[7] = (cmd[1] + cmd[2] + cmd[3] + cmd[4] + cmd[5] + cmd[6]) & 0xff;
-    ret = m_serial->UartWrite(cmd, SERIAL_BUFFER_LEN);
-    if(ret != 0){
-        pthread_mutex_unlock(&m_Lock);
-        ERROR("write is err\n");
-        return -1;
-    }
-    CConfig *pcfg = CConfig::GetInstance();
-    pcfg->SetValue("infrareImage","Sharpening_value",(long)ddelv);
-    memset(cmd, 0, SERIAL_BUFFER_LEN);
-    ret = m_serial->UartRead(cmd,SERIAL_BUFFER_LEN,READ_SERIAL_MS);
-    if(ret > 0)
+    if(m_sharp == ddelv)
     {
-        if(cmd[0] == 0x55 && cmd[1] == 0XC5)
-        {
-            pthread_mutex_unlock(&m_Lock);
-            return 0;
-        }
-        
+        pthread_mutex_unlock(&m_Lock);
+        return 0;
     }
+    m_cconfig->SetValue(IR_CONFIG_SECTION,"Sharpening",(long)ddelv);
+    m_sharp = ddelv;
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -465,8 +410,7 @@ int CCInfraredImage::GetInfraredImageSharpening(int *ddelv)
         return -1;
     }
     pthread_mutex_lock(&m_Lock);
-    CConfig *pcfg = CConfig::GetInstance();
-    *ddelv = pcfg->GetValue("infrareImage","Sharpening_value",(long)0);
+    *ddelv = m_sharp;
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -479,8 +423,11 @@ int CCInfraredImage::SetInfraredImagePolarity(int value)
     }
     int ret;
     pthread_mutex_lock(&m_Lock);
-
-#ifdef PROCESS_CTRL
+    if(m_pseudo == value)
+    {
+        pthread_mutex_unlock(&m_Lock);
+        return 0;
+    }
     JsonConfigExt info(_Code(IR_PSEUDO_CONFIG_CODE, "pseudo"), "set");
     info.data = DataConfigBody();
     info.data->value = pseudo_enum[value]; 
@@ -504,37 +451,9 @@ int CCInfraredImage::SetInfraredImagePolarity(int value)
         return -1;
     }
     
-    CConfig *pcfg = CConfig::GetInstance();
-    pcfg->SetValue("infrareImage","Polarity_value",(long)value);
-    
-    
-#else
-    char buf[SERIAL_BUFFER_LEN]= {0};
-    buf[0] = 0xAA;
-    buf[1] =0xb2;
-    buf[2] = value;
-    buf[7] = (buf[1] + buf[2] + buf[3] + buf[4] + buf[5] + buf[6]) & 0xff;
-    ret = m_serial->UartWrite(buf, SERIAL_BUFFER_LEN);
-    if(ret != 0){
-        pthread_mutex_unlock(&m_Lock);
-        ERROR("write is err\n");
-        return -1;
-    }
-    CConfig *pcfg = CConfig::GetInstance();
-    pcfg->SetValue("infrareImage","Polarity_value",(long)value);
-    memset(buf, 0, SERIAL_BUFFER_LEN);
-    ret = m_serial->UartRead(buf,SERIAL_BUFFER_LEN,READ_SERIAL_MS);
-    if(ret > 0)
-    {
-        if(buf[0] == 0x55 && buf[1] == 0XC5)
-        {
-            pthread_mutex_unlock(&m_Lock);
-            return 0;
-        }
-        
-    }
-#endif
+    m_cconfig->SetValue(IR_CONFIG_SECTION,"Polarity",(long)value);
     m_pseudo = value;
+    
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -593,8 +512,7 @@ int CCInfraredImage::SetInfraredImagePAL(int status)
         ERROR("write is err\n");
         return -1;
     }
-    CConfig *pcfg = CConfig::GetInstance();
-    pcfg->SetValue("infrareImage","PAL_status",(long)status);
+    m_cconfig->SetValue(IR_CONFIG_SECTION,"PAL_status",(long)status);
     memset(cmd, 0, SERIAL_BUFFER_LEN);
     ret = m_serial->UartRead(cmd,SERIAL_BUFFER_LEN,READ_SERIAL_MS);
     if(ret > 0)
@@ -617,8 +535,7 @@ int CCInfraredImage::GetInfraredImagePAL(int *status)
         return -1;
     }
     pthread_mutex_lock(&m_Lock);
-    CConfig *pcfg = CConfig::GetInstance();
-    *status = pcfg->GetValue("infrareImage","PAL_status",(long)0);
+    *status = m_cconfig->GetValue(IR_CONFIG_SECTION,"PAL_status",(long)0);
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -636,7 +553,6 @@ int CCInfraredImage::SetInfraredImageElectronicZoom(float value)
         pthread_mutex_unlock(&m_Lock);
         return 0;
     }
-#ifdef PROCESS_CTRL
     JsonConfigExt info(_Code(IR_ZOOM_CONFIG_CODE, "zoom"), "set");
     info.data = DataConfigBody();
     info.data->value = std::to_string(value);  
@@ -660,14 +576,12 @@ int CCInfraredImage::SetInfraredImageElectronicZoom(float value)
         return -1;
     }
 
-    CConfig *pcfg = CConfig::GetInstance();
-    pcfg->SetValue("infrareImage","electron_zoom",(float)value);
-#endif
-    
+    m_cconfig->SetValue(IR_CONFIG_SECTION,"electron_zoom",(float)value);
+
     m_ElectronicZoom = value;
     pthread_mutex_unlock(&m_Lock);
     
-    return -1;
+    return 0;
 }
 
 int CCInfraredImage::GetInfraredImageElectronicZoom(float *value)
@@ -698,7 +612,7 @@ int CCInfraredImage::SetInfraredImageFocusMode(int mode)
         pthread_mutex_unlock(&m_Lock);
         return 0;
     }
-#ifdef PROCESS_CTRL
+
     if(mode == 0)       //0 自动调焦 1 电动调焦
     {
         msg_flag = 1;
@@ -735,9 +649,7 @@ int CCInfraredImage::SetInfraredImageFocusMode(int mode)
             return -1;
         }
     }
-    CConfig *pcfg = CConfig::GetInstance();
-    pcfg->SetValue("infrareImage","focus_mode",(long)mode);
-#endif
+    m_cconfig->SetValue(IR_CONFIG_SECTION,"focus_mode",(long)mode);
     m_FocusMode = mode;
     pthread_mutex_unlock(&m_Lock);
     return 0;
@@ -768,7 +680,7 @@ int CCInfraredImage::SetGasEnhanced(int enable)
         pthread_mutex_unlock(&m_Lock);
         return 0;
     }
-#ifdef PROCESS_CTRL
+
     JsonConfigExt info(_Code(GAS_ENHANCEMENT_CODE, "gas_enhancement"), "set");
     info.data = DataConfigBody();
     info.data->value = std::to_string(enable);  
@@ -792,9 +704,7 @@ int CCInfraredImage::SetGasEnhanced(int enable)
         return -1;
     }
 
-    CConfig *pcfg = CConfig::GetInstance();
-    pcfg->SetValue("infrareImage","gas_enhanced",(long)enable);
-#endif
+    m_cconfig->SetValue(IR_CONFIG_SECTION,"gas_enhanced",(long)enable);
     m_GasEnhanced = enable;
     pthread_mutex_unlock(&m_Lock);
     return 0;

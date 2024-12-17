@@ -73,6 +73,15 @@ int AVL_InfraredImage_SetElectricFocu(int nch, int action);
 int AVL_InfraredImage_SetAutoFocuData(int nch, int type);
 
 
+int AVL_InfraredImage_SetImagesaturation(int nch, int value);
+
+int AVL_InfraredImage_GetImagesaturation(int nch, int *value);
+
+int AVL_Alg_SetDetectGasEnable(int nch, int enable);
+
+int AVL_Alg_GetDetectGasEnable(int nch, int *enable);
+
+
 int AVL_Groy_Init(int nch);
 
 int AVL_Groy_UnInit(int nch);

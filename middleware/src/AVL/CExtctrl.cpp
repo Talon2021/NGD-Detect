@@ -71,7 +71,7 @@ int CExtctrl::SetWipersEnable(int enable)
     }
     int ret = 0;
     m_WipersEnable = enable;
-#ifdef PROCESS_CTRL
+
     JsonConfigExt info(_Code(WIPERS_CODE, "wipers"), "set");
     info.data = DataConfigBody();
     info.data->value = std::to_string(enable);  
@@ -97,7 +97,7 @@ int CExtctrl::SetWipersEnable(int enable)
 
     CConfig *pcfg = CConfig::GetInstance();
     m_Cconfig->SetValue(EXT_SECITONCFG, EXT_WIPERSKEY, (long)enable);
-#endif
+
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -124,7 +124,7 @@ int CExtctrl::SetAutoLightEnable(int enable)
     }
     int ret = 0;
     m_AutoLightEnable = enable;
-#ifdef PROCESS_CTRL
+
     JsonConfigExt info(_Code(AUTO_FILL_LIGHT_CODE, "auto_fill_light"), "set");
     info.data = DataConfigBody();
     info.data->value = std::to_string(enable);  
@@ -150,7 +150,7 @@ int CExtctrl::SetAutoLightEnable(int enable)
 
     CConfig *pcfg = CConfig::GetInstance();
     m_Cconfig->SetValue(EXT_SECITONCFG, EXT_AUTOLIGHTKEY, (long)enable);
-#endif
+
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -177,7 +177,7 @@ int CExtctrl::SetCvbsEnable(int enable)
         return 0;
     }
     m_CvbsEnable = enable;
-#ifdef PROCESS_CTRL
+
     JsonConfigExt info(_Code(CVBS_CODE, "cvbs"), "set");
     info.data = DataConfigBody();
     info.data->value = std::to_string(enable);  
@@ -201,7 +201,7 @@ int CExtctrl::SetCvbsEnable(int enable)
         return -1;
     }
     m_Cconfig->SetValue(EXT_SECITONCFG, EXT_CVBSKEY, (long)enable);
-#endif
+
     
     pthread_mutex_unlock(&m_Lock);
     return 0;
@@ -219,7 +219,7 @@ int CExtctrl::CtrlDevFactoryReset()
 {
     pthread_mutex_lock(&m_Lock);
     int ret = 0;
-#ifdef PROCESS_CTRL
+
     JsonConfigExt info(_Code(FACTORY_RESET_CODE, "factory_reset"), "set");
     info.data = DataConfigBody();
     std::string json_data;
@@ -241,7 +241,7 @@ int CExtctrl::CtrlDevFactoryReset()
         pthread_mutex_unlock(&m_Lock);
         return -1;
     }
-#endif
+
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -249,7 +249,7 @@ int CExtctrl::CtrlDevFactoryReset()
 int CExtctrl::CtrlDevClear()
 {
     int ret = 0;
-#ifdef PROCESS_CTRL
+
     JsonConfigExt info(_Code(DEV_FORMAT_CODE, "format"), "set");
     info.data = DataConfigBody();
     std::string json_data;
@@ -271,7 +271,7 @@ int CExtctrl::CtrlDevClear()
         pthread_mutex_unlock(&m_Lock);
         return -1;
     }
-#endif
+
     return 0;
 }
 

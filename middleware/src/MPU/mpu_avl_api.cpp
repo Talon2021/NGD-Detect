@@ -192,6 +192,26 @@ int AVL_InfraredImage_SetAutoFocuData(int nch, int type)
     MPU_AVL_CALL(InfraredImage_SetAutoFocuData(nch, type));
 }
 
+int AVL_InfraredImage_SetImagesaturation(int nch, int value)
+{
+    MPU_AVL_CALL(InfraredImage_SetImagesaturation(nch, value));
+}
+
+int AVL_InfraredImage_GetImagesaturation(int nch, int *value)
+{
+    MPU_AVL_CALL(InfraredImage_GetImagesaturation(nch, value));
+}
+
+int AVL_Alg_SetDetectGasEnable(int nch, int enable)
+{
+    MPU_AVL_CALL(Alg_SetDetectGasEnable(nch, enable));
+}
+
+int AVL_Alg_GetDetectGasEnable(int nch, int *enable)
+{
+    MPU_AVL_CALL(Alg_GetDetectGasEnable(nch, enable));
+}
+
 int AVL_Groy_Init(int nch)
 {
     MPU_AVL_CALL(Groy_Init(nch));

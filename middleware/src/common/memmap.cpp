@@ -101,7 +101,7 @@ void * memmap(unsigned long phy_addr, unsigned long size)
 	if (addr == MAP_FAILED)
 	{
 		// WRITE_LOG_ERROR("memmap():mmap @ 0x%x error!\n", phy_addr_in_page);
-		printf("memmap():mmap @ 0x%x error!\n", phy_addr_in_page);
+		printf("memmap():mmap @ 0x%lx error!\n", phy_addr_in_page);
 		return NULL;
 	}
 
@@ -239,7 +239,7 @@ void * mmapfile(char* fn, unsigned long size)
 	{
 		// WRITE_LOG_DEBUG("Memory Map OK. Map File: %s, length:%#X, addr:0x%08lX", 
 		// 		fn, size, (unsigned long)pShm);
-		printf("Memory Map OK. Map File: %s, length:%#X, addr:0x%08lX", 
+		printf("Memory Map OK. Map File: %s, length:%#lX, addr:0x%08lX", 
 				fn, size, (unsigned long)pShm);
 	}
 	else
@@ -277,7 +277,7 @@ void * mmapfile_r(char* fn, unsigned long size)
 	{
 		// WRITE_LOG_DEBUG("Memory Map OK. Map File: %s, length:%#X, addr:0x%08lX\n", 
 		// 		fn, size, (unsigned long)pShm);
-		printf("Memory Map OK. Map File: %s, length:%#X, addr:0x%08lX\n", 
+		printf("Memory Map OK. Map File: %s, length:%#lX, addr:0x%08lX\n", 
 				fn, size, (unsigned long)pShm);
 	}
 	else

@@ -39,6 +39,24 @@ int CConfig::LoadFile(const char *pszFileName)
     return 0;
 }
 
+int CConfig::DeleteSection(const char *pszSection)
+{
+    int n = ini_puts(pszSection, NULL, NULL, m_strFile);
+    if(n != 1){
+        return -1;
+    }
+    return 0;
+}
+
+int CConfig::DeleteKey(const char *pszSection, const char *pszKey)
+{
+    int n = ini_puts(pszSection, pszKey, NULL, m_strFile);
+    if(n != 1){
+        return -1;
+    }
+    return 0;
+}
+
 CConfig *CConfig::GetInstance()
 {
     if(m_pEdvrCfg == NULL)

@@ -36,41 +36,42 @@ int CCAreaInvasion::Init()
     int i = 0;
     int j = 0;
     int ret = 0;
+    int enable;
     char buffer[AREA_NAME_BUFF_MAX] = {0};
     char key[64] = {0}; 
     AlgorithmSwitch alg_switch;
     memset(&alg_switch,0,sizeof(AlgorithmSwitch));
     std::vector<std::vector<AreaPoint>> polygon;
 
-    CConfig *pcfg = CConfig::GetInstance();
-    m_area_count = pcfg->GetValue(AREA_ALL_AREA,"all_count",(long)0);
+    m_cconfig = CConfig::GetInstance();
+    m_area_count = m_cconfig->GetValue(AREA_ALL_AREA,"all_count",(long)0);
     for( i = 0; i < m_area_count; i++)
     {
         std::vector<AreaPoint> tmp;
         AreaPoint tmp_point;
         snprintf(buffer, sizeof(buffer), "%s_%02d", AREA_SECTION, i);
-        m_area[i].point_num = pcfg->GetValue(buffer,"area_num",(long)0);
+        m_area[i].point_num = m_cconfig->GetValue(buffer,"area_num",(long)0);
         for(j = 0; j < m_area[i].point_num;j++)
         {
             snprintf(key, sizeof(key), "areaX_%02d", j);
-            m_area[i].point[j].x = pcfg->GetValue(buffer,key,(long)0);
+            m_area[i].point[j].x = m_cconfig->GetValue(buffer,key,(long)0);
             snprintf(key, sizeof(key), "areaY_%02d", j);
-            m_area[i].point[j].y = pcfg->GetValue(buffer,key,(long)0);
+            m_area[i].point[j].y = m_cconfig->GetValue(buffer,key,(long)0);
 
             tmp_point.x = m_area[i].point[j].x;
             tmp_point.y = m_area[i].point[j].y;
             tmp.emplace_back(tmp_point);
         }
-        pcfg->GetValue(buffer, "area_name", NULL, m_area[i].area_name,AREA_NAME_BUFF_MAX);
-        m_area[i].enable = pcfg->GetValue(buffer,"area_enable",(long)0);
+        m_cconfig->GetValue(buffer, "area_name", NULL, m_area[i].area_name,AREA_NAME_BUFF_MAX);
+        m_area[i].enable = m_cconfig->GetValue(buffer,"area_enable",(long)0);
         if(m_area[i].enable > 0)
         {
             m_really_count++;
             polygon.emplace_back(tmp);
         }
     }
-    pcfg->SetValue(AREA_ALL_AREA,"really_count",(long)(m_really_count));
-    pcfg->SetValue(AREA_ALL_AREA,"all_count",(long)(m_area_count));
+    m_cconfig->SetValue(AREA_ALL_AREA,"really_count",(long)(m_really_count));
+    m_cconfig->SetValue(AREA_ALL_AREA,"all_count",(long)(m_area_count));
 #ifdef ALG_SDK
     ret = SetMonitorArea(m_han, polygon);
     if(ret != 0)
@@ -79,7 +80,7 @@ int CCAreaInvasion::Init()
         return -1;
     }
 #endif
-    m_alg_enable = pcfg->GetValue(ALG_SECTION,"alg_enable",(long)0);
+    m_alg_enable = m_cconfig->GetValue(ALG_SECTION,"alg_enable",(long)0);
     if(get_bit(&m_alg_enable,0))
     {
         alg_switch.TargetDetectionSwitch = true;
@@ -101,6 +102,9 @@ int CCAreaInvasion::Init()
     }
 #endif
     m_init = 1;
+    enable =  m_cconfig->GetValue(ALG_SECTION,"gas_detect_enable",(long)(1));
+    SetDetectGasEnable(enable);
+
     return 0;
 }
 
@@ -122,27 +126,26 @@ int CCAreaInvasion::SetAreaPoint(area_information area)
     int i = 0,j = 0;
     char buffer[AREA_NAME_BUFF_MAX] = {0};
     char key[64] = {0};
-    CConfig *pcfg = CConfig::GetInstance();
     for( i = 0; i < m_area_count; i++)
     {
         if(strcmp(m_area[i].area_name,area.area_name) == 0)
         {
             snprintf(buffer, sizeof(buffer), "%s_%02d", AREA_SECTION, i);
 
-            if(pcfg->GetValue(buffer,"area_enable",(long)0) == 0)       //新增区域，真实区域加一
+            if(m_cconfig->GetValue(buffer,"area_enable",(long)0) == 0)       //新增区域，真实区域加一
             {
                 m_really_count++;
-                pcfg->SetValue(AREA_ALL_AREA,"really_count",(long)(m_really_count));
+                m_cconfig->SetValue(AREA_ALL_AREA,"really_count",(long)(m_really_count));
             }
-            pcfg->SetValue(buffer,"area_num",(long)(area.point_num));
-            pcfg->SetValue(buffer,"area_name",(area.area_name));
-            pcfg->SetValue(buffer,"area_enable",(long)(area.enable));
+            m_cconfig->SetValue(buffer,"area_num",(long)(area.point_num));
+            m_cconfig->SetValue(buffer,"area_name",(area.area_name));
+            m_cconfig->SetValue(buffer,"area_enable",(long)(area.enable));
             for(j = 0; j < area.point_num;j++)
             {
                 snprintf(key, sizeof(key), "areaX_%02d", j);
-                pcfg->SetValue(buffer,key,(long)(area.point[j].x));
+                m_cconfig->SetValue(buffer,key,(long)(area.point[j].x));
                 snprintf(key, sizeof(key), "areaY_%02d", j);
-                pcfg->SetValue(buffer,key,(long)(area.point[j].y));
+                m_cconfig->SetValue(buffer,key,(long)(area.point[j].y));
             }
             memcpy(&m_area[i], &area, sizeof(area_information));
             
@@ -154,22 +157,22 @@ int CCAreaInvasion::SetAreaPoint(area_information area)
     for( i = 0; i < m_area_count; i++)
     {
         snprintf(buffer, sizeof(buffer), "%s_%02d", AREA_SECTION, i);
-        if(pcfg->GetValue(buffer,"area_enable",(long)0) == 0)
+        if(m_cconfig->GetValue(buffer,"area_enable",(long)0) == 0)
         {
-            pcfg->SetValue(buffer,"area_num",(long)(area.point_num));
-            pcfg->SetValue(buffer,"area_name",(area.area_name));
-            pcfg->SetValue(buffer,"area_enable",(long)(area.enable));
+            m_cconfig->SetValue(buffer,"area_num",(long)(area.point_num));
+            m_cconfig->SetValue(buffer,"area_name",(area.area_name));
+            m_cconfig->SetValue(buffer,"area_enable",(long)(area.enable));
             for(j = 0; j < area.point_num;j++)
             {
                 snprintf(key, sizeof(key), "areaX_%02d", j);
-                pcfg->SetValue(buffer,key,(long)(area.point[j].x));
+                m_cconfig->SetValue(buffer,key,(long)(area.point[j].x));
                 snprintf(key, sizeof(key), "areaY_%02d", j);
-                pcfg->SetValue(buffer,key,(long)(area.point[j].y));
+                m_cconfig->SetValue(buffer,key,(long)(area.point[j].y));
             }
             memcpy(&m_area[i], &area, sizeof(area_information));
             
             m_really_count++;
-            pcfg->SetValue(AREA_ALL_AREA,"really_count",(long)(m_really_count));
+            m_cconfig->SetValue(AREA_ALL_AREA,"really_count",(long)(m_really_count));
 
             //设置下去新的区域
             return 0;
@@ -178,19 +181,19 @@ int CCAreaInvasion::SetAreaPoint(area_information area)
     m_area_count++;
     memcpy(&m_area[m_area_count-1], &area, sizeof(area_information));
     snprintf(buffer, sizeof(buffer), "%s_%02d", AREA_SECTION, m_area_count-1);
-    pcfg->SetValue(buffer,"area_num",(long)(area.point_num));
-    pcfg->SetValue(buffer,"area_name",(area.area_name));
-    pcfg->SetValue(buffer,"area_enable",(long)(area.enable));
+    m_cconfig->SetValue(buffer,"area_num",(long)(area.point_num));
+    m_cconfig->SetValue(buffer,"area_name",(area.area_name));
+    m_cconfig->SetValue(buffer,"area_enable",(long)(area.enable));
     for(j = 0; j < area.point_num; j++)
     {
         snprintf(key, sizeof(key), "areaX_%02d", j);
-        pcfg->SetValue(buffer,key,(long)(area.point[j].x));
+        m_cconfig->SetValue(buffer,key,(long)(area.point[j].x));
         snprintf(key, sizeof(key), "areaY_%02d", j);
-        pcfg->SetValue(buffer,key,(long)(area.point[j].y));
+        m_cconfig->SetValue(buffer,key,(long)(area.point[j].y));
     }
     m_really_count++;
-    pcfg->SetValue(AREA_ALL_AREA,"all_count",(long)(m_area_count));
-    pcfg->SetValue(AREA_ALL_AREA,"really_count",(long)(m_really_count));
+    m_cconfig->SetValue(AREA_ALL_AREA,"all_count",(long)(m_area_count));
+    m_cconfig->SetValue(AREA_ALL_AREA,"really_count",(long)(m_really_count));
     
     mysystem("sync");
     return 0;
@@ -202,21 +205,20 @@ int CCAreaInvasion::SetAllAreaPoint(area_information *area, int num)
     char key[64] = {0};
     int ret = 0;
     std::vector<std::vector<AreaPoint>> polygon;
-    CConfig *pcfg = CConfig::GetInstance();
     for(int i = 0; i < num; i++)
     {
         std::vector<AreaPoint> tmp;
         AreaPoint tmp_point;
         snprintf(buffer, sizeof(buffer), "%s_%02d", AREA_SECTION, i);
-        pcfg->SetValue(buffer,"area_num",(long)(area[i].point_num));
-        pcfg->SetValue(buffer,"area_name",(area[i].area_name));
-        pcfg->SetValue(buffer,"area_enable",(long)(area[i].enable));
+        m_cconfig->SetValue(buffer,"area_num",(long)(area[i].point_num));
+        m_cconfig->SetValue(buffer,"area_name",(area[i].area_name));
+        m_cconfig->SetValue(buffer,"area_enable",(long)(area[i].enable));
         for(int j = 0; j < area[i].point_num; j++)
         {
             snprintf(key, sizeof(key), "areaX_%02d", j);
-            pcfg->SetValue(buffer,key,(long)(area[i].point[j].x));
+            m_cconfig->SetValue(buffer,key,(long)(area[i].point[j].x));
             snprintf(key, sizeof(key), "areaY_%02d", j);
-            pcfg->SetValue(buffer,key,(long)(area[i].point[j].y));
+            m_cconfig->SetValue(buffer,key,(long)(area[i].point[j].y));
             tmp_point.x = area[i].point[j].x;
             tmp_point.y = area[i].point[j].y;
             tmp.emplace_back(tmp_point);
@@ -228,7 +230,7 @@ int CCAreaInvasion::SetAllAreaPoint(area_information *area, int num)
         for(int i = num; i < m_area_count; i++)
         {
             snprintf(buffer, sizeof(buffer), "%s_%02d", AREA_SECTION, i);
-            pcfg->SetValue(buffer,"area_enable",(long)0);
+            m_cconfig->SetValue(buffer,"area_enable",(long)0);
             m_area[i].enable = 0;
         }
     }
@@ -237,8 +239,8 @@ int CCAreaInvasion::SetAllAreaPoint(area_information *area, int num)
         m_area_count = num;
     }
     m_really_count = num;
-    pcfg->SetValue(AREA_ALL_AREA,"really_count",(long)(m_really_count));
-    pcfg->SetValue(AREA_ALL_AREA,"all_count",(long)(m_area_count));
+    m_cconfig->SetValue(AREA_ALL_AREA,"really_count",(long)(m_really_count));
+    m_cconfig->SetValue(AREA_ALL_AREA,"all_count",(long)(m_area_count));
     memcpy(m_area, area, num * sizeof(area_information));
 #ifdef ALG_SDK
     ret = SetMonitorArea(m_han, polygon);
@@ -288,18 +290,17 @@ int CCAreaInvasion::DeleteAreaPoint(const char *area_name)
     }
     //char tmp_name[AREA_NAME_BUFF_MAX];
     char buffer[AREA_NAME_BUFF_MAX] = {0};
-    CConfig *pcfg = CConfig::GetInstance();
-    //pcfg->GetValue(buffer, "area_name", NULL, tmp_name,AREA_NAME_BUFF_MAX);
+    //m_cconfig->GetValue(buffer, "area_name", NULL, tmp_name,AREA_NAME_BUFF_MAX);
     for(int i = 0; i < m_area_count;i++)
     {
         if(strcmp(m_area[i].area_name,area_name) == 0)
         {
             snprintf(buffer, sizeof(buffer), "%s_%02d", AREA_SECTION, i);
-            pcfg->SetValue(buffer,"area_enable",(long)(0));
-            //pcfg->SetValue(buffer,"area_name",(char)(" "));
+            m_cconfig->SetValue(buffer,"area_enable",(long)(0));
+            //m_cconfig->SetValue(buffer,"area_name",(char)(" "));
             m_area[i].enable = 0;
             m_really_count--;
-            pcfg->SetValue(AREA_ALL_AREA,"really_count",(long)(m_really_count));
+            m_cconfig->SetValue(AREA_ALL_AREA,"really_count",(long)(m_really_count));
             break;
         }
     }
@@ -344,8 +345,7 @@ int CCAreaInvasion::SetDetectEnable(int enable)
         return -1;
     }
 #endif
-    CConfig *pcfg = CConfig::GetInstance();
-    pcfg->SetValue(ALG_SECTION,"alg_enable",(long)(m_alg_enable));
+    m_cconfig->SetValue(ALG_SECTION,"alg_enable",(long)(m_alg_enable));
     return 0;
 }
 
@@ -389,8 +389,7 @@ int CCAreaInvasion::SetTrackEnable(int enable)
         return -1;
     }
 #endif
-    CConfig *pcfg = CConfig::GetInstance();
-    pcfg->SetValue(ALG_SECTION,"alg_enable",(long)(m_alg_enable));
+    m_cconfig->SetValue(ALG_SECTION,"alg_enable",(long)(m_alg_enable));
     return 0;
 }
 
@@ -431,8 +430,7 @@ int CCAreaInvasion::SetBehaviorEnable(int enable)
         return -1;
     }
 #endif
-    CConfig *pcfg = CConfig::GetInstance();
-    pcfg->SetValue(ALG_SECTION,"alg_enable",(long)(m_alg_enable));
+    m_cconfig->SetValue(ALG_SECTION,"alg_enable",(long)(m_alg_enable));
     return 0;
 }
 
@@ -461,5 +459,26 @@ int CCAreaInvasion::SetDetectTrackId(std::vector<long> track_id)
 int CCAreaInvasion::GetDetectTrackId(std::vector<long> &track_id)
 {
     track_id = m_track_id;
+    return 0;
+}
+
+int CCAreaInvasion::SetDetectGasEnable(int enable)
+{
+    if(!m_init)
+    {
+        return -1;
+    }
+    m_cconfig->SetValue(ALG_SECTION,"gas_detect_enable",(long)(enable));
+    m_gas_enable = enable;
+    return 0;
+}
+
+int CCAreaInvasion::GetDetectGasEnable(int *enable)
+{
+    if(!m_init)
+    {
+        return -1;
+    }
+    *enable = m_gas_enable;
     return 0;
 }

@@ -143,6 +143,10 @@ public:
 
     int InfraredImage_SetAutoFocuData(int nch, int type);
 
+    int InfraredImage_SetImagesaturation(int nch, int value);
+
+    int InfraredImage_GetImagesaturation(int nch, int *value);
+
     /*陀螺仪*/
     int Groy_Init(int nch);
 
@@ -187,6 +191,10 @@ public:
     int Alg_SetDetectTrackId(int nch, std::vector<long> track_id);
     
     int Alg_GetDetectTrackId(int nch, std::vector<long> track_id);
+
+    int Alg_SetDetectGasEnable(int nch, int enable);
+
+    int Alg_GetDetectGasEnable(int nch, int *enable);
 
     /*电子罗盘*/
     int Compass_Init(int nch);

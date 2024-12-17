@@ -152,6 +152,7 @@ void CPtzCtrl::Fnx_ReadUartThread()
 
 int CPtzCtrl::Init()
 {
+    char pre_section[32] = {0};
     m_levelAngle = PTZ_VIEWING_ANGLE;
     m_ptzstep = PTZ_STEP_ANGLE;
     pthread_mutex_init(&m_lock,NULL);
@@ -170,6 +171,19 @@ int CPtzCtrl::Init()
     m_targetAngle = pcfg->GetValue(PTZ_CTRLINFO, "ptz_TargetAngle", (long)50);
     m_target_x = pcfg->GetValue(PTZ_CTRLINFO, "ptz_TargetPix_x", (long)0);
     m_target_y = pcfg->GetValue(PTZ_CTRLINFO, "ptz_TargetPix_y", (long)0);
+    
+    m_preset_size = pcfg->GetValue(PTZ_CTRLINFO, "ptz_preset_size", (long)0);
+    for(int i = 0; i < m_preset_size; i++)
+    {
+        memset(pre_section, 0, sizeof(pre_section));
+        snprintf(pre_section, sizeof(pre_section), "%s_%03d", PTZ_PRESETSECTION, i);
+        m_preset[i].yaw = pcfg->GetValue(pre_section, "yaw", (long)0);
+        m_preset[i].pitch = pcfg->GetValue(pre_section, "pitch", (long)0);
+        m_preset[i].enable = pcfg->GetValue(pre_section, "enable", (long)1);
+        m_preset[i].num = pcfg->GetValue(pre_section, "num", (long)0);
+        pcfg->GetValue(pre_section, "num", "###", m_preset[i].name, sizeof(m_preset[i].name));
+    }
+
     m_thread_exit = 0;
     if(m_targetAngle < 0 || m_targetAngle > 360)
     {
@@ -965,6 +979,7 @@ int CPtzCtrl::SetPresetEx(traget_preset *presetInfo, int num)
     CConfig *pcfg = CConfig::GetInstance();
     for(int i = 0; i < num; i++)
     {
+        memset(pre_section, 0, sizeof(pre_section));
         snprintf(pre_section, sizeof(pre_section), "%s_%03d", PTZ_PRESETSECTION, i);
         pcfg->SetValue(pre_section, "name", presetInfo[i].name);
         pcfg->SetValue(pre_section, "yaw", (float)0);
@@ -976,8 +991,9 @@ int CPtzCtrl::SetPresetEx(traget_preset *presetInfo, int num)
     {
         for(int i = num; i < m_preset_size; i++)
         {
+            memset(pre_section, 0, sizeof(pre_section));
             snprintf(pre_section, sizeof(pre_section), "%s_%03d", PTZ_PRESETSECTION, i);
-            pcfg->SetValue(pre_section, "enable", (long)0);
+            pcfg->DeleteSection(pre_section);
         }
     }
     m_preset_size = num;

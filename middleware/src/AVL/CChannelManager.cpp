@@ -705,6 +705,36 @@ int CChannelManager::InfraredImage_SetAutoFocuData(int nch, int type)
     return m_infraredImage[nch]->SetElectricFocu(type);
 }
 
+int CChannelManager::InfraredImage_SetImagesaturation(int nch, int value)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_infraredImage[nch]->SetImagesaturation(value);
+}
+
+int CChannelManager::InfraredImage_GetImagesaturation(int nch, int *value)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_infraredImage[nch]->GetImagesaturation(value);
+}
+
 /*======================================================================================================================================*/
 
 
@@ -1035,6 +1065,36 @@ int CChannelManager::Alg_GetDetectTrackId(int nch, std::vector<long> track_id)
         return -1;
     }
     return m_areahannle[nch]->GetDetectTrackId(track_id);
+}
+
+int CChannelManager::Alg_SetDetectGasEnable(int nch, int enable)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_areahannle[nch]->SetDetectGasEnable(enable);
+}
+
+int CChannelManager::Alg_GetDetectGasEnable(int nch, int *enable)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_areahannle[nch]->GetDetectGasEnable(enable);
 }
 
 int CChannelManager::Compass_Init(int nch)

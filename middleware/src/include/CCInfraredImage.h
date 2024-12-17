@@ -2,6 +2,7 @@
 #define _CCINFRARED_IMAGE_H_
 #include "Cserial.h"
 #include "common.h"
+#include "CConfig.h"
 #define G_UART_DEV5 "/dev/ttyS5"
 #define READ_SERIAL_MS  100
 class CCInfraredImage
@@ -18,8 +19,12 @@ private:
     int m_brightness;
     int m_contrast;
     int m_pseudo;
+    int m_sharp;
+    int m_saturation;
     pthread_mutex_t m_Lock;
-
+    
+    CConfig *m_cconfig;
+    int LoadParam();
 public:
     CCInfraredImage(void *handle, int ch);
     ~CCInfraredImage();
@@ -54,6 +59,20 @@ public:
      * @return {int} successful 0
      */
     int GetImageContrast(int *value);
+
+    /**
+     * @description: 设置饱和度
+     * @param {int} value 0 ~ 99
+     * @return {int} successful 0
+     */
+    int SetImagesaturation(int value);
+
+    /**
+     * @description: 获取饱和度
+     * @param {int} *value default 50
+     * @return {int} successful 0
+     */
+    int GetImagesaturation(int *value);
 
     /**
      * @description: 设置红外追踪

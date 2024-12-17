@@ -114,6 +114,7 @@ static int MPU_CIU_SET_IR_ConfigCamearImage(NetworkConfigCameraIrImageInfos *pcf
             ret |= AVL_InfraredImage_SetImageContrast(i, pcfg->image_info[i].contrast);
             ret |= AVL_InfraredImage_SetInfraredImagePolarity(i, pcfg->image_info[i].pseudo_color);
             ret |= AVL_InfraredImage_SetInfraredImageSharpening(i, pcfg->image_info[i].sharpening);
+            ret |= AVL_InfraredImage_SetImagesaturation(i, pcfg->image_info[i].saturation);
         }
     }
     else
@@ -122,6 +123,7 @@ static int MPU_CIU_SET_IR_ConfigCamearImage(NetworkConfigCameraIrImageInfos *pcf
         ret |= AVL_InfraredImage_SetImageContrast(pcfg->deal_num, pcfg->image_info[pcfg->deal_num].contrast);
         ret |= AVL_InfraredImage_SetInfraredImagePolarity(pcfg->deal_num, pcfg->image_info[pcfg->deal_num].pseudo_color);
         ret |= AVL_InfraredImage_SetInfraredImageSharpening(pcfg->deal_num, pcfg->image_info[pcfg->deal_num].sharpening);
+        ret |= AVL_InfraredImage_SetImagesaturation(pcfg->deal_num, pcfg->image_info[pcfg->deal_num].saturation);
     }
     return ret;
 }
@@ -144,6 +146,7 @@ static int MPU_CIU_GET_IR_ConfigCamearImage(NetworkConfigCameraIrImageInfos *pcf
             ret |= AVL_InfraredImage_GetImageContrast(i, &(pcfg->image_info[i].contrast));
             ret |= AVL_InfraredImage_GetInfraredImagePolarity(i, &(pcfg->image_info[i].pseudo_color));
             ret |= AVL_InfraredImage_GetInfraredImageSharpening(i, &(pcfg->image_info[i].sharpening));
+            ret |= AVL_InfraredImage_GetImagesaturation(i, &(pcfg->image_info[i].saturation));
         }
     }
     else
@@ -152,6 +155,7 @@ static int MPU_CIU_GET_IR_ConfigCamearImage(NetworkConfigCameraIrImageInfos *pcf
         ret |= AVL_InfraredImage_GetImageContrast(pcfg->deal_num, &(pcfg->image_info[i].contrast));
         ret |= AVL_InfraredImage_GetInfraredImagePolarity(pcfg->deal_num, &(pcfg->image_info[i].pseudo_color));
         ret |= AVL_InfraredImage_GetInfraredImageSharpening(pcfg->deal_num, &(pcfg->image_info[i].sharpening));
+        ret |= AVL_InfraredImage_GetImagesaturation(pcfg->deal_num, &(pcfg->image_info[pcfg->deal_num].saturation));
     }
     return ret;
 }
@@ -287,11 +291,25 @@ static int MPU_CIU_SET_VIS_ImageConfig(NetworkConfigCameraVisImageInfos *pcfg)
         ERROR("the param is err \n");
         return -1;
     }
+    int i = 0;
     int ret = 0;
-    ret |= AVL_Vis_SetBrightness(pcfg->deal_num, pcfg->image_info[pcfg->deal_num].brightness);
-    ret |= AVL_Vis_SetContrast(pcfg->deal_num, pcfg->image_info[pcfg->deal_num].contrast);
-    ret |= AVL_Vis_SetSaturation(pcfg->deal_num, pcfg->image_info[pcfg->deal_num].saturation);
-    ret |= AVL_Vis_SetSharpness(pcfg->deal_num, pcfg->image_info[pcfg->deal_num].sharpening);
+    if(pcfg->deal_num == -1)
+    {
+        for(i = 0; i < pcfg->num; i++)
+        {
+            ret |= AVL_Vis_SetBrightness(i, pcfg->image_info[i].brightness);
+            ret |= AVL_Vis_SetContrast(i, pcfg->image_info[i].contrast);
+            ret |= AVL_Vis_SetSaturation(i, pcfg->image_info[i].saturation);
+            ret |= AVL_Vis_SetSharpness(i, pcfg->image_info[i].sharpening);
+        }
+    }
+    else
+    {
+        ret |= AVL_Vis_SetBrightness(pcfg->deal_num, pcfg->image_info[pcfg->deal_num].brightness);
+        ret |= AVL_Vis_SetContrast(pcfg->deal_num, pcfg->image_info[pcfg->deal_num].contrast);
+        ret |= AVL_Vis_SetSaturation(pcfg->deal_num, pcfg->image_info[pcfg->deal_num].saturation);
+        ret |= AVL_Vis_SetSharpness(pcfg->deal_num, pcfg->image_info[pcfg->deal_num].sharpening);
+    }
     return ret;
 }
 
@@ -461,7 +479,7 @@ static int MPU_CIU_SET_AlgoDetectConfig(NetworkConfigAlgorithmDetection *pcfg)
         return -1;
     }
     int ret = 0;
-
+    ret |= AVL_Alg_SetDetectGasEnable(0, pcfg->gas_detection);
     return ret;
 }
 
@@ -473,7 +491,7 @@ static int MPU_CIU_GET_AlgoDetectConfig(NetworkConfigAlgorithmDetection *pcfg)
         return -1;
     }
     int ret = 0;
-
+    ret |= AVL_Alg_GetDetectGasEnable(0, &(pcfg->gas_detection));
     return ret;
 }
 
@@ -732,7 +750,7 @@ int MPU_CIU_Set_ConfigGure(int type, void *buffer, unsigned int  bufflen)
             ERROR("buffer is too small\n");
             break;
         }
-        ERROR("not subpoort ir enhance\n");
+        ERROR("not support ir enhance\n");
         ret = -1;
         break;
     }
@@ -1327,6 +1345,9 @@ static int NETWORK_GetConfig_cb(NetworkConfigType type, void *buffer, int buffer
      case NETWORK_CONFIG_ALGORITHM_AREAS:
         ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_GET_CONFIG, CONFIG_ALGORITHM_AREAS, buffer, bufferlen, NULL, 0);
         break;
+     case NETWORK_CONFIG_ALGORITHM_IMAGE:
+        ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_GET_CONFIG, CONFIG_ALGORITHM_IMAGE, buffer, bufferlen, NULL, 0);
+        break;
      case NETWORK_CONFIG_NETWORK_TCP_IP:
         ret = MPU_CIU_Get_ALL_ConfigGure(JP_NVR_GET_CONFIG, CONFIG_NETWORK_TCP_IP, buffer, bufferlen, NULL, 0);
         break;
@@ -1399,6 +1420,9 @@ static int NETWORK_SetConfig_cb(NetworkConfigType type, void *buffer, int buffer
         break;
      case NETWORK_CONFIG_ALGORITHM_AREAS:
         ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_ALGORITHM_AREAS, buffer, bufferlen, NULL, 0);
+        break;
+    case NETWORK_CONFIG_ALGORITHM_IMAGE:
+        ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_ALGORITHM_IMAGE, buffer, bufferlen, NULL, 0);
         break;
      case NETWORK_CONFIG_NETWORK_TCP_IP:
         ret = MPU_CIU_Set_ALL_ConfigGure(JP_NVR_SET_CONFIG, CONFIG_NETWORK_TCP_IP, buffer, bufferlen, NULL, 0);

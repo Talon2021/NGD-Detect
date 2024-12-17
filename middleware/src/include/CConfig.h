@@ -34,6 +34,10 @@ public:
 
     int LoadFile(const char *pszFileName);
 
+    int DeleteSection(const char *pszSection);
+
+    int DeleteKey(const char *pszSection, const char *pszKey);
+
 };
 
 

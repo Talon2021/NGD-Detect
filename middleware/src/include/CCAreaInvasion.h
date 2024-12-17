@@ -19,6 +19,7 @@
 #define ALG_SECTION          "alg_information"
 
 #include <vector>
+#include "CConfig.h"
 
 typedef struct area_point
 {
@@ -47,6 +48,8 @@ private:
     int m_alg_enable;       //0位代表目标检测，1位代表跟踪 2位代表行为分析
     std::vector<long> m_track_id;
     void *m_han;
+    int m_gas_enable;
+    CConfig *m_cconfig;
 public:
     CCAreaInvasion(void *handle, int ch);
 
@@ -75,6 +78,10 @@ public:
     int SetDetectTrackId(std::vector<long> track_id);
     
     int GetDetectTrackId(std::vector<long> &track_id);
+
+    int SetDetectGasEnable(int enable);
+
+    int GetDetectGasEnable(int *enable);
 };
 
 
