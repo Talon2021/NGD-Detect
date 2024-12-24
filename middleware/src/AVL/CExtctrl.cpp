@@ -3,6 +3,7 @@
 #include "MessageManager.h"
 #include "common.h"
 #include "sdk_log.h"
+#include "jpsdk.h"
 
 #define EXT_SECITONCFG      "CEXT_cfg"
 
@@ -72,29 +73,8 @@ int CExtctrl::SetWipersEnable(int enable)
     int ret = 0;
     m_WipersEnable = enable;
 
-    JsonConfigExt info(_Code(WIPERS_CODE, "wipers"), "set");
-    info.data = DataConfigBody();
-    info.data->value = std::to_string(enable);  
-    std::string json_data;
-    JsonPackData<JsonConfigExt>(info, json_data);
-    MessageManager *msghandle = MessageManager::getInstance();
-    std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, WIPERS_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
-    if(ret != WIPERS_CODE)
-    {
-        ERROR("get reply message is err \n");
-        pthread_mutex_unlock(&m_Lock);
-        return -1;
-    }
-    DataConfigResponse out_response;
-    JsonParseData<DataConfigResponse>(out_response, out_msg->recv_data);
-    if(std::stoi(out_response.status.value()) != 0)
-    {
-        ERROR(" reply message is status = %s \n", out_response.status->c_str());
-        pthread_mutex_unlock(&m_Lock);
-        return -1;
-    }
-
+    JPSys_SetWiperEnable(enable);
+    
     CConfig *pcfg = CConfig::GetInstance();
     m_Cconfig->SetValue(EXT_SECITONCFG, EXT_WIPERSKEY, (long)enable);
 
@@ -124,31 +104,22 @@ int CExtctrl::SetAutoLightEnable(int enable)
     }
     int ret = 0;
     m_AutoLightEnable = enable;
-
-    JsonConfigExt info(_Code(AUTO_FILL_LIGHT_CODE, "auto_fill_light"), "set");
-    info.data = DataConfigBody();
-    info.data->value = std::to_string(enable);  
-    std::string json_data;
-    JsonPackData<JsonConfigExt>(info, json_data);
-    MessageManager *msghandle = MessageManager::getInstance();
-    std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, AUTO_FILL_LIGHT_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
-    if(ret != AUTO_FILL_LIGHT_CODE)
+    if(m_AutoLightEnable == 2)  //自动检测模式
     {
-        ERROR("get reply message is err \n");
-        pthread_mutex_unlock(&m_Lock);
-        return -1;
+        JPSys_SetLightMode(2);
     }
-    DataConfigResponse out_response;
-    JsonParseData<DataConfigResponse>(out_response, out_msg->recv_data);
-    if(std::stoi(out_response.status.value()) != 0)
+    else
     {
-        ERROR(" reply message is status = %s \n", out_response.status->c_str());
-        pthread_mutex_unlock(&m_Lock);
-        return -1;
+        JPSys_SetLightMode(1);
+        if(m_AutoLightEnable == 0)
+        {
+            JPSys_SetLightEnable(0);
+        }
+        else if(m_AutoLightEnable == 1)
+        {
+            JPSys_SetLightEnable(1);
+        }
     }
-
-    CConfig *pcfg = CConfig::GetInstance();
     m_Cconfig->SetValue(EXT_SECITONCFG, EXT_AUTOLIGHTKEY, (long)enable);
 
     pthread_mutex_unlock(&m_Lock);
@@ -177,29 +148,6 @@ int CExtctrl::SetCvbsEnable(int enable)
         return 0;
     }
     m_CvbsEnable = enable;
-
-    JsonConfigExt info(_Code(CVBS_CODE, "cvbs"), "set");
-    info.data = DataConfigBody();
-    info.data->value = std::to_string(enable);  
-    std::string json_data;
-    JsonPackData<JsonConfigExt>(info, json_data);
-    MessageManager *msghandle = MessageManager::getInstance();
-    std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, CVBS_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
-    if(ret != CVBS_CODE)
-    {
-        ERROR("get reply message is err \n");
-        pthread_mutex_unlock(&m_Lock);
-        return -1;
-    }
-    DataConfigResponse out_response;
-    JsonParseData<DataConfigResponse>(out_response, out_msg->recv_data);
-    if(std::stoi(out_response.status.value()) != 0)
-    {
-        ERROR(" reply message is status = %s \n", out_response.status->c_str());
-        pthread_mutex_unlock(&m_Lock);
-        return -1;
-    }
     m_Cconfig->SetValue(EXT_SECITONCFG, EXT_CVBSKEY, (long)enable);
 
     

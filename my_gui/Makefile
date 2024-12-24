@@ -1,5 +1,7 @@
 # Compiler settings - Can change to clang++ if required
 CXX := aarch64-buildroot-linux-gnu-g++
+
+DESTDIR := /home/share/nfs/ngd-detect/
 # Compiler flags
 CXXFLAGS := -Wall -g -I./include
 CXXFLAGS += -I../middleware/src/common
@@ -18,21 +20,23 @@ CXXFLAGS += -I../moudle/mqtt
 LDFLAGS := -L../middleware/lib 
 LDFLAGS += -L../middleware/lib/network
 LDFLAGS += -L../middleware/lib/algdetect
-LDFLAGS += -L../middleware/lib/opencv 
+LDFLAGS += -L../middleware/lib/opencv -Wl,-rpath-link,../middleware/lib/opencv
+LDFLAGS += -L../middleware/lib/opencv
+LDFLAGS += -L../middleware/lib/gpiod 
 LDFLAGS += -L../middleware/lib/rk_lib  -Wl,-rpath-link,../middleware/lib/rk_lib
+LDFLAGS += -L../middleware/lib/rk_lib
 #test
-DESTDIR=/home/share/nfs/ngd-detect/
 
 # Libraries to link against
-LIBS := -lAVL -lMPU -lNET -lmahony -lminini -lip -lmqtt -lpthread -lcommon -lLOG -lMSG
+LIBS := -lAVL -lMPU -lNET -lmahony -lminini -lip -lmqtt -lpthread -lcommon -lLOG -lMSG 
 
-#LIBS += -ljpsdk
+LIBS += -ljpsdk -lgpiod 
 
 #network
 LIBS += -lnetwork -lcurl -lz -ldl
 
 #alg detect
-#LIBS += -ljpInfrare -lba -lgomp -lVOTDetection -lVOTTracker -lrtsp
+LIBS += -lrknnrt -lrga
 
 #rkmedia
 #LIBS += -lliveMedia -lgroupsock -lBasicUsageEnvironment -lUsageEnvironment -leasymedia -lRKAP_3A -lthird_media -lrockface -lsqlite3 -lrockx -lVSC
@@ -42,7 +46,7 @@ LIBS += -lnetwork -lcurl -lz -ldl
 #LIBS += -lod_share
 
 #opencv
-#LIBS += -lopencv_dnn \
+LIBS += -lopencv_dnn \
         -lopencv_highgui \
         -lopencv_ml \
         -lopencv_objdetect \
@@ -55,7 +59,7 @@ LIBS += -lnetwork -lcurl -lz -ldl
         -lopencv_videoio \
         -lopencv_imgcodecs \
         -lopencv_imgproc \
-        -lopencv_core
+        -lopencv_core \
 
 
 

@@ -107,14 +107,14 @@ static inline void TimerMicroseconds(unsigned long uSec)
 #define SelectSleepUSec(X) TimerMicroseconds(X)
 
 
-#define JP_NVR_GET_DEVICEINFO       1   //主命令
+#define JP_NVR_GET_DEVICEINFO       1   //系统相关
 #define JP_NVR_SET_DEVICEINFO       2
 
 #define DEVICE_ALL_ABLITY           0XFFFF
 #define DEVICE_SYSTEM_INFO          1
 
-#define JP_NVR_GET_CONFIG           3 //主命令
-#define JP_NVR_SET_CONFIG           4
+#define JP_NVR_GET_CONFIG               3 
+#define JP_NVR_SET_CONFIG               4
 
 #define CONFIG_SYSTEM_TIME_INFO                 2000
 #define CONFIG_CAMERA_IR_IMAGE_INFO             2001
@@ -141,6 +141,7 @@ static inline void TimerMicroseconds(unsigned long uSec)
 
 
 #define JP_NVR_CONTORL              5 //主命令
+
 
 #define CONTORL_SNAP                1
 #define CONTORL_RECORD              2

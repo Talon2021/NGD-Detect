@@ -15,6 +15,7 @@
 #include "common.h"
 #include "sdk_log.h"
 #include "connect.h"
+#include "jpsdk.h"
 CCAreaInvasion::CCAreaInvasion(void *handle, int ch)
 {
     memset(&m_area, 0, sizeof(area_information) * AREA_COUNT_MAX);
@@ -28,6 +29,19 @@ CCAreaInvasion::~CCAreaInvasion()
 {
     UnInit();
 }
+
+static int GasDetectResultCb(void *pDataBuff, int pDataSize, void *userData)
+{
+
+    GAS_DETECT_RESULT *result = (GAS_DETECT_RESULT *)pDataBuff;
+    DEBUG("result gas num = %d \n", result->u8GasNum);
+    CCAreaInvasion *ptr = (CCAreaInvasion *)userData;
+
+    ptr->PushGasResult(pDataBuff, pDataSize);
+    
+    return 0;
+}
+
 
 int CCAreaInvasion::Init()
 {
@@ -72,14 +86,7 @@ int CCAreaInvasion::Init()
     }
     m_cconfig->SetValue(AREA_ALL_AREA,"really_count",(long)(m_really_count));
     m_cconfig->SetValue(AREA_ALL_AREA,"all_count",(long)(m_area_count));
-#ifdef ALG_SDK
-    ret = SetMonitorArea(m_han, polygon);
-    if(ret != 0)
-    {
-        ERROR("Set algarea is err\n");
-        return -1;
-    }
-#endif
+
     m_alg_enable = m_cconfig->GetValue(ALG_SECTION,"alg_enable",(long)0);
     if(get_bit(&m_alg_enable,0))
     {
@@ -93,17 +100,13 @@ int CCAreaInvasion::Init()
     {
         alg_switch.ActivityAnalysisSwitch = true;
     }
-#ifdef ALG_SDK
-    ret = SetAlgorithmSwitch(m_han, alg_switch);
-    if(ret != 0)
-    {
-        ERROR("Set alg is err\n");
-        return -1;
-    }
-#endif
     m_init = 1;
     enable =  m_cconfig->GetValue(ALG_SECTION,"gas_detect_enable",(long)(1));
     SetDetectGasEnable(enable);
+
+    JPSys_RegisterGasDetectResultCb(GasDetectResultCb, this);
+
+
 
     return 0;
 }
@@ -242,14 +245,6 @@ int CCAreaInvasion::SetAllAreaPoint(area_information *area, int num)
     m_cconfig->SetValue(AREA_ALL_AREA,"really_count",(long)(m_really_count));
     m_cconfig->SetValue(AREA_ALL_AREA,"all_count",(long)(m_area_count));
     memcpy(m_area, area, num * sizeof(area_information));
-#ifdef ALG_SDK
-    ret = SetMonitorArea(m_han, polygon);
-    if(ret != 0)
-    {
-        ERROR("Set algarea is err\n");
-        return -1;
-    }
-#endif
     return 0;
 }
 
@@ -288,9 +283,7 @@ int CCAreaInvasion::DeleteAreaPoint(const char *area_name)
     {
         return -1;
     }
-    //char tmp_name[AREA_NAME_BUFF_MAX];
     char buffer[AREA_NAME_BUFF_MAX] = {0};
-    //m_cconfig->GetValue(buffer, "area_name", NULL, tmp_name,AREA_NAME_BUFF_MAX);
     for(int i = 0; i < m_area_count;i++)
     {
         if(strcmp(m_area[i].area_name,area_name) == 0)
@@ -337,14 +330,6 @@ int CCAreaInvasion::SetDetectEnable(int enable)
     {
         alg_switch.ActivityAnalysisSwitch = true;
     }
-#ifdef ALG_SDK
-    ret = SetAlgorithmSwitch(m_han, alg_switch);
-    if(ret != 0)
-    {
-        ERROR("Set alg is err\n");
-        return -1;
-    }
-#endif
     m_cconfig->SetValue(ALG_SECTION,"alg_enable",(long)(m_alg_enable));
     return 0;
 }
@@ -381,14 +366,6 @@ int CCAreaInvasion::SetTrackEnable(int enable)
     {
         alg_switch.ActivityAnalysisSwitch = true;
     }
-#ifdef ALG_SDK
-    ret = SetAlgorithmSwitch(m_han, alg_switch);
-    if(ret != 0)
-    {
-        ERROR("Set alg is err\n");
-        return -1;
-    }
-#endif
     m_cconfig->SetValue(ALG_SECTION,"alg_enable",(long)(m_alg_enable));
     return 0;
 }
@@ -422,14 +399,6 @@ int CCAreaInvasion::SetBehaviorEnable(int enable)
     {
         alg_switch.ActivityAnalysisSwitch = true;
     }
-#ifdef ALG_SDK
-    ret = SetAlgorithmSwitch(m_han, alg_switch);
-    if(ret != 0)
-    {
-        ERROR("Set alg is err\n");
-        return -1;
-    }
-#endif
     m_cconfig->SetValue(ALG_SECTION,"alg_enable",(long)(m_alg_enable));
     return 0;
 }
@@ -480,5 +449,22 @@ int CCAreaInvasion::GetDetectGasEnable(int *enable)
         return -1;
     }
     *enable = m_gas_enable;
+    return 0;
+}
+
+int CCAreaInvasion::RegisterGasResultCb(GasDetectResult_CALLBACK cb)
+{
+    if(!m_init)
+    {
+        return -1;
+    }
+    m_GasResultCallBack = cb;
+    return 0;
+}
+
+int CCAreaInvasion::PushGasResult(void *result, int size)
+{
+    if(m_GasResultCallBack)
+        m_GasResultCallBack(result, size, NULL);
     return 0;
 }

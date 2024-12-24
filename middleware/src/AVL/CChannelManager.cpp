@@ -96,21 +96,9 @@ int CChannelManager::Init()
     m_reportExit = 0;
     void *hannle = NULL;
     /*初始化底层放在该处*/
-#ifdef JPMPP_SDK
+
     JPSys_Init(0);
-    JPSys_EncRegisterFrameHookCallback(FrameHook_FNX);
-#endif
-
-#ifdef ALG_SDK
-    std::vector<std::vector<AreaPoint>> polygonInit;
-    hannle = SetAlgorithmInit(polygonInit); 
-    DEBUG("alg sdk init\n");
-    if(hannle == NULL)
-    {
-        ERROR("alg init is fail\n");
-    }
-#endif
-
+    //JPSys_EncRegisterFrameHookCallback(FrameHook_FNX);
 
     CConfig *pcfg = CConfig::GetInstance();
     m_reportflag = pcfg->GetValue("peripheral_info", "report_enable", (long)1);
@@ -128,15 +116,20 @@ int CChannelManager::Init()
         m_ExtCtrl[i] = new CExtctrl(hannle, i);
         m_VisLightImage[i] = new CVisLightImage(hannle, i);
         
-        //ret |= m_ccgyro[i]->Init();
+#ifdef RK3588_NGD_DETECT
         ret |= m_infraredImage[i]->Init();
-        //ret |= m_areahannle[i]->Init();
+        ret |= m_VisLightImage[i]->Init();
+        ret |= m_Ptzhannel[i]->Init();
+#elif defined(RK3588_HGD_DETECT)
+        
+#endif
+        ret |= m_areahannle[i]->Init();
+        //ret |= m_ccgyro[i]->Init();
         //ret |= m_compasshannel[i]->Init();
         ret |= m_Actionhannel[i]->Init();
-        ret |= m_Ptzhannel[i]->Init();
         ret |= m_coderhannel[i]->Init();
         ret |= m_ExtCtrl[i]->Init();
-        ret |= m_VisLightImage[i]->Init();
+        
     }
     // ret = pthread_create(&m_PeripheralReportThread, NULL, Fnx_ReportThread, this);
     // if(ret != 0)
@@ -1095,6 +1088,22 @@ int CChannelManager::Alg_GetDetectGasEnable(int nch, int *enable)
         return -1;
     }
     return m_areahannle[nch]->GetDetectGasEnable(enable);
+}
+
+int CChannelManager::Alg_RegisterGasResultCb(int nch, GasDetectResult_CALLBACK cb)
+{
+
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_areahannle[nch]->RegisterGasResultCb(cb);
 }
 
 int CChannelManager::Compass_Init(int nch)

@@ -18,15 +18,11 @@ STRIP=$(CROSS_COMPILE_PREFIX)strip
 RM=rm -rf
 INSTALL=install -cv -m 777
 CFLAGS+= -fPIC -shared 
-CFLAGS+= -Wall -std=c++17
+CFLAGS+= -Wall -std=c++17 -fcommon
 RFLAGS+= $(CFLAGS) -Os -DNDEBUG
 DFLAGS+= $(CFLAGS) -W -g 
 TESTFLAGS+= -O3 -DNDEBUG -Wall
 LFLAGS+= -lpthread #-ldbus-1
-
-ifeq ($(JPMPP_SDK),yes)
-CFLAGS += -DJPMPP_SDK
-endif
 
 ifeq ($(ALG_SDK),yes)
 CFLAGS += -DALG_SDK
@@ -54,6 +50,15 @@ endif
 
 ifeq ($(PROCESS_CTRL),yes)
 CFLAGS += -DPROCESS_CTRL
+endif
+
+ifeq ($(RK3588_HGD_DETECT),yes)
+CFLAGS += -DRK3588_HGD_DETECT
+endif
+
+
+ifeq ($(RK3588_NGD_DETECT),yes)
+CFLAGS += -DRK3588_NGD_DETECT
 endif
 
 #moudle include

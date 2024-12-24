@@ -196,6 +196,8 @@ public:
 
     int Alg_GetDetectGasEnable(int nch, int *enable);
 
+    int Alg_RegisterGasResultCb(int nch, GasDetectResult_CALLBACK cb);
+
     /*电子罗盘*/
     int Compass_Init(int nch);
 

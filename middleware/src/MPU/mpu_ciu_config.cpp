@@ -47,6 +47,11 @@ static int report_alarm_Calback(alarm_data *info)
 	return 0;
 }
 
+static int ReportDetectReusltCb(void *pDataBuff, int pDatasize, void *userdata)
+{
+    return 0;
+}
+
 
 
 static int MPU_CIU_SET_ConfigSystem(NetworkConfigSystemTimeInfo *pcfg)
@@ -1253,7 +1258,7 @@ int MPU_CIU_Get_ALL_ConfigGure(unsigned int major, unsigned int minor, void *buf
     {
     case JP_NVR_GET_DEVICEINFO:
         {
-            ret = MPU_CIU_GET_DevConfig(minor, buffer, bufflen);
+            //ret = MPU_CIU_GET_DevConfig(minor, buffer, bufflen);
             break;
         }
     case JP_NVR_GET_CONFIG:
@@ -1281,7 +1286,7 @@ int MPU_CIU_Set_ALL_ConfigGure(unsigned int major, unsigned int minor, void *buf
     {
     case JP_NVR_SET_DEVICEINFO:
         {
-            ret = MPU_CIU_SET_DevConfig(minor, buffer, bufflen);
+            //ret = MPU_CIU_SET_DevConfig(minor, buffer, bufflen);
             break;
         }
     case JP_NVR_SET_CONFIG:
@@ -1482,6 +1487,7 @@ int mpu_ciu_config_init()
 
 	AVL_SetMpuCallback(report_peripheralCalback);
     AVL_Alarm_SetAlarmActionCallback(0, report_alarm_Calback);
+    AVL_Alg_RegisterGasResultCb(0,ReportDetectReusltCb);
 #endif
     CIU_RegisterPreview();
 
