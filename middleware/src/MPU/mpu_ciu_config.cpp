@@ -47,7 +47,7 @@ static int report_alarm_Calback(alarm_data *info)
 	return 0;
 }
 
-static int ReportDetectReusltCb(void *pDataBuff, int pDatasize, void *userdata)
+static int ReportDetectReusltCb(void *pDataBuff, int pDatasize)
 {
     return 0;
 }

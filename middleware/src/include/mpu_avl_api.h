@@ -81,7 +81,7 @@ int AVL_Alg_SetDetectGasEnable(int nch, int enable);
 
 int AVL_Alg_GetDetectGasEnable(int nch, int *enable);
 
-int AVL_Alg_RegisterGasResultCb(int nch, GasDetectResult_CALLBACK cb);
+int AVL_Alg_RegisterGasResultCb(int nch, DetectResult_CALLBACK cb);
 
 int AVL_Groy_Init(int nch);
 

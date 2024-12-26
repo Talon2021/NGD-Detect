@@ -7,7 +7,7 @@
 #include "rknn_unitl.h"
 #include "safe_quene.hpp"
 #include "ThreadPool.h"
-
+#include <stdint.h>
 class EnhancedInterfaceLock {
 public:
     void sharedMethod() {
@@ -50,12 +50,14 @@ typedef struct _algor_frame
 {
     image_buffer_t src_frame;   //放检测帧数据
     const void *user_data;  //放原始帧数据，帧号，等
+    uint64_t frame_id;
 }algor_frame;
 
 typedef struct Detect_Result
 {
     object_detect_result_list result;
     const void *userdata;
+    uint64_t frame_id;
 }Detect_Result;
 
 class Detect_Task

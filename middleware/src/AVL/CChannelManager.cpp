@@ -1090,7 +1090,7 @@ int CChannelManager::Alg_GetDetectGasEnable(int nch, int *enable)
     return m_areahannle[nch]->GetDetectGasEnable(enable);
 }
 
-int CChannelManager::Alg_RegisterGasResultCb(int nch, GasDetectResult_CALLBACK cb)
+int CChannelManager::Alg_RegisterGasResultCb(int nch, DetectResult_CALLBACK cb)
 {
 
     if(!m_bInit)

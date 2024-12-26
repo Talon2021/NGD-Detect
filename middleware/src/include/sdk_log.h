@@ -10,8 +10,8 @@
 #define _SDK_LOG_H_
 #pragma once
 
-#define SDK_LOG_USER         "sdk_log"
-#define SDK_LOG_LOG         "/oem/app/logs"
+#define SDK_LOG_USER         "mid_log"
+#define SDK_LOG_LOG         "/root/app/ai/logs/"
 
 // #define DEBUG(format, args...) SPDLOG_LOGGER_DEBUG(spdlog::default_logger_raw(), format, ##args);SPDLOG_LOGGER_DEBUG(spdlog::get(SDK_LOG_USER), format, ##args)
 // #define INFO(format, args...) SPDLOG_LOGGER_INFO(spdlog::default_logger_raw(),format, ##args);SPDLOG_LOGGER_INFO(spdlog::get(SDK_LOG_USER), format, ##args)

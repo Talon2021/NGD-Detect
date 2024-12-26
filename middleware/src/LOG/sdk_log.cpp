@@ -29,8 +29,8 @@
 #define LOG_LEVEL_ERROR spdlog::level::err
 #define LOG_LEVEL_CRITICAL spdlog::level::critical
 #define LOG_LEVEL_OFF spdlog::level::off
-#define max_file_size       500 * ((1) << (10))
-#define max_file_count          (5)
+#define max_file_size       5 * ((1) << (20))
+#define max_file_count          (1)
 
 static int mysystem(const char *cmdstring)
 {

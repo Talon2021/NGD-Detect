@@ -228,6 +228,6 @@ int get_localgetway(const char * eth_name, char *netway)
             break;  
     }  
     sscanf(buf, "%*s%*s%s", netway);          
-    pclose(fp);  
-
+    pclose(fp);
+    return 0;  
 }

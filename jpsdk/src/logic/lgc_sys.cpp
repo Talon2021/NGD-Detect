@@ -3,6 +3,7 @@
 #include "lgc_sys.h"
 #include "meida_common.h"
 #include "gpio_hal.h"
+#include "mpp_venc.h"
 
 SystemInfo_t g_SystemInfo = { 0 };
 
@@ -94,12 +95,18 @@ int LGC_SYS_Init()
     pthread_mutex_init(&pSysInfo->m_CheckBrightnessLock, NULL);
     pthread_mutex_init(&pSysInfo->m_CheckTemperatureLock, NULL);
 
+    if(mpp_venc_init())
+    {
+        SDK_ERR("Fail to called mpp_venc_init\n");
+    }
+
     return 0;
 }
 
 void LGC_SYS_DeInit()
 {
     SystemInfo_t* pSysInfo = &g_SystemInfo;
+    if(mpp_venc_deinit())
     pthread_mutex_destroy(&pSysInfo->m_CheckBrightnessLock);
     pthread_mutex_destroy(&pSysInfo->m_CheckTemperatureLock);
 }

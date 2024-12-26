@@ -36,7 +36,7 @@
 #include "image_utils.h"
 
 
-#define LABEL_NALE_TXT_PATH "./model/coco_80_labels_list.txt"
+#define LABEL_NALE_TXT_PATH "/root/app/ai/gas_labels_list.txt"
 // #define USE_FP_RESIZE
 
 static char *labels[OBJ_CLASS_NUM];

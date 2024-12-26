@@ -26,12 +26,15 @@ static void load_board_hal_info()
     {
         fprintf(stderr, "Board Hal Info Load Faile! ret[%d]", ret);
     }
+    fprintf(stderr, "load gpio is success \n");
     return;
 }
 
 int LGC_Init()
 {
-    //load_board_hal_info();
+#ifdef LOAD_GPIO
+    load_board_hal_info();
+#endif
 
     LGC_SYS_Init();
     LGC_ALGO_Init();

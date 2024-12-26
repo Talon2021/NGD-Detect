@@ -6,7 +6,7 @@
 
 #include "meida_common.h"
 #include "jpsdk.h"
-
+#include "mpp_venc.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -19,7 +19,8 @@ typedef struct PlatformChannelContext_S{
     void *m_Detect_handle;
     GasDetectResult_CALLBACK m_GasResultCallBack;
     void *m_GasResultUserData;
-
+    int m_AlgoPicWidth;
+    int m_AlgoPicHeight;
 }CPlatformChannelContext;
 
 int LGC_ALGO_Init(void);

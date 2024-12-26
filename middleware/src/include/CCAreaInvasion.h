@@ -20,7 +20,7 @@
 
 #include <vector>
 #include "CConfig.h"
-#include "jpsdk.h"
+#include "IR_common.h"
 
 typedef struct area_point
 {
@@ -51,7 +51,7 @@ private:
     void *m_han;
     int m_gas_enable;
     CConfig *m_cconfig;
-    GasDetectResult_CALLBACK m_GasResultCallBack;
+    DetectResult_CALLBACK m_GasResultCallBack;
 public:
     CCAreaInvasion(void *handle, int ch);
 
@@ -85,7 +85,7 @@ public:
 
     int GetDetectGasEnable(int *enable);
 
-    int RegisterGasResultCb(GasDetectResult_CALLBACK cb);
+    int RegisterGasResultCb(DetectResult_CALLBACK cb);
 
     int PushGasResult(void *result, int size);
 };

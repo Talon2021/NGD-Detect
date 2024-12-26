@@ -212,7 +212,7 @@ int AVL_Alg_GetDetectGasEnable(int nch, int *enable)
     MPU_AVL_CALL(Alg_GetDetectGasEnable(nch, enable));
 }
 
-int AVL_Alg_RegisterGasResultCb(int nch, GasDetectResult_CALLBACK cb)
+int AVL_Alg_RegisterGasResultCb(int nch, DetectResult_CALLBACK cb)
 {
     MPU_AVL_CALL(Alg_RegisterGasResultCb(nch, cb));
 }

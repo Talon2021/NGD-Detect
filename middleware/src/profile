@@ -37,7 +37,7 @@ endif
 
 ifeq ($(TYPE),RK3588_PROJECT)
     RK3588_HGD_DETECT=yes
-    HTTP_UPLOAD=yes
+    HTTP_UPLOAD=no
     NET_WLAN=yes
 endif
 

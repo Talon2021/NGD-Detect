@@ -117,7 +117,7 @@
 
 #if 1
 
-#define LOG_DEV_FILE        "/oem/app/logs/log_sdk"      // log日志文件，为空表示标准输出打印，不写入日志
+#define LOG_DEV_FILE        "/root/app/ai/logs/log_sdk"      // log日志文件，为空表示标准输出打印，不写入日志
 #define LOG_PREFIX_STR      "SDK"               // log信息前缀，为空表示默认"LOG"，一般为模块名
 #define LOG_SHOW_LEVEL       LOG_DEBUG          // 需要显示的log的等级(小于该值的log信息不会显示和写入日志)
 #define LOG_PRT_ENABLE       ENABLE_LOG_CONSOLE // 是否需要输出到终端显示(支持接口动态修改)
@@ -377,10 +377,6 @@ typedef struct
     int m_Pri;
 } ThreadInfo_t;
 
-typedef int (*mpp_recv_raw_fnx)(void* data1, void* data2);
-
-typedef int (*mpp_frame_fnx)(void* mb);
-
 typedef struct
 {
     unsigned int loadType;
@@ -432,7 +428,32 @@ typedef enum AlarmTypeAudio
     AlERT_NULL
 }AlarmTypeAudio;
 
-typedef int (*ALGODETECTCALLBACK)(void *data, int datalen);  //data = 
+#define MAX_GAS_NUM             (32)
+/* 注意：是以最上边框和最左边框为基准的,均按照百分比 */
+typedef struct
+{
+    int left;     /* 区域的左边与图像的最左边的距离 */
+    int top;      /* 区域的上边与图像的最上边的距离 */
+    int right;    /* 区域的右边与图像的最左边的距离 */
+    int bottom;   /* 区域的下边与图像的最上边的距离 */
+} DETECT_RECTH;
+
+typedef struct _human_attr
+{
+    unsigned char u8Valid;    // 该索引是否有效
+    DETECT_RECTH stGasRecth;
+} GAS_ATTR;
+
+typedef struct _gas_detect_result
+{
+    uint64_t frame_id;
+    unsigned char u8GasNum;
+    GAS_ATTR stGasAttr[MAX_GAS_NUM];
+    unsigned char *gas_mask;
+
+}GAS_DETECT_RESULT;
+
+typedef int (*ALGODETECTCALLBACK)(void *data, int datalen);   
 
 uint64_t GetSystemBootDuratingMSecond(void);
 

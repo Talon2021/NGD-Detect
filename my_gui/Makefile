@@ -6,10 +6,9 @@ DESTDIR := /home/share/nfs/ngd-detect/
 CXXFLAGS := -Wall -g -I./include
 CXXFLAGS += -I../middleware/src/common
 CXXFLAGS += -I../middleware/src/include
-CXXFLAGS += -I../middleware/include/algdetect
-CXXFLAGS += -I../middleware/include/network
 CXXFLAGS += -I../middleware/include
 CXXFLAGS += -I../middleware/src/MSG
+CXXFLAGS += -I../middleware/inc
 
 CXXFLAGS += -I../moudle/include/minini
 CXXFLAGS += -I../moudle/include/mahony
@@ -28,7 +27,7 @@ LDFLAGS += -L../middleware/lib/rk_lib
 #test
 
 # Libraries to link against
-LIBS := -lAVL -lMPU -lNET -lmahony -lminini -lip -lmqtt -lpthread -lcommon -lLOG -lMSG 
+LIBS := -lMidLayer -lmahony -lminini -lip -lmqtt -lpthread 
 
 LIBS += -ljpsdk -lgpiod 
 

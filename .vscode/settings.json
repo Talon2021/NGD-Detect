@@ -92,6 +92,12 @@
         "im2d_expand.h": "c",
         "im2d.h": "c",
         "set": "c",
-        "opencv.hpp": "c"
+        "opencv.hpp": "c",
+        "mpp_venc.h": "c",
+        "image_common.h": "c",
+        "ir_gasapi.h": "c",
+        "ir_common.h": "c",
+        "mpu_avl_api.h": "c",
+        "image_utils.h": "c"
     }
 }

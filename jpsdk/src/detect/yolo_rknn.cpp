@@ -1,7 +1,7 @@
 #include "yolo_rknn.h"
 #include <unistd.h>
 #include <string.h>
-
+#include "meida_common.h"
 int Detect_Task::GetFrameDetectThread()
 {
 
@@ -55,7 +55,9 @@ int Detect_Task::taskModelReson(algor_frame *frame)
         fprintf(stderr, " yolov8 Run is fail ret = %d ", ret);
         goto free_result;
     }
+    //SDK_DBG("result = count = %d \n", od_results->result.count);
     od_results->userdata = frame->user_data;
+    od_results->frame_id = frame->frame_id;
     m_DetectResult->push(od_results);
     SerFreeHandle(index);
     return 0;
@@ -79,6 +81,7 @@ Detect_Task::~Detect_Task()
 int Detect_Task::Init(const char *model_path)
 {
     int i = 0;
+    init_post_process();
     for(i = 0; i < MAX_PTHREAD_NUM; i++)
     {
         init_yolov8_seg_model(model_path,  &m_Handle[i]);

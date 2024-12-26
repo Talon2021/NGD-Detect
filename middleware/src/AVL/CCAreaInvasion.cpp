@@ -34,7 +34,6 @@ static int GasDetectResultCb(void *pDataBuff, int pDataSize, void *userData)
 {
 
     GAS_DETECT_RESULT *result = (GAS_DETECT_RESULT *)pDataBuff;
-    DEBUG("result gas num = %d \n", result->u8GasNum);
     CCAreaInvasion *ptr = (CCAreaInvasion *)userData;
 
     ptr->PushGasResult(pDataBuff, pDataSize);
@@ -452,7 +451,7 @@ int CCAreaInvasion::GetDetectGasEnable(int *enable)
     return 0;
 }
 
-int CCAreaInvasion::RegisterGasResultCb(GasDetectResult_CALLBACK cb)
+int CCAreaInvasion::RegisterGasResultCb(DetectResult_CALLBACK cb)
 {
     if(!m_init)
     {
@@ -465,6 +464,6 @@ int CCAreaInvasion::RegisterGasResultCb(GasDetectResult_CALLBACK cb)
 int CCAreaInvasion::PushGasResult(void *result, int size)
 {
     if(m_GasResultCallBack)
-        m_GasResultCallBack(result, size, NULL);
+        m_GasResultCallBack(result, size);
     return 0;
 }

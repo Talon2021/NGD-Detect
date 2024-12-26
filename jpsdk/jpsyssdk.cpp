@@ -4,6 +4,7 @@
 #include "meida_common.h"
 #include "lgc.h"
 #include "gpio_hal.h"
+#include "lgc_algo.h"
 int JPSys_Init(int mode)
 {
     int nRet;
@@ -62,3 +63,12 @@ int JPSys_RegisterGasDetectResultCb(GasDetectResult_CALLBACK cb, void *userdata)
     ret = LGC_ALGO_RegisterGasResultCb(cb, userdata);
     return ret;
 }
+
+int JPSys_PushStream(void *stream)
+{
+    int ret = 0;
+    ret = mpp_venc_push_stream(stream);
+    return ret;
+
+}
+

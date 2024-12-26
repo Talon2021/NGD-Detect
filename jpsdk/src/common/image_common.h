@@ -1,6 +1,8 @@
 #ifndef _RKNN_MODEL_ZOO_COMMON_H_
 #define _RKNN_MODEL_ZOO_COMMON_H_
 
+#include <stdint.h>
+#include <stdio.h>
 /**
  * @brief Image pixel format
  * 
@@ -50,5 +52,17 @@ typedef struct {
     int h;
     float angle;
 } image_obb_box_t;
+
+
+typedef struct rgb_data_s{
+    uint64_t frame_id;
+    uint32_t width;
+    uint32_t height;
+    uint32_t u32RealTimeSec;
+    uint32_t u32RealTimeUSec;
+    uint32_t fmt;
+    size_t   size;
+    uint8_t *data;
+}rgb_data_t;
 
 #endif //_RKNN_MODEL_ZOO_COMMON_H_

@@ -19,6 +19,12 @@ CFLAGS += -I./src/common
 CFLAGS += -I./src/hal
 CFLAGS += -I./src/logic
 CFLAGS += -I./src/detect
+CFLAGS += -I./src/encode
+
+
+ifeq ($(LOAD_GPIO),yes)
+CFLAGS += -DLOAD_GPIO
+endif
 
 
 LDFLAGS += -L./lib
@@ -39,7 +45,7 @@ DFLAGS = -g $(CFLAGS)
 
 TARGET := libjpsdk.so
 
-SRC_DIRS := . src/common src/hal src/logic src/detect
+SRC_DIRS := . src/common src/hal src/logic src/detect src/encode
 
 CFILES = $(foreach dir,$(SRC_DIRS),$(wildcard $(dir)/*.c))
 OBJS_NOTSORT = $(patsubst %.c,%.o, $(CFILES))
@@ -60,8 +66,8 @@ DEBUG_TARGET = $(DEBUG_DIR)/$(TARGET)
 
 all: release
 .PHONY : clean
-release: $(RELEASE_DIR)/. $(RELEASE_DIR)/src/. $(RELEASE_DIR)/src/common/. $(RELEASE_DIR)/src/hal/. $(RELEASE_DIR)/src/logic/. $(RELEASE_DIR)/src/detect/. $(RELEASE_TARGET)
-debug: $(DEBUG_DIR)/. $(DEBUG_DIR)/src/. $(DEBUG_DIR)/src/common/.  $(DEBUG_DIR)/src/hal/. $(DEBUG_DIR)/src/logic/. $(DEBUG_DIR)/src/detect/. $(DEBUG_TARGET)
+release: $(RELEASE_DIR)/. $(RELEASE_DIR)/src/. $(RELEASE_DIR)/src/common/. $(RELEASE_DIR)/src/hal/. $(RELEASE_DIR)/src/logic/. $(RELEASE_DIR)/src/detect/. $(RELEASE_DIR)/src/encode/. $(RELEASE_TARGET)
+debug: $(DEBUG_DIR)/. $(DEBUG_DIR)/src/. $(DEBUG_DIR)/src/common/.  $(DEBUG_DIR)/src/hal/. $(DEBUG_DIR)/src/logic/. $(DEBUG_DIR)/src/detect/. $(DEBUG_DIR)/src/encode/. $(DEBUG_TARGET)
 
 $(RELEASE_TARGET):$(addprefix $(RELEASE_DIR)/,$(OBJS)) $(addprefix $(RELEASE_DIR)/,$(CPPOBJS))
 	$(CC) -o $@  $^  $(LDFLAGS) $(LDLIBS)

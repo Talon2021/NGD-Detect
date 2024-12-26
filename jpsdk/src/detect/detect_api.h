@@ -33,6 +33,8 @@ typedef struct DETECT_HANDLE_OPTPARAM_ST
 {
     const char *model_path;
     float confidence;
+    int input_width;
+    int input_height;
 }DETECT_HANDLE_OPTPARAM_S;
 
 typedef struct DETECT_RECT_ST

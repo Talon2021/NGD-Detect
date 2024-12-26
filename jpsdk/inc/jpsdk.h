@@ -148,28 +148,6 @@ typedef enum {
     eSpeechPlaying = 1, // 正在播放
 } E_SpeechPlayStatus;
 
-#define MAX_GAS_NUM             (32)
-/* 注意：是以最上边框和最左边框为基准的,均按照百分比 */
-typedef struct
-{
-    int left;     /* 区域的左边与图像的最左边的距离 */
-    int top;      /* 区域的上边与图像的最上边的距离 */
-    int right;    /* 区域的右边与图像的最左边的距离 */
-    int bottom;   /* 区域的下边与图像的最上边的距离 */
-} DETECT_RECTH;
-
-typedef struct _human_attr
-{
-    unsigned char u8Valid;    // 该索引是否有效
-    DETECT_RECTH stGasRecth;
-} GAS_ATTR;
-
-typedef struct _gas_detect_result
-{
-    unsigned char u8GasNum;
-    GAS_ATTR stGasAttr[MAX_GAS_NUM];
-}GAS_DETECT_RESULT;
-
 typedef int (*GasDetectResult_CALLBACK)(void* pDataBuf, int uiDataLen, void* userData);
 
 int JPSys_Init(int mode);
@@ -187,6 +165,9 @@ int JPSys_SetLightMode(int mode);
 int JPSys_SetHeatMode(int mode);
 
 int JPSys_RegisterGasDetectResultCb(GasDetectResult_CALLBACK cb, void *userdata);
+
+int JPSys_PushStream(void *stream);
+
 
 #ifdef __cplusplus
 }

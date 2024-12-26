@@ -309,7 +309,7 @@ int mpu_init()
 
     while(1)
     {
-        if(!get_localip("eth1", addr))
+        if(!get_localip("eth0", addr))
         {
             break;
         }
