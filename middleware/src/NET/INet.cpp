@@ -22,6 +22,8 @@ static const char *INet_SubnetMask_key = "LocalSubnetMask";
 static const char *IFNAME = "wlan0";
 #elif defined(NET_ETHERNET)
 static const char *IFNAME = "eth0";
+// #else
+// static const char *IFNAME = "default";  // 设置默认值
 #endif
 static const char *INet_Gateway_key = "LocalGateway";
 
@@ -47,6 +49,7 @@ int INet::LoadParam()
 {
 	int port, getPort;
 	int ret = 0;
+	char cmd[256] = {0};
 	char mac[MAX_MAC_STR_LEN] = {0};
 	char ip[MAX_IP_STR_LEN] = {0};
     char gateway[MAX_IP_STR_LEN] = {0};
@@ -58,44 +61,68 @@ int INet::LoadParam()
 	int mac0, mac1, mac2, mac3, mac4, mac5;
     CConfig *pCfg = CConfig::GetInstance();
 
-    m_bDHCP_Enable = pCfg->GetValue(INet_CfgSection, INet_DHCP_key, (long)0);
+    m_bDHCP_Enable = pCfg->GetValue(INet_CfgSection, INet_DHCP_key, (long)1);
+	if(m_bDHCP_Enable == 1)
+	{	
+		snprintf(cmd, sizeof(cmd), "killall dhcpcd");
+		mysystem(cmd);
+		snprintf(cmd, sizeof(cmd), "dhcpcd -i %s", IFNAME);
+		mysystem(cmd);
+		
+		get_localgetway(IFNAME, gateway);
+		
+		get_localip(IFNAME, ip);
 
-	m_pCConfig->GetValue(INet_CfgSection, INet_IP_key, (char *)INet_IP_Default_s, ip, MAX_IP_STR_LEN);
-	if (!IsValidIP(ip))
-	{							
-		ERROR(" load cfg--  ip is invalid(%s)\n", ip);
-		strcpy(ip, INet_IP_Default_s);
+		get_localmask(IFNAME, netmask);
+		NET_SetIPAddress(ip);
+		
+		NET_SetGateway(gateway);
+
+		
+		NET_SetSubnetMask(netmask);
+
+		DEBUG("===========================net cmd = %s gateway =%s mask = %s\n",cmd, gateway, netmask);
+		
+
 	}
-	NET_SetIPAddress(ip);
-	pCfg->GetValue(INet_CfgSection, INet_SubnetMask_key, (char *)INet_SubnetMask_Default_s, netmask, MAX_IP_STR_LEN);
-	if (!IsValidIP(netmask))
+	else
 	{
-		ERROR(" load cfg--  subnetmask is invalid(%s)\n", netmask);
-		strcpy(netmask, INet_SubnetMask_Default_s);
+		m_pCConfig->GetValue(INet_CfgSection, INet_IP_key, (char *)INet_IP_Default_s, ip, MAX_IP_STR_LEN);
+		if (!IsValidIP(ip))
+		{							
+			ERROR(" load cfg--  ip is invalid(%s)\n", ip);
+			strcpy(ip, INet_IP_Default_s);
+		}
+		NET_SetIPAddress(ip);
+		pCfg->GetValue(INet_CfgSection, INet_SubnetMask_key, (char *)INet_SubnetMask_Default_s, netmask, MAX_IP_STR_LEN);
+		if (!IsValidIP(netmask))
+		{
+			ERROR(" load cfg--  subnetmask is invalid(%s)\n", netmask);
+			strcpy(netmask, INet_SubnetMask_Default_s);
+		}
+
+		ret = NET_SetSubnetMask(netmask);
+		
+
+		pCfg->GetValue(INet_CfgSection, INet_Gateway_key, (char *)INet_Gateway_Default_s, gateway, MAX_IP_STR_LEN);
+		if (!IsValidIP(gateway))
+		{
+			ERROR("load cfg -- gateway is invalid(%s)\n", gateway);
+			strcpy(gateway, INet_Gateway_Default_s);
+		}
+
+		ret = NET_SetGateway(gateway);
+
+		NET_GetMacAddress(mac);
+
+		sscanf(mac, "%02x:%02x:%02x:%02x:%02x:%02x", &mac0, &mac1, &mac2, &mac3, &mac4, &mac5);
+		m_sMAC_addr[0] = mac0;
+		m_sMAC_addr[1] = mac1;
+		m_sMAC_addr[2] = mac2;
+		m_sMAC_addr[3] = mac3;
+		m_sMAC_addr[4] = mac4;
+		m_sMAC_addr[5] = mac5;
 	}
-
-	ret = NET_SetSubnetMask(netmask);
-	
-
-	pCfg->GetValue(INet_CfgSection, INet_Gateway_key, (char *)INet_Gateway_Default_s, gateway, MAX_IP_STR_LEN);
-	if (!IsValidIP(gateway))
-	{
-		ERROR("load cfg -- gateway is invalid(%s)\n", gateway);
-		strcpy(gateway, INet_Gateway_Default_s);
-	}
-
-	ret = NET_SetGateway(gateway);
-
-	NET_GetMacAddress(mac);
-
-	sscanf(mac, "%02x:%02x:%02x:%02x:%02x:%02x", &mac0, &mac1, &mac2, &mac3, &mac4, &mac5);
-	m_sMAC_addr[0] = mac0;
-	m_sMAC_addr[1] = mac1;
-	m_sMAC_addr[2] = mac2;
-	m_sMAC_addr[3] = mac3;
-	m_sMAC_addr[4] = mac4;
-	m_sMAC_addr[5] = mac5;
-
 	pCfg->GetValue(INet_CfgSection, INet_Dns_Major_key, (char *)DNS_Default, major_dns, MAX_IP_STR_LEN);
 	if(!IsValidIP(major_dns))
 	{
@@ -103,8 +130,7 @@ int INet::LoadParam()
 		strcpy(major_dns, DNS_Default);
 	}
 	NET_SetDns(major_dns, NULL);
-	
-    return 0;
+return 0;
 }
 
 int INet::IsValidIP(const char *ipaddr)
@@ -178,7 +204,7 @@ int INet::Init()
 	}
 	pthread_mutex_init(&m_writeLock, NULL);
 
-	//LoadParam();
+	LoadParam();
 
     return 0;
 }

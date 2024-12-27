@@ -24,7 +24,7 @@
 
 #ifndef TRACE_IP
 
-#define TRACE_IP printf
+#define TRACE_IP //printf
 #endif
 /*
  *      Display an IP address in readable format.
@@ -81,6 +81,29 @@ int IsIface(char *szLine, char *ifname, int *pEntered)
 	return 0;
 }
 
+
+int check_interface_end() {
+    FILE *file = fopen(SYSTEM_NETWORK_CONF, "r");
+    if (file == NULL) {
+        return -1;  // 文件打开失败
+    }
+
+    char line[256];
+    while (fgets(line, sizeof(line), file)) {
+        // 去除行尾的换行符
+        line[strcspn(line, "\n")] = 0;
+
+        // 判断是否包含目标字段
+        if (strstr(line, "INTERFACE_BEGIN") != NULL) {
+            fclose(file);
+            return 1;  // 找到了INTERFACE_END字段
+        }
+    }
+	//fprintf(stderr, "rm interfile ===========\n");
+	remove(SYSTEM_NETWORK_CONF);
+    fclose(file);
+    return 0;  // 没有找到INTERFACE_END字段
+}
 
 static int TestInterface(char *path)
 {
@@ -197,7 +220,7 @@ broadcast 192.168.2.255\n\
 gateway 192.168.2.1\n\
 pre-up /etc/network/wifi-pre\n\
 down /etc/network/wifi-pre\n\
-#INTERFACE_END#");
+#INTERFACE_END#\n");
 		fwrite(line_buffer, strlen(line_buffer), 1, fp_new);
 		fclose(fp_new);		
 		
@@ -348,6 +371,8 @@ int set_if_address(char *if_name, char *in_address, ADDR_SET_OPS operation)
 		ret = EFAULT;
 		goto out;
 	}
+
+	check_interface_end();
 
 	if (operation == SET_GATEWAY)
 	{
@@ -507,14 +532,14 @@ TRACE_IP("\n..IP.C---------- get_if_address--------begin--------\n");
 
 	if ((!if_name) || (!address))
 		return EFAULT;
-
+	check_interface_end();
 	if (operation == GET_GATEWAY)
 	{
 
 		ret = get_default_gw(if_name, address);
 		return ret;
 	}
-
+	
 	if ((sock = socket(AF_INET, SOCK_DGRAM, 0)) < 0)
 		return errno;
 

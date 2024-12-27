@@ -48,7 +48,13 @@ int CVisLightImage::Init()
 {
     m_cconfig = CConfig::GetInstance();
     pthread_mutex_init(&m_Lock, NULL);
+    m_serial = new Cserial("/dev/ttyS7", 9600);
+    if(m_serial->init() != 0)
+    {
+        return -1;
+    }
     m_init = 1;
+    
     LoadParam();
    
     
@@ -69,35 +75,17 @@ int CVisLightImage::SetBrightness(int value)
         return -1;
     }
     int ret = 0;
+    unsigned char data[9] = {0x81, 0x01, 0x09, 0x8c, 0x00, 0x00, 0x00, 0x00, 0xFF};
     pthread_mutex_lock(&m_Lock);
     if(value == m_brightness)
     {
         pthread_mutex_unlock(&m_Lock);
         return 0;
     }
-   
-    JsonConfigExt info(_Code(VIS_PIC_BRIGHTNESS_CODE, "vis_pic_brightness"), "set");
-    info.data = DataConfigBody();
-    info.data->value = std::to_string(value);  
-    std::string json_data;
-    JsonPackData<JsonConfigExt>(info, json_data);
-    MessageManager *msghandle = MessageManager::getInstance();
-    std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, VIS_PIC_BRIGHTNESS_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
-    if(ret != VIS_PIC_BRIGHTNESS_CODE)
-    {
-        ERROR("get reply message is err \n");
-        pthread_mutex_unlock(&m_Lock);
-        return -1;
-    }
-    DataConfigResponse out_response;
-    JsonParseData<DataConfigResponse>(out_response, out_msg->recv_data);
-    if(std::stoi(out_response.status.value()) != 0)
-    {
-        ERROR(" reply message is status = %s \n", out_response.status->c_str());
-        pthread_mutex_unlock(&m_Lock);
-        return -1;
-    }
+    data[7] = value & 0xff;
+
+    m_serial->UartWrite(data, 9);
+
     m_brightness = value;
     m_cconfig->SetValue(VIS_LIGHT_SECTION_CFG,"brightness",(long)value);
     
@@ -126,34 +114,18 @@ int CVisLightImage::SetContrast(int value)
         return -1;
     }
     int ret = 0;
+    unsigned char data[9] = {0x81, 0x01, 0x09, 0x8D, 0x00, 0x00, 0x00, 0x00, 0xFF};
     pthread_mutex_lock(&m_Lock);
     if(value == m_contrast)
     {
         pthread_mutex_unlock(&m_Lock);
         return 0;
     }
-    JsonConfigExt info(_Code(VIS_PIC_CONTRAST_CODE, "vis_pic_contrast"), "set");
-    info.data = DataConfigBody();
-    info.data->value = std::to_string(value);  
-    std::string json_data;
-    JsonPackData<JsonConfigExt>(info, json_data);
-    MessageManager *msghandle = MessageManager::getInstance();
-    std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, VIS_PIC_CONTRAST_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
-    if(ret != VIS_PIC_CONTRAST_CODE)
-    {
-        ERROR("get reply message is err \n");
-        pthread_mutex_unlock(&m_Lock);
-        return -1;
-    }
-    DataConfigResponse out_response;
-    JsonParseData<DataConfigResponse>(out_response, out_msg->recv_data);
-    if(std::stoi(out_response.status.value()) != 0)
-    {
-        ERROR(" reply message is status = %s \n", out_response.status->c_str());
-        pthread_mutex_unlock(&m_Lock);
-        return -1;
-    }
+    
+    data[7] = value & 0xff;
+
+    m_serial->UartWrite(data, 9);
+
     m_contrast = value;
     m_cconfig->SetValue(VIS_LIGHT_SECTION_CFG,"contrast",(long)m_contrast);
     
@@ -252,29 +224,10 @@ int CVisLightImage::SetSaturation(int value)
         pthread_mutex_unlock(&m_Lock);
         return 0;
     }
+    unsigned char data[6] = {0x81, 0x01, 0x09, 0x16, 0x00, 0xFF};
+
+    data[4] = value & 0xff;
    
-    JsonConfigExt info(_Code(VIS_PIC_STAURATION_CODE, "vis_pic_saturation"), "set");
-    info.data = DataConfigBody();
-    info.data->value = std::to_string(value); 
-    std::string json_data;
-    JsonPackData<JsonConfigExt>(info, json_data);
-    MessageManager *msghandle = MessageManager::getInstance();
-    std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, VIS_PIC_STAURATION_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
-    if(ret != VIS_PIC_STAURATION_CODE)
-    {
-        ERROR("get reply message is err \n");
-        pthread_mutex_unlock(&m_Lock);
-        return -1;
-    }
-    DataConfigResponse out_response;
-    JsonParseData<DataConfigResponse>(out_response, out_msg->recv_data);
-    if(std::stoi(out_response.status.value()) != 0)
-    {
-        ERROR(" reply message is status = %s \n", out_response.status->c_str());
-        pthread_mutex_unlock(&m_Lock);
-        return -1;
-    }
     m_saturation = value;
     m_cconfig->SetValue(VIS_LIGHT_SECTION_CFG,"saturation",(long)m_saturation);
     pthread_mutex_unlock(&m_Lock);
@@ -306,28 +259,12 @@ int CVisLightImage::SetSharpness(int value)
         pthread_mutex_unlock(&m_Lock);
         return 0;
     }
-    JsonConfigExt info(_Code(VIS_PIC_SHARPNESS_CODE, "vis_pic_sharpness"), "set");
-    info.data = DataConfigBody();
-    info.data->value = std::to_string(value); 
-    std::string json_data;
-    JsonPackData<JsonConfigExt>(info, json_data);
-    MessageManager *msghandle = MessageManager::getInstance();
-    std::shared_ptr<receMessage> out_msg;
-    ret = msghandle->MSG_SendMessage(0, VIS_PIC_SHARPNESS_CODE, json_data, 1, MQTTMSGTIMEOUT, out_msg);
-    if(ret != VIS_PIC_SHARPNESS_CODE)
-    {
-        ERROR("get reply message is err \n");
-        pthread_mutex_unlock(&m_Lock);
-        return -1;
-    }
-    DataConfigResponse out_response;
-    JsonParseData<DataConfigResponse>(out_response, out_msg->recv_data);
-    if(std::stoi(out_response.status.value()) != 0)
-    {
-        ERROR(" reply message is status = %s \n", out_response.status->c_str());
-        pthread_mutex_unlock(&m_Lock);
-        return -1;
-    }
+    unsigned char data[9] = {0x81, 0x01, 0x04, 0x42, 0x00, 0x00, 0x00, 0x00, 0xFF};
+
+    data[7] = value & 0xff;
+
+    m_serial->UartWrite(data, 9);
+
     m_sharpness = value;
     m_cconfig->SetValue(VIS_LIGHT_SECTION_CFG,"sharpness",(long)m_sharpness);
      pthread_mutex_unlock(&m_Lock);

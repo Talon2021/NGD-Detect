@@ -27,7 +27,7 @@
 #define PTZ_VIEWING_ANGLE   (5.8)
 #define PTZ_STEP_ANGLE      (10.0)
 #define PTZ_SLEEP_MS        (50)         
-#define DEV_TTYSERIAL   "/dev/ttyS4"
+#define DEV_TTYSERIAL   "/dev/ttyS7"
 
 #define PTZ_CTRLINFO    "ptz_ctrlinfo"
 
@@ -157,7 +157,11 @@ int CPtzCtrl::Init()
     m_ptzstep = PTZ_STEP_ANGLE;
     pthread_mutex_init(&m_lock,NULL);
     m_serial = new Cserial(DEV_TTYSERIAL, 115200);
-    m_serial->init();
+    if(m_serial->init() != 0)
+    {
+        return -1;
+    }
+    
     //PtzZeroInit();
     m_init = 1;
     CConfig *pcfg = CConfig::GetInstance();

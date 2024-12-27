@@ -105,10 +105,11 @@ void NetworkOperationRegister(NetworkOperationType type, void* cb);
 
 /**
  * @brief 网络初始化
+ * @param [in] log_path 日志路径，为NULL时默认存储/data/logs
  * @return 成功返回 0
  *         失败返回 其他值
 */
-int NetworkInit(char* addr);
+int NetworkInit(const char* log_path);
 
 /**
  * @brief 网络反初始化

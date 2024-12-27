@@ -1,7 +1,9 @@
 #!/bin/bash
 
 # 创建 algo_detect 文件夹
-mkdir -p algo_detect/bin algo_detect/include algo_detect/lib algo_detect/model
+if [ ! -d "algo_detect"];  then
+    mkdir -p algo_detect/bin algo_detect/include algo_detect/lib algo_detect/model
+fi
 
 cp -r middleware/inc/* algo_detect/include/
 

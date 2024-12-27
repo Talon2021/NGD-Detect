@@ -307,16 +307,8 @@ int mpu_init()
 	}
     NET_Init();
 
-    while(1)
-    {
-        if(!get_localip("eth0", addr))
-        {
-            break;
-        }
-        sleep(1);
-    }
 #ifdef HTTP_UPLOAD
-	ret = NetworkInit(addr);
+	ret = NetworkInit("/root/app/ai/logs");
 	if(ret != 0)
 	{
 		ERROR("NET WORK init is fail");

@@ -141,7 +141,7 @@ int main(void)
         return -1;
     }
     IR_Sys_RegisterResultCAllBack(AlgoResultCallback);
-
+#if 1
     result_cache.result.gas_mask = (uint8_t *)malloc(SRC_PIC_WIDTH * SRC_PIC_HEIGHT);
 
     int size = SRC_PIC_WIDTH * SRC_PIC_HEIGHT * 3 / 2 ;
@@ -151,6 +151,7 @@ int main(void)
     unsigned char *frame_buff = (unsigned char *)calloc(1, size);
 
     unsigned char *rgb_frame = (unsigned char *)calloc(1, out_size);
+
     FILE *file_input = fopen("input_1024.yuv", "r");
     if(file_input == NULL)
     {
@@ -187,6 +188,7 @@ int main(void)
     fclose(file_input);
     fclose(out);
     printf("read file is end \n");
+#endif
     while (1)
     {
         sleep(10);

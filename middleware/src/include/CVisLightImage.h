@@ -2,6 +2,7 @@
 #define __CVISLIGHT_IMAGE_H
 #include "CConfig.h"
 #include <pthread.h>
+#include "Cserial.h"
 
 
 class CVisLightImage
@@ -40,6 +41,8 @@ private:
     int m_sharpness;
     pthread_mutex_t m_Lock;
     CConfig *m_cconfig;
+
+    Cserial *m_serial;
 };
 
 

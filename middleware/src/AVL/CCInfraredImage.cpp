@@ -90,9 +90,14 @@ int CCInfraredImage::Init()
     {
         return -1;
     }
-    m_serial = new Cserial(G_UART_DEV5, 115200);
-    m_serial->init();
+    int ret = 0;
     pthread_mutex_init(&m_Lock, NULL);
+    m_serial = new Cserial(G_UART_DEV5, 115200);
+    ret = m_serial->init();
+    if(ret != 0)
+    {
+        return -1;
+    }
     m_cconfig = CConfig::GetInstance();;
     m_init = 1;
 

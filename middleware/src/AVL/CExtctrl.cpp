@@ -49,7 +49,7 @@ int CExtctrl::Init()
     pthread_mutex_init(&m_Lock, NULL);
     m_init = 1;
 
-    LoadParam();
+    //LoadParam();
     return 0;
 }
 

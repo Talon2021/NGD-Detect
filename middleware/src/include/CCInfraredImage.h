@@ -3,7 +3,7 @@
 #include "Cserial.h"
 #include "common.h"
 #include "CConfig.h"
-#define G_UART_DEV5 "/dev/ttyS5"
+#define G_UART_DEV5 "/dev/ttyS7"
 #define READ_SERIAL_MS  100
 class CCInfraredImage
 {

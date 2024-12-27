@@ -397,7 +397,19 @@ static int MPU_CIU_SET_VIS_FocuConfig(NetworkConfigCameraVisFocusings *pcfg)
         return -1;
     }
     int ret = 0;
-    ret = AVL_Vis_SetFocuMode(pcfg->deal_num, pcfg->focusing[pcfg->deal_num].focusing_mode);
+    int i = 0;
+    if(pcfg->deal_num == -1)
+    {
+        for(i = 0; i < pcfg->num; i++)
+        {
+            ret = AVL_Vis_SetFocuMode(i, pcfg->focusing[i].focusing_mode);
+        }
+    }
+    else
+    {
+        ret = AVL_Vis_SetFocuMode(pcfg->deal_num, pcfg->focusing[pcfg->deal_num].focusing_mode);
+    }
+   
     return ret;
 }
 
@@ -409,7 +421,19 @@ static int MPU_CIU_GET_VIS_FocuConfig(NetworkConfigCameraVisFocusings *pcfg)
         return -1;
     }
     int ret = 0;
-    ret = AVL_Vis_GetFocuMode(pcfg->deal_num, &(pcfg->focusing[pcfg->deal_num].focusing_mode));
+    int i = 0;
+    pcfg->num = MAX_CH_NUM;
+    if(pcfg->deal_num == -1)
+    {
+        for(i = 0; i < pcfg->num; i++)
+        {
+            ret = AVL_Vis_GetFocuMode(i, &(pcfg->focusing[i].focusing_mode));
+        }
+    }
+    else
+    {
+        ret = AVL_Vis_GetFocuMode(pcfg->deal_num, &(pcfg->focusing[pcfg->deal_num].focusing_mode));
+    }
     return ret;
 }
 
@@ -568,6 +592,12 @@ static int MPU_CIU_GET_TcpIpConfig(NetworkConfigNetworkTcpIp *pcfg)
         return -1;
     }
     int ret = 0;
+    pcfg->ipv4_enable = 1;
+    pcfg->dhcp_enable = MPU_NET_GetDhcpEnable();
+    MPU_NET_GetIPAddress(pcfg->ipv4_addr);
+    MPU_NET_GetGateway(pcfg->ipv4_gateway);
+    MPU_NET_GetSubnetMask(pcfg->ipv4_mask);
+    MPU_NET_GetDns(pcfg->dns, pcfg->alt_dns);
 
     return ret;
 }

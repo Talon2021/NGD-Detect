@@ -316,6 +316,7 @@ int CChannelManager::InfraredImage_SetImageBrightness(int nch, int value)
 
 int CChannelManager::InfraredImage_GetImageBrightness(int nch, int *value)
 {
+    DEBUG("====================================get brighnetss\n");
     if(!m_bInit)
     {
         ERROR("CChannelManager not inited\n");
