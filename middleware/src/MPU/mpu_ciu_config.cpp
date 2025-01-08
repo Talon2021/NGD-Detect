@@ -340,7 +340,7 @@ static int MPU_CIU_GET_VIS_ImageConfig(NetworkConfigCameraVisImageInfos *pcfg)
     return ret;
 }
 
-static int MPU_CIU_SET_VIS_EleZoomConfig(NetworkConfigCameraVisImageZooms *pcfg)    //使用红外接口
+static int MPU_CIU_SET_VIS_EleZoomConfig(NetworkConfigCameraVisImageZooms *pcfg)    
 {
      if(pcfg == NULL)
     {
@@ -354,12 +354,12 @@ static int MPU_CIU_SET_VIS_EleZoomConfig(NetworkConfigCameraVisImageZooms *pcfg)
     {
         for(i = 0; i < pcfg->num; i++)
         {
-            ret = AVL_InfraredImage_SetInfraredImageElectronicZoom(i, pcfg->image_zoom[i].electronic);
+            ret = AVL_Vis_SetDigitalZoom(i, pcfg->image_zoom[i].electronic);
         }
     }
     else
     {
-        ret = AVL_InfraredImage_SetInfraredImageElectronicZoom(pcfg->deal_num, pcfg->image_zoom[i].electronic);
+        ret = AVL_Vis_SetDigitalZoom(pcfg->deal_num, pcfg->image_zoom[i].electronic);
     }
     return ret;
 }
@@ -684,6 +684,7 @@ static int MPU_CIU_SET_OtherInfoConfig(NetworkConfigOtherInfo *pcfg)
     int ret = 0;
     ret = AVL_Ext_SetAutoLightEnable(0, pcfg->fill_light);
     ret = AVL_Ext_SetWipersEnable(0, pcfg->fan);
+    ret = AVL_Ext_SetTemperatureMode(0, pcfg->heat);
     return ret;
 }
 
@@ -697,6 +698,7 @@ static int MPU_CIU_GET_OtherInfoConfig(NetworkConfigOtherInfo *pcfg)
     int ret = 0;
     ret = AVL_Ext_GetAutoLightEnable(0, &pcfg->fill_light);
     ret = AVL_Ext_GetWipersEnable(0, &pcfg->fan);
+    ret = AVL_Ext_GetTemperaTureMode(0, &pcfg->heat);
     return ret;
 }
 

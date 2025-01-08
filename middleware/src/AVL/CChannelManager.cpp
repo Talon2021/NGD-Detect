@@ -729,6 +729,21 @@ int CChannelManager::InfraredImage_GetImagesaturation(int nch, int *value)
     return m_infraredImage[nch]->GetImagesaturation(value);
 }
 
+int CChannelManager::InfraredImage_RegisterIrCtrlCb(int nch, IRControlFunctions cb)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_infraredImage[nch]->RegisterIrCtrlCb(cb);
+}
+
 /*======================================================================================================================================*/
 
 
@@ -1943,6 +1958,36 @@ int CChannelManager::Ext_GetDevVersionInfo(int nch, DevInfo_st *info)
     return m_ExtCtrl[nch]->GetDevVersionInfo(info);
 }
 
+int CChannelManager::Ext_SetTemperatureMode(int nch, int mode)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_ExtCtrl[nch]->SetTemperatureMode(mode);
+}
+
+int CChannelManager::Ext_GetTemperaTureMode(int nch, int *mode)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_ExtCtrl[nch]->GetTemperaTureMode(mode);
+}
+
 int CChannelManager::Vis_SetBrightness(int nch, int value)
 {
     if(!m_bInit)
@@ -2091,4 +2136,64 @@ int CChannelManager::Vis_GetSharpness(int nch, int *value)
         return -1;
     }
     return m_VisLightImage[nch]->GetSharpness(value);
+}
+
+int CChannelManager::Vis_SetDigitalZoom(int nch, float value)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_VisLightImage[nch]->SetDigitalZoom(value);
+}
+
+int CChannelManager::Vis_GetDigitalZoom(int nch, float *value)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_VisLightImage[nch]->GetDigitalZoom(value);
+}
+
+int CChannelManager::Vis_RegisterVisCtrlCb(int nch, VisControlFunctions cb)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_VisLightImage[nch]->RegisterVisCtrlCb(cb);
+}
+
+int CChannelManager::Vis_SetAutoFocuData(int nch, int mode)
+{
+    if(!m_bInit)
+    {
+        ERROR("CChannelManager not inited\n");
+        return -1;
+    }
+    if(nch < 0 || nch >= m_iEncChannelCnt)
+    {
+        ERROR("CChannelManager channel_no err channel = %d\n",nch);
+        return -1;
+    }
+    return m_VisLightImage[nch]->SetAutoFocuData(mode);
 }

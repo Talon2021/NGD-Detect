@@ -147,6 +147,8 @@ public:
 
     int InfraredImage_GetImagesaturation(int nch, int *value);
 
+    int InfraredImage_RegisterIrCtrlCb(int nch, IRControlFunctions cb);
+
     /*陀螺仪*/
     int Groy_Init(int nch);
 
@@ -311,6 +313,10 @@ public:
 
     int Ext_GetDevVersionInfo(int nch, DevInfo_st *info);
 
+    int Ext_SetTemperatureMode(int nch, int mode);
+
+    int Ext_GetTemperaTureMode(int nch, int *mode);
+
     int Vis_SetBrightness(int nch, int value);
 
     int Vis_GetBrightness(int nch, int *value);
@@ -330,6 +336,14 @@ public:
     int Vis_SetSharpness(int nch, int value);
     
     int Vis_GetSharpness(int nch, int *value);
+
+    int Vis_SetDigitalZoom(int nch, float value);
+
+    int Vis_GetDigitalZoom(int nch, float *value);
+
+    int Vis_RegisterVisCtrlCb(int nch, VisControlFunctions cb);
+
+    int Vis_SetAutoFocuData(int nch, int mode);
 };
 
 

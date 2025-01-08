@@ -148,25 +148,51 @@ typedef enum {
     eSpeechPlaying = 1, // 正在播放
 } E_SpeechPlayStatus;
 
+typedef struct 
+{
+    int enable;
+    int interval_time;
+    unsigned int  start_time;       //分钟
+    unsigned int  end_time;
+    int mode; //0 : 非跨天 1： 跨天          
+}AlarmEventCfg;
+
+typedef struct 
+{
+    int min_temperature;
+    int max_temperature;
+}TemperatureCfg;
+
 typedef int (*GasDetectResult_CALLBACK)(void* pDataBuf, int uiDataLen, void* userData);
+
+typedef int (*AlarmEvent_CALLBACK)(int type, void *data, void *userData);
 
 int JPSys_Init(int mode);
 
 int JPSys_DeInit();
 
-int JPSys_SetWiperEnable(int enbale);
+/*ch 1 2 */
+int JPSys_SetheatEnable(int ch, int enbale);
 
-int JPSys_SetheatEnable(int enbale);
+int JPSys_SetMcuPower(int enbale);
 
-int JPSys_SetLightEnable(int enbale);
+int JPSys_SetIrCameraPower(int enbale);
 
-int JPSys_SetLightMode(int mode);
+int JPSys_SetVisCameraPower(int enbale);
+
+/*1 发送 0 接收*/
+int JPSys_SetPtzUartSwitchPower(int enbale);
+/*1 发送 0 接收*/
+int JPSys_SetAlarmUartSwitchPower(int enbale);
 
 int JPSys_SetHeatMode(int mode);
 
 int JPSys_RegisterGasDetectResultCb(GasDetectResult_CALLBACK cb, void *userdata);
 
 int JPSys_PushStream(void *stream);
+
+int JPSys_SetAutoTemperaCfg(TemperatureCfg tem_cfg);
+
 
 #ifdef __cplusplus
 }

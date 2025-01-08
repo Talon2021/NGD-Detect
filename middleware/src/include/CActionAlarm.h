@@ -20,13 +20,14 @@ typedef enum
 
 typedef enum 
 {
-    ALARM_CROSS_LINE,
-	ALARM_AREA_INVASION,
-	ALARM_ABNORMAL_ACTION,
-	ALARM_FIRE_WARN,
-	ALARM_TEMP_WARN,
-	ALARM_VOL_WARN,
-	ALARM_AMPEER_WARN,
+    ALARM_TYPE_OVER_BOUNDARY,            // 越界  
+    ALARM_TYPE_AREA_INTRUDE,             // 区域入侵
+    ALARM_TYPE_ABNORMAL_ACTION,          // 异常行为
+    ALARM_TYPE_FIRE_POINT_DETECTION,     // 火点检测
+    ALARM_TYPE_TEMPERATURE_ABNORMAL,     // 温度异常
+    ALARM_TYPE_VOLTAGE_ABNORMAL,         // 电压异常
+    ALARM_TYPE_AMPERE_ABNORMAL,          // 电流异常
+    ALARM_TYPE_GAS_LEAKAGE,          // 气体泄漏
 }alarm_type;
 
 typedef struct _alarm_data_st

@@ -25,6 +25,7 @@ int CVisLightImage::LoadParam()
     int focu_mode;
     int saturation;
     int sharpness;
+    float digitalzoom;
 
     brightness = m_cconfig->GetValue(VIS_LIGHT_SECTION_CFG, "brightness", (long)5);
     SetBrightness(brightness);
@@ -41,7 +42,9 @@ int CVisLightImage::LoadParam()
     sharpness = m_cconfig->GetValue(VIS_LIGHT_SECTION_CFG, "sharpness", (long)5);
     SetSharpness(sharpness);
 
+    digitalzoom = m_cconfig->GetValue(VIS_LIGHT_SECTION_CFG,"electron_zoom",(float)1);
 
+    SetDigitalZoom(digitalzoom);
     return 0;
 }
 int CVisLightImage::Init()
@@ -55,7 +58,7 @@ int CVisLightImage::Init()
     }
     m_init = 1;
     
-    LoadParam();
+    //LoadParam();
    
     
     return 0;
@@ -160,6 +163,13 @@ int CVisLightImage::SetFocuMode(int mode)
         pthread_mutex_unlock(&m_Lock);
         return 0;
     }
+    if(m_CtrlFnxCb.Vis_SetAfocesMode == NULL)
+    {
+        ERROR("set pic Vis_SetAfocesMode cb is NULL");
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+#if 0
     if(m_focu_mode == 0)    //0 自动调焦
     {
         enable = 1;
@@ -191,6 +201,14 @@ int CVisLightImage::SetFocuMode(int mode)
         pthread_mutex_unlock(&m_Lock);
         return -1;
     }
+#endif
+    ret = m_CtrlFnxCb.Vis_SetAfocesMode(mode);
+    if(ret != 0)
+    {
+        ERROR("set Vis_SetAfocesMode is fail ret = %d \n", ret);
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
 
     m_focu_mode = mode;
     m_cconfig->SetValue(VIS_LIGHT_SECTION_CFG,"focu_mode",(long)m_focu_mode);
@@ -207,6 +225,32 @@ int CVisLightImage::GetFocuMode(int *mode)
     }
     pthread_mutex_lock(&m_Lock);
     *mode = m_focu_mode;
+    pthread_mutex_unlock(&m_Lock);
+    return 0;
+}
+
+int CVisLightImage::SetAutoFocuData(int mode)
+{
+    if(!m_init)
+    {
+        return -1;
+    }
+    int ret = 0;
+    if(m_CtrlFnxCb.Vis_SetAfocesStatus == NULL)
+    {
+        ERROR("set pic Vis_SetAfocesStatus cb is NULL");
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+
+    pthread_mutex_lock(&m_Lock);
+    ret = m_CtrlFnxCb.Vis_SetAfocesStatus(mode);
+    if(ret != 0)
+    {
+        ERROR("set Vis_SetAfocesStatus is fail ret = %d \n", ret);
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -281,5 +325,53 @@ int CVisLightImage::GetSharpness(int *value)
     *value = m_sharpness;
     pthread_mutex_unlock(&m_Lock);
 
+    return 0;
+}
+
+int CVisLightImage::SetDigitalZoom(float value)
+{
+    if(!m_init)
+    {
+        return -1;
+    }
+    int ret = 0;
+    pthread_mutex_lock(&m_Lock);
+    if(m_CtrlFnxCb.Vis_SetPicDigitalZoom == NULL)
+    {
+        ERROR("set pic Vis_SetPicDigitalZoom cb is NULL");
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+    ret = m_CtrlFnxCb.Vis_SetPicDigitalZoom(value);
+    if(ret != 0)
+    {
+        ERROR("set Vis_SetPicDigitalZoom is fail ret = %d \n", ret);
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+    m_cconfig->SetValue(VIS_LIGHT_SECTION_CFG,"electron_zoom",(float)value);
+    m_DigitalZoom = value;
+    pthread_mutex_unlock(&m_Lock);
+    return 0;
+}
+
+int CVisLightImage::GetDigitalZoom(float *value)
+{
+    if(!m_init)
+    {
+        return -1;
+    }
+    pthread_mutex_lock(&m_Lock);
+    *value = m_DigitalZoom;
+    pthread_mutex_unlock(&m_Lock);
+    return 0;
+}
+
+int CVisLightImage::RegisterVisCtrlCb(VisControlFunctions cb)
+{
+    pthread_mutex_lock(&m_Lock);
+    memcpy(&m_CtrlFnxCb, &cb, sizeof(VisControlFunctions));
+    pthread_mutex_unlock(&m_Lock);
+    LoadParam();
     return 0;
 }

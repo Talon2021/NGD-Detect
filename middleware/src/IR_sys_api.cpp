@@ -41,6 +41,21 @@ int IR_Sys_AlgoSendFrame(img_data *data)
 
 int IR_Sys_RegisterResultCAllBack(DetectResult_CALLBACK cb)
 {
-    AVL_Alg_RegisterGasResultCb(0, cb);
-    return 0;
+    int ret ;
+    ret = AVL_Alg_RegisterGasResultCb(0, cb);
+    return ret;
+}
+
+int IR_Sys_SetIrCtrlCb(IRControlFunctions ir_cb)
+{
+    int ret ;
+    ret = AVL_InfraredImage_RegisterIrCtrlCb(0, ir_cb);
+    return ret;
+}
+
+int IR_Sys_SetVisCtrlCb(VisControlFunctions vis_cb)
+{
+    int ret ;
+    ret = AVL_Vis_RegisterVisCtrlCb(0, vis_cb);
+    return ret;
 }

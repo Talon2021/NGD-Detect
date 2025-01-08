@@ -2,6 +2,7 @@
 #define __LGC_SYS_H__
 
 #include <pthread.h>
+#include "jpsdk.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -17,6 +18,8 @@ typedef struct{
     volatile int m_bExitTemperature;    
     int m_AutoTemperatureMode;              // 1手动 ， 2 自动加热
     pthread_mutex_t m_CheckTemperatureLock;
+    TemperatureCfg m_autoTemCtrlCfg;
+    int m_TemCtrlFlag;              //加热开关标志
 
 }SystemInfo_t;
 
@@ -48,7 +51,9 @@ int LGC_SYS_SetheatMode(int mode);
 
 int LGC_SYS_SetLightEnable(int enable);
 
-int LGC_SYS_SetheatEnable(int enable);
+int LGC_SYS_SetheatEnable(int ch, int enable);
+
+int LGC_SYS_SetTemCtrlCfg(TemperatureCfg cfg);
 
 
 #ifdef __cplusplus

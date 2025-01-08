@@ -98,6 +98,7 @@
         "ir_gasapi.h": "c",
         "ir_common.h": "c",
         "mpu_avl_api.h": "c",
-        "image_utils.h": "c"
+        "image_utils.h": "c",
+        "typeindex": "c"
     }
 }

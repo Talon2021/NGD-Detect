@@ -11,9 +11,13 @@
 typedef struct gpio_hal_handle
 {
     gpio_hal_info_t g_hal_info;
-    struct gpiod_line_request *wiper_request;
-    struct gpiod_line_request *heat_request;
-    struct gpiod_line_request *light_request;
+    struct gpiod_line_request *heat1_request;
+    struct gpiod_line_request *heat2_request;
+    struct gpiod_line_request *mcu_request;
+    struct gpiod_line_request *ir_request;
+    struct gpiod_line_request *vis_request;
+    struct gpiod_line_request *ptz_request;
+    struct gpiod_line_request *alarm_request;
 }gpio_hal_handle;
 
 gpio_hal_handle g_hal_handle = { 0 };
@@ -102,56 +106,103 @@ int load_gpio_param(gpio_hal_info_t *info)
     memcpy(&(g_hal_handle.g_hal_info), info, sizeof(gpio_hal_info_t));
     g_hal_handle.g_hal_info.valid = 1;
     pthread_mutex_unlock(&g_hal_info_mutex);
-    enum gpiod_line_direction dir = g_hal_handle.g_hal_info.wiper.dir == 1 ? GPIOD_LINE_DIRECTION_OUTPUT : GPIOD_LINE_DIRECTION_INPUT;
-    bool active = g_hal_handle.g_hal_info.wiper.active_low  != 1 ? false : true; 
-    ret = request_chip_gpio(g_hal_handle.g_hal_info.wiper.chip, &(g_hal_handle.g_hal_info.wiper.line), &dir, &active, 1, "wiper_pin", &(g_hal_handle.wiper_request));
+    enum gpiod_line_direction dir = g_hal_handle.g_hal_info.heat_1.dir == 1 ? GPIOD_LINE_DIRECTION_OUTPUT : GPIOD_LINE_DIRECTION_INPUT;
+    bool active = g_hal_handle.g_hal_info.heat_1.active_low  != 1 ? false : true; 
+    ret = request_chip_gpio(g_hal_handle.g_hal_info.heat_1.chip, &(g_hal_handle.g_hal_info.heat_1.line), &dir, &active, 1, "heat1_pin", &(g_hal_handle.heat1_request));
     if(ret != 0)
     {
-        fprintf(stderr, "load_gpio_param  wiper_pin fail \n");
+        fprintf(stderr, "load_gpio_param  heat1_pin fail \n");
         return -1;
     }
-    dir = g_hal_handle.g_hal_info.heat.dir == 1 ? GPIOD_LINE_DIRECTION_OUTPUT : GPIOD_LINE_DIRECTION_INPUT;
-    active = g_hal_handle.g_hal_info.heat.active_low  != 1 ? false : true; 
-    ret = request_chip_gpio(g_hal_handle.g_hal_info.heat.chip, &(g_hal_handle.g_hal_info.heat.line), &dir, &active, 1, "heat_pin", &(g_hal_handle.heat_request));
+    dir = g_hal_handle.g_hal_info.heat_2.dir == 1 ? GPIOD_LINE_DIRECTION_OUTPUT : GPIOD_LINE_DIRECTION_INPUT;
+    active = g_hal_handle.g_hal_info.heat_2.active_low  != 1 ? false : true; 
+    ret = request_chip_gpio(g_hal_handle.g_hal_info.heat_2.chip, &(g_hal_handle.g_hal_info.heat_2.line), &dir, &active, 1, "heat2_pin", &(g_hal_handle.heat2_request));
     if(ret != 0)
     {
-        fprintf(stderr, "load_gpio_param  heat fail \n");
+        fprintf(stderr, "load_gpio_param  heat2_pin fail \n");
         return -1;
     }
-    dir = g_hal_handle.g_hal_info.light.dir == 1 ? GPIOD_LINE_DIRECTION_OUTPUT : GPIOD_LINE_DIRECTION_INPUT;
-    active = g_hal_handle.g_hal_info.light.active_low  != 1 ? false : true; 
-    ret = request_chip_gpio(g_hal_handle.g_hal_info.light.chip, &(g_hal_handle.g_hal_info.light.line), &dir, &active, 1, "light_pin", &(g_hal_handle.light_request));
+    dir = g_hal_handle.g_hal_info.mcu_power.dir == 1 ? GPIOD_LINE_DIRECTION_OUTPUT : GPIOD_LINE_DIRECTION_INPUT;
+    active = g_hal_handle.g_hal_info.mcu_power.active_low  != 1 ? false : true; 
+    ret = request_chip_gpio(g_hal_handle.g_hal_info.mcu_power.chip, &(g_hal_handle.g_hal_info.mcu_power.line), &dir, &active, 1, "mcu_power_pin", &(g_hal_handle.mcu_request));
     if(ret != 0)
     {
-        fprintf(stderr, "load_gpio_param  light fail \n");
+        fprintf(stderr, "load_gpio_param  mcu_power_pin fail \n");
+        return -1;
+    }
+    dir = g_hal_handle.g_hal_info.ir_power.dir == 1 ? GPIOD_LINE_DIRECTION_OUTPUT : GPIOD_LINE_DIRECTION_INPUT;
+    active = g_hal_handle.g_hal_info.ir_power.active_low  != 1 ? false : true; 
+    ret = request_chip_gpio(g_hal_handle.g_hal_info.ir_power.chip, &(g_hal_handle.g_hal_info.ir_power.line), &dir, &active, 1, "ir_power_pin", &(g_hal_handle.ir_request));
+    if(ret != 0)
+    {
+        fprintf(stderr, "load_gpio_param  ir_power_pin fail \n");
+        return -1;
+    }
+    dir = g_hal_handle.g_hal_info.vis_power.dir == 1 ? GPIOD_LINE_DIRECTION_OUTPUT : GPIOD_LINE_DIRECTION_INPUT;
+    active = g_hal_handle.g_hal_info.vis_power.active_low  != 1 ? false : true; 
+    ret = request_chip_gpio(g_hal_handle.g_hal_info.vis_power.chip, &(g_hal_handle.g_hal_info.vis_power.line), &dir, &active, 1, "vis_power_pin", &(g_hal_handle.vis_request));
+    if(ret != 0)
+    {
+        fprintf(stderr, "load_gpio_param  vis_power_pin fail \n");
+        return -1;
+    }
+    dir = g_hal_handle.g_hal_info.ptz_uart.dir == 1 ? GPIOD_LINE_DIRECTION_OUTPUT : GPIOD_LINE_DIRECTION_INPUT;
+    active = g_hal_handle.g_hal_info.ptz_uart.active_low  != 1 ? false : true; 
+    ret = request_chip_gpio(g_hal_handle.g_hal_info.ptz_uart.chip, &(g_hal_handle.g_hal_info.ptz_uart.line), &dir, &active, 1, "ptz_uart_pin", &(g_hal_handle.ptz_request));
+    if(ret != 0)
+    {
+        fprintf(stderr, "load_gpio_param  ptz_uart_pin fail \n");
+        return -1;
+    }
+    dir = g_hal_handle.g_hal_info.alarm_uart.dir == 1 ? GPIOD_LINE_DIRECTION_OUTPUT : GPIOD_LINE_DIRECTION_INPUT;
+    active = g_hal_handle.g_hal_info.alarm_uart.active_low  != 1 ? false : true; 
+    ret = request_chip_gpio(g_hal_handle.g_hal_info.alarm_uart.chip, &(g_hal_handle.g_hal_info.alarm_uart.line), &dir, &active, 1, "alarm_uart_pin", &(g_hal_handle.alarm_request));
+    if(ret != 0)
+    {
+        fprintf(stderr, "load_gpio_param  alarm_uart_pin fail \n");
         return -1;
     }
     return 0;
 }
 
-int wiper_pin_status_get()
-{
-    int ret = 0;
-    enum gpiod_line_value value;
-    value = gpiod_line_request_get_value(g_hal_handle.wiper_request, g_hal_handle.g_hal_info.wiper.line);
-    if (value == GPIOD_LINE_VALUE_ACTIVE)
-		ret = 1;
-	else if (value == GPIOD_LINE_VALUE_INACTIVE) {
-		ret = 0;
-	} else {
-		fprintf(stderr, "error reading value: %s\n",
-			strerror(errno));
-		ret = -1;
-	}
-    return ret;
-}
 
-int wiper_pin_status_set(int value)
+
+int heat_pin_status_set(int ch, int value)
 {
     int ret = 0;
     enum gpiod_line_value values;
     values = value == 1 ? GPIOD_LINE_VALUE_ACTIVE : GPIOD_LINE_VALUE_INACTIVE;
-    ret = gpiod_line_request_set_values_subset(g_hal_handle.wiper_request, 1, (const unsigned int *)(&(g_hal_handle.g_hal_info.wiper.line)), &values);
+    if(ch == 1)
+    {
+        ret = gpiod_line_request_set_values_subset(g_hal_handle.heat1_request, 1, (const unsigned int *)(&(g_hal_handle.g_hal_info.heat_1.line)), &values);
+        if(ret != 0)
+        {
+            fprintf(stderr, "set reset pin gpio is err \n");
+        }
+    }
+    else if (ch == 2)
+    {
+        ret = gpiod_line_request_set_values_subset(g_hal_handle.heat2_request, 1, (const unsigned int *)(&(g_hal_handle.g_hal_info.heat_2.line)), &values);
+        if(ret != 0)
+        {
+            fprintf(stderr, "set reset pin gpio is err \n");
+        }
+    }
+    else
+    {
+        fprintf(stderr,"no sopport ch = %d \n", ch);
+        ret = -1;
+    }
+    
+    return ret;
+}
+
+int mcu_pin_power_set(int value)
+{
+    int ret = 0;
+    enum gpiod_line_value values;
+    values = value == 1 ? GPIOD_LINE_VALUE_ACTIVE : GPIOD_LINE_VALUE_INACTIVE;
+    ret = gpiod_line_request_set_values_subset(g_hal_handle.mcu_request, 1, (const unsigned int *)(&(g_hal_handle.g_hal_info.mcu_power.line)), &values);
     if(ret != 0)
     {
         fprintf(stderr, "set reset pin gpio is err \n");
@@ -159,12 +210,12 @@ int wiper_pin_status_set(int value)
     return ret;
 }
 
-int heat_pin_status_set(int value)
+int ir_pin_power_set(int value)
 {
     int ret = 0;
     enum gpiod_line_value values;
     values = value == 1 ? GPIOD_LINE_VALUE_ACTIVE : GPIOD_LINE_VALUE_INACTIVE;
-    ret = gpiod_line_request_set_values_subset(g_hal_handle.heat_request, 1, (const unsigned int *)(&(g_hal_handle.g_hal_info.heat.line)), &values);
+    ret = gpiod_line_request_set_values_subset(g_hal_handle.ir_request, 1, (const unsigned int *)(&(g_hal_handle.g_hal_info.ir_power.line)), &values);
     if(ret != 0)
     {
         fprintf(stderr, "set reset pin gpio is err \n");
@@ -172,12 +223,38 @@ int heat_pin_status_set(int value)
     return ret;
 }
 
-int light_pin_status_set(int value)
+int vis_pin_power_set(int value)
 {
     int ret = 0;
     enum gpiod_line_value values;
     values = value == 1 ? GPIOD_LINE_VALUE_ACTIVE : GPIOD_LINE_VALUE_INACTIVE;
-    ret = gpiod_line_request_set_values_subset(g_hal_handle.light_request, 1, (const unsigned int *)(&(g_hal_handle.g_hal_info.light.line)), &values);
+    ret = gpiod_line_request_set_values_subset(g_hal_handle.vis_request, 1, (const unsigned int *)(&(g_hal_handle.g_hal_info.vis_power.line)), &values);
+    if(ret != 0)
+    {
+        fprintf(stderr, "set reset pin gpio is err \n");
+    }
+    return ret;
+}
+
+int ptz_pin_power_set(int value)
+{
+    int ret = 0;
+    enum gpiod_line_value values;
+    values = value == 1 ? GPIOD_LINE_VALUE_ACTIVE : GPIOD_LINE_VALUE_INACTIVE;
+    ret = gpiod_line_request_set_values_subset(g_hal_handle.ptz_request, 1, (const unsigned int *)(&(g_hal_handle.g_hal_info.ptz_uart.line)), &values);
+    if(ret != 0)
+    {
+        fprintf(stderr, "set reset pin gpio is err \n");
+    }
+    return ret;
+}
+
+int alarm_pin_power_set(int value)
+{
+    int ret = 0;
+    enum gpiod_line_value values;
+    values = value == 1 ? GPIOD_LINE_VALUE_ACTIVE : GPIOD_LINE_VALUE_INACTIVE;
+    ret = gpiod_line_request_set_values_subset(g_hal_handle.alarm_request, 1, (const unsigned int *)(&(g_hal_handle.g_hal_info.alarm_uart.line)), &values);
     if(ret != 0)
     {
         fprintf(stderr, "set reset pin gpio is err \n");

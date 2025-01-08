@@ -3,7 +3,7 @@
 
 #include "CConfig.h"
 #include <pthread.h>
-
+#include "jpsdk.h"
 typedef struct DevInfo_st
 {
     char sort_version[64];
@@ -29,6 +29,8 @@ private:
 
     void *m_handle;
     int m_ch;
+    TemperatureCfg m_TemCfg;
+    int m_TemperMode;
     int LoadParam();
 public:
     CExtctrl(void *handle, int ch);
@@ -50,6 +52,12 @@ public:
     int CtrlDevClear();
 
     int GetDevVersionInfo(DevInfo_st *info);
+
+    int SetTemCtrlCfg(TemperatureCfg TemCfg);
+    int GetTemCtrlCfg(TemperatureCfg *TemCfg);
+
+    int SetTemperatureMode(int mode);
+    int GetTemperaTureMode(int *mode);
 };
 
 

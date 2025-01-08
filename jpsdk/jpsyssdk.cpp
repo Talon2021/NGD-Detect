@@ -22,17 +22,45 @@ int JPSys_DeInit()
     return 0;
 }
 
-int JPSys_SetWiperEnable(int enbale)
+int JPSys_SetheatEnable(int ch, int enbale)
 {
-    int ret = 0;
-    ret = wiper_pin_status_set(enbale);
+    int ret; 
+    ret = LGC_SYS_SetheatEnable(ch, enbale);
     return ret;
 }
 
-int JPSys_SetheatEnable(int enbale)
+int JPSys_SetMcuPower(int enbale)
 {
-    int ret = 0;
-    ret = LGC_SYS_SetheatEnable(enbale);
+    int ret; 
+    ret = mcu_pin_power_set(enbale);
+    return ret;
+}
+
+int JPSys_SetIrCameraPower(int enbale)
+{
+    int ret; 
+    ret = ir_pin_power_set(enbale);
+    return ret;
+}
+
+int JPSys_SetVisCameraPower(int enbale)
+{
+   int ret; 
+    ret = vis_pin_power_set(enbale);
+    return ret;
+}
+
+int JPSys_SetPtzUartSwitchPower(int enbale)
+{
+    int ret; 
+    ret = ptz_pin_power_set(enbale);
+    return ret;
+}
+
+int JPSys_SetAlarmUartSwitchPower(int enbale)
+{
+    int ret; 
+    ret = alarm_pin_power_set(enbale);
     return ret;
 }
 
@@ -72,3 +100,9 @@ int JPSys_PushStream(void *stream)
 
 }
 
+int JPSys_SetAutoTemperaCfg(TemperatureCfg tem_cfg)
+{
+    int ret = 0;
+    ret = LGC_SYS_SetTemCtrlCfg(tem_cfg);
+    return ret;
+}

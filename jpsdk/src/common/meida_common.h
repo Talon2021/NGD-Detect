@@ -468,4 +468,10 @@ void HY_RES_SDK_init();
 int Comm_CreateThread(ThreadInfo_t* pThInfo, int Pri, void* (*start_routine)(void*));
 
 int Comm_DestroyThread(ThreadInfo_t* pThInfo);
+
+int get_bit(int *data, int index);
+
+void set_bit(int *data, int index, bool ch);
+
+
 #endif

@@ -467,13 +467,19 @@ typedef struct {
 }NetworkConfigDisplayScreenRedDotInfo;
 
 typedef enum {
+	NETWORK_CONFIG_HEAT_OFF,	// 关
+	NETWORK_CONFIG_HEAT_ON,		// 开
+	NETWORK_CONFIG_HEAT_AUTO,	// 自动
+}NetworkConfigHeatCtrl;
+
+typedef enum {
 	NETWORK_CONFIG_FILL_LIGHT_OFF,		// 关
 	NETWORK_CONFIG_FILL_LIGHT_ON,		// 开
 	NETWORK_CONFIG_FILL_LIGHT_AUTO,	// 自动
 }NetworkConfigFillLightCtrl;
 
 typedef struct {
-	int heat;			// 加热
+	int heat;			// 加热, NetworkConfigHeatCtrl
 	int fan;			// 风扇
 	int wipers;			// 雨刷
 	int fill_light;		// 补光灯, enum NetworkConfigFillLightCtrl
@@ -578,6 +584,7 @@ typedef enum {
     NETWORK_ALARM_TYPE_TEMPERATURE_ABNORMAL,     // 温度异常
     NETWORK_ALARM_TYPE_VOLTAGE_ABNORMAL,         // 电压异常
     NETWORK_ALARM_TYPE_AMPERE_ABNORMAL,          // 电流异常
+    NETWORK_ALARM_TYPE_GAS_LEAKAGE,				// 气体泄漏
 }NetworkAlarmType;
 
 typedef enum {

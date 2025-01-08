@@ -8,7 +8,8 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include "IR_GasApi.h"
-
+#include "jpsdk.h"
+#include <signal.h>
 typedef struct
 {
     int vaild;
@@ -128,20 +129,121 @@ static void yuv420_to_rgb(const uint8_t* yuv_data, uint8_t* rgb_data, int width,
         rgb_data[3 * i + 2] = y; // B
     }
 }
+void signal_handler(int signal) {
+  
+    JPSys_SetheatEnable(1, 0);
+    usleep(100 * 1000);
+    JPSys_SetheatEnable(2, 0);
+    usleep(100 * 1000);
+    printf("Exiting program after cleaning up...\n");
+    exit(0); 
 
+}
+
+/*
+typedef struct {
+    int (*IR_SetPicPreMode)(int mode);             //切换伪彩 IrPseudoColor
+    int (*IR_SetAfocesMode)(int mode);             //设置调焦模式  0: 自动调焦 1:电动调焦
+    int (*IR_SetAfocesStatus)(int status);         //调焦使能   自动模式：0：单次 1：连续； 电动模式，参数无意义   
+    int (*IR_SetPicDigitalZoom)(int value);        //红外数字变倍 *1 *2 *4 *8 
+    int (*IR_SetPicbrightness)(int value);         //红外亮度     0~10
+    int (*IR_SetPicContrast)(int value);           //红外对比度   0~10
+    int (*IR_SetGasEnhanced)(int enable);          //红外气体增强  0：关闭 1：打开 
+} IRControlFunctions;
+*/
+
+static int SetPicPreMode(int mode)
+{
+    fprintf(stderr, "SetPicPreMode mode = %d \n", mode);
+    return 0;
+}
+
+static int SetAfocesMode(int mode)
+{
+    fprintf(stderr, "SetAfocesMode mode = %d \n", mode);
+    return 0;
+}
+
+static int SetAfocesStatus(int status)
+{
+    fprintf(stderr, "SetAfocesStatus mode = %d \n", status);
+    return 0;
+}
+
+static int SetPicDigitalZoom(int value)
+{
+    fprintf(stderr, "SetPicDigitalZoom mode = %d \n", value);
+    return 0;
+}
+
+static int SetPicbrightness(int value)
+{
+    fprintf(stderr, "SetPicbrightness mode = %d \n", value);
+    return 0;
+}
+
+static int SetPicContrast(int value)
+{
+    fprintf(stderr, "SetPicContrast mode = %d \n", value);
+    return 0;
+}
+
+static int SetGasEnhanced(int enable)
+{
+    fprintf(stderr, "SetGasEnhanced mode = %d \n", enable);
+    return 0;
+}
+
+static int VisSetAfocesMode(int mode)
+{
+     fprintf(stderr, "VisSetAfocesMode mode = %d \n", mode);
+    return 0;
+}
+
+static int VisSetAfocesStatus(int status)
+{
+     fprintf(stderr, "VisSetAfocesMode mode = %d \n", status);
+    return 0;
+}
+
+static int VisSetPicDigitalZoom(int value)
+{
+     fprintf(stderr, "VisSetAfocesMode mode = %d \n", value);
+    return 0;
+}
 int main(void)
 {
     printf("start\n");
     int ret = 0;
     static uint64_t frame_id = 0;
+    signal(SIGINT, signal_handler);
     ret = IR_Sys_Init();
     if(ret < 0)
     {
         fprintf(stderr, "init sys is err \n");
         return -1;
     }
+    IRControlFunctions ir_cb;
+    ir_cb.IR_SetPicPreMode = SetPicPreMode;
+    ir_cb.IR_SetAfocesMode = SetAfocesMode;
+    ir_cb.IR_SetAfocesStatus = SetAfocesStatus;
+    ir_cb.IR_SetPicDigitalZoom = SetPicDigitalZoom;
+    ir_cb.IR_SetPicbrightness = SetPicbrightness;
+    ir_cb.IR_SetPicContrast = SetPicContrast;
+    ir_cb.IR_SetGasEnhanced = SetGasEnhanced;
+    ret = IR_Sys_SetIrCtrlCb(ir_cb);
+
+    VisControlFunctions vis_cb;
+    vis_cb.Vis_SetAfocesMode = VisSetAfocesMode;
+    vis_cb.Vis_SetAfocesStatus = VisSetAfocesStatus;
+    vis_cb.Vis_SetPicDigitalZoom = VisSetPicDigitalZoom;
+    
+    ret = IR_Sys_SetVisCtrlCb(vis_cb);
+
     IR_Sys_RegisterResultCAllBack(AlgoResultCallback);
-#if 1
+
+    
+#if 0
     result_cache.result.gas_mask = (uint8_t *)malloc(SRC_PIC_WIDTH * SRC_PIC_HEIGHT);
 
     int size = SRC_PIC_WIDTH * SRC_PIC_HEIGHT * 3 / 2 ;
@@ -189,8 +291,12 @@ int main(void)
     fclose(out);
     printf("read file is end \n");
 #endif
+    //JPSys_SetheatEnable(1,1);
+    //JPSys_SetheatEnable(2,1);
     while (1)
     {
+        // JPSys_SetheatEnable(1,1);
+        // JPSys_SetheatEnable(2,1);
         sleep(10);
     }
     

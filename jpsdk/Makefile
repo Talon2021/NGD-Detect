@@ -1,4 +1,4 @@
-
+include profile
 CROSS_COMPILE = aarch64-buildroot-linux-gnu-
 CC = $(CROSS_COMPILE)gcc
 CPP = $(CROSS_COMPILE)g++

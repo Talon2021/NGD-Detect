@@ -42,7 +42,21 @@ uint64_t GetSystemBootDuratingMSecond(void)
     clock_gettime(CLOCK_MONOTONIC, &curTime);
     return ((uint64_t)curTime.tv_sec * 1000 + curTime.tv_nsec / 1000000);
 }
+int get_bit(int *data, int index) {
+    return (*data & (0x01 << index)) != 0 ? 1 : 0;
+}
 
+void set_bit(int *data, int index, bool ch)
+{
+    if(ch)
+    {
+        *data |=(0x01<<(index));
+    }
+    else
+    {
+        *data &=~(0x01<<(index));
+    }
+}
 int mysystem(const char *cmdstring)
 {
 	pid_t pid;

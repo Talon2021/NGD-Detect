@@ -21,6 +21,13 @@ static int GetFraneOfshareMem(void *frame)
     return 0;
 }
 
+static unsigned long long get_ms()
+{
+    struct timeval time_v = { 0 };
+    gettimeofday(&time_v, NULL);
+    return (unsigned long long)time_v.tv_sec * 1000 + time_v.tv_usec / 1000;   
+}
+
 
 static CPlatformChannelContext g_LgcAlgoHandleContext = { 0 };
 
@@ -68,6 +75,51 @@ int write_data_to_file(const char *path, const char *data, unsigned int size)
     fclose(fp);
     return 0;
 }
+
+static int GasAlarmEvent(DETECT_TASK_RESULT *result)
+{
+    CPlatformChannelContext* ctx = &g_LgcAlgoHandleContext;
+    AlarmEventCfg *gasCfg = &ctx->m_GasAlarmCfg;
+    struct timeval now;
+    static unsigned long long last_time = 0;
+    gettimeofday(&now, NULL);
+    struct tm now_time;
+    time_t time_seconds = time(NULL);
+    localtime_r(&time_seconds, &now_time);
+    int cur_time_min = now_time.tm_hour * 60 + now_time.tm_min;
+    if(now.tv_sec - last_time < gasCfg->interval_time)
+    {
+        return -1;
+    }
+    if(gasCfg->enable == 0)
+    {
+        return 0;
+    }
+    if(gasCfg->mode == 0)
+    {
+        if(cur_time_min < gasCfg->start_time || cur_time_min > gasCfg->end_time)
+            return 0;
+    }
+    else
+    {
+        if(cur_time_min < gasCfg->start_time && cur_time_min > gasCfg->end_time)
+            return 0;
+    }
+    if(result->gas_list_size > 0)
+    {
+        if(ctx->m_AlarmEventCb)
+        {
+            alarm_data data;
+            data.vaild = 1;
+            data.type = ALARM_TYPE_GAS_LEAKAGE;
+            data.timeTamp = get_ms();
+            ctx->m_AlarmEventCb(ALARM_EVENT, &data, ctx->m_AlarmUserData);
+        }
+    }
+    return 0;
+
+}
+
 static int GasResultPacket(DETECT_TASK_RESULT *result)
 {
     int i = 0;
@@ -194,17 +246,17 @@ static void* GasResulRecvThread(void* lpParameter)
         if(detect_recv_task_result(ctx->m_Detect_handle, &result))
         {
             SDK_ERR("recv algo result is err\n");
-            usleep(20 * 1000);
+            usleep(10 * 1000);
             continue;
         }
         GasResultPacket(&result);
-
+        GasAlarmEvent(&result);
         if(result.user_data)
         {
             free(result.user_data);
         }
         detect_reuslt_delete((void *)(&result));
-        usleep(20 * 1000);
+        usleep(10 * 1000);
     }
     
     return NULL;
@@ -262,6 +314,36 @@ int LGC_ALGO_RegisterGasResultCb(GasDetectResult_CALLBACK callback, void *userda
     }
     ctx->m_GasResultCallBack = callback;
     ctx->m_GasResultUserData = userdata;
+    HY_Res_SDK_UnLock();
+    return 0;
+}
+
+int LGC_ALGO_SetGasEventCfg(AlarmEventCfg cfg)
+{
+    CPlatformChannelContext* ctx = &g_LgcAlgoHandleContext;
+
+    if (HY_Res_SDK_Lock() != 0)
+    {
+        SDK_ERR("SDK Not Init\n");
+        return ERR_SDK_NOINIT;
+    }
+    memcpy(&ctx->m_GasAlarmCfg, &cfg, sizeof(AlarmEventCfg));
+    HY_Res_SDK_UnLock();
+    return 0;
+}
+
+int LGC_ALGO_RegisterAlarmCb(AlarmEvent_CALLBACK callback, void *userdata)
+{
+    
+    CPlatformChannelContext* ctx = &g_LgcAlgoHandleContext;
+
+    if (HY_Res_SDK_Lock() != 0)
+    {
+        SDK_ERR("SDK Not Init\n");
+        return ERR_SDK_NOINIT;
+    }
+    ctx->m_AlarmEventCb = callback;
+    ctx->m_AlarmUserData = userdata;
     HY_Res_SDK_UnLock();
     return 0;
 }

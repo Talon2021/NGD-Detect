@@ -11,11 +11,14 @@
 #define EXT_WIPERSKEY       "WipersEnable"
 #define EXT_AUTOLIGHTKEY    "AutoLightEnable"
 #define EXT_CVBSKEY         "CvbsEnable"
-
+#define EXT_TEMPERATURE_MAX "MaxTemperature"
+#define EXT_TEMPERATURE_MIN "MINTemperature"
+#define EXT_TEMPERATURE_MODE "TemperatureMode"
 int CExtctrl::LoadParam()
 {
     int value;
-    int ret;
+    TemperatureCfg tem;
+    int mode;
     value = m_Cconfig->GetValue(EXT_SECITONCFG, EXT_WIPERSKEY, (long)0);
     SetWipersEnable(value);
 
@@ -24,6 +27,12 @@ int CExtctrl::LoadParam()
 
     value = m_Cconfig->GetValue(EXT_SECITONCFG, EXT_CVBSKEY, (long)0);
     SetCvbsEnable(value);
+    tem.min_temperature = m_Cconfig->GetValue(EXT_SECITONCFG, EXT_TEMPERATURE_MIN, (long)30);
+    tem.max_temperature = m_Cconfig->GetValue(EXT_SECITONCFG, EXT_TEMPERATURE_MAX, (long)40);
+    SetTemCtrlCfg(tem);
+
+    mode = m_Cconfig->GetValue(EXT_SECITONCFG, EXT_TEMPERATURE_MODE, (long)2);
+    SetTemperatureMode(mode);
     return 0;
 }
 
@@ -49,7 +58,7 @@ int CExtctrl::Init()
     pthread_mutex_init(&m_Lock, NULL);
     m_init = 1;
 
-    //LoadParam();
+    LoadParam();
     return 0;
 }
 
@@ -73,7 +82,7 @@ int CExtctrl::SetWipersEnable(int enable)
     int ret = 0;
     m_WipersEnable = enable;
 
-    JPSys_SetWiperEnable(enable);
+    //JPSys_SetWiperEnable(enable);
     
     CConfig *pcfg = CConfig::GetInstance();
     m_Cconfig->SetValue(EXT_SECITONCFG, EXT_WIPERSKEY, (long)enable);
@@ -106,18 +115,18 @@ int CExtctrl::SetAutoLightEnable(int enable)
     m_AutoLightEnable = enable;
     if(m_AutoLightEnable == 2)  //自动检测模式
     {
-        JPSys_SetLightMode(2);
+        //JPSys_SetLightMode(2);
     }
     else
     {
-        JPSys_SetLightMode(1);
+        //JPSys_SetLightMode(1);
         if(m_AutoLightEnable == 0)
         {
-            JPSys_SetLightEnable(0);
+            //JPSys_SetLightEnable(0);
         }
         else if(m_AutoLightEnable == 1)
         {
-            JPSys_SetLightEnable(1);
+            //JPSys_SetLightEnable(1);
         }
     }
     m_Cconfig->SetValue(EXT_SECITONCFG, EXT_AUTOLIGHTKEY, (long)enable);
@@ -227,6 +236,50 @@ int CExtctrl::GetDevVersionInfo(DevInfo_st *info)
 {
     pthread_mutex_lock(&m_Lock);
     memcpy(info, &m_DevVersion, sizeof(DevInfo_st));
+    pthread_mutex_unlock(&m_Lock);
+    return 0;
+}
+
+int CExtctrl::SetTemCtrlCfg(TemperatureCfg TemCfg)
+{
+    pthread_mutex_lock(&m_Lock);
+    memcpy(&m_TemCfg, &TemCfg, sizeof(TemperatureCfg));
+
+    JPSys_SetAutoTemperaCfg(TemCfg);
+    m_Cconfig->SetValue(EXT_SECITONCFG, EXT_TEMPERATURE_MIN, (long)TemCfg.min_temperature);
+    m_Cconfig->SetValue(EXT_SECITONCFG, EXT_TEMPERATURE_MAX, (long)TemCfg.max_temperature);
+
+    pthread_mutex_unlock(&m_Lock);
+    return 0;
+}
+
+int CExtctrl::GetTemCtrlCfg(TemperatureCfg *TemCfg)
+{
+    pthread_mutex_lock(&m_Lock);
+    memcpy(&TemCfg, &m_TemCfg, sizeof(TemperatureCfg));
+    pthread_mutex_unlock(&m_Lock);
+    return 0;
+}
+
+int CExtctrl::SetTemperatureMode(int mode)
+{
+    pthread_mutex_lock(&m_Lock);
+    if(m_TemperMode == mode)
+    {
+        pthread_mutex_unlock(&m_Lock);
+        return 0;
+    }
+    JPSys_SetHeatMode(mode);
+    m_Cconfig->SetValue(EXT_SECITONCFG, EXT_TEMPERATURE_MODE, (long)mode);
+    m_TemperMode = mode;
+    pthread_mutex_unlock(&m_Lock);
+    return 0;
+}
+
+int CExtctrl::GetTemperaTureMode(int *mode)
+{
+    pthread_mutex_lock(&m_Lock);
+    *mode = m_TemperMode;
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }

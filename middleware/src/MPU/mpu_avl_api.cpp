@@ -192,6 +192,11 @@ int AVL_InfraredImage_SetAutoFocuData(int nch, int type)
     MPU_AVL_CALL(InfraredImage_SetAutoFocuData(nch, type));
 }
 
+int AVL_InfraredImage_RegisterIrCtrlCb(int nch, IRControlFunctions cb)
+{
+    MPU_AVL_CALL(InfraredImage_RegisterIrCtrlCb(nch, cb));
+}
+
 int AVL_InfraredImage_SetImagesaturation(int nch, int value)
 {
     MPU_AVL_CALL(InfraredImage_SetImagesaturation(nch, value));
@@ -604,6 +609,16 @@ int AVL_Ext_GetDevVersionInfo(int nch, DevInfo_st *info)
     MPU_AVL_CALL(Ext_GetDevVersionInfo(nch, info));
 }
 
+int AVL_Ext_SetTemperatureMode(int nch, int mode)
+{
+    MPU_AVL_CALL(Ext_SetTemperatureMode(nch, mode));
+}
+
+int AVL_Ext_GetTemperaTureMode(int nch, int *mode)
+{
+    MPU_AVL_CALL(Ext_GetTemperaTureMode(nch, mode));
+}
+
 int AVL_Vis_SetBrightness(int nch, int value)
 {
     MPU_AVL_CALL(Vis_SetBrightness(nch, value));
@@ -652,4 +667,24 @@ int AVL_Vis_SetSharpness(int nch, int value)
 int AVL_Vis_GetSharpness(int nch, int *value)
 {
     MPU_AVL_CALL(Vis_GetSharpness(nch, value));
+}
+
+int AVL_Vis_SetDigitalZoom(int nch, float value)
+{
+    MPU_AVL_CALL(Vis_SetDigitalZoom(nch, value));
+}
+
+int AVL_Vis_GetDigitalZoom(int nch, float *value)
+{
+    MPU_AVL_CALL(Vis_GetDigitalZoom(nch, value));
+}
+
+int AVL_Vis_RegisterVisCtrlCb(int nch, VisControlFunctions cb)
+{
+    MPU_AVL_CALL(Vis_RegisterVisCtrlCb(nch, cb));
+}
+
+int AVL_Vis_SetAutoFocuData(int nch, int mode)
+{
+    MPU_AVL_CALL(Vis_SetAutoFocuData(nch, mode));
 }

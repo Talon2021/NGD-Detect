@@ -22,6 +22,10 @@ int IR_Sys_AlgoSendFrame(img_data *data);
 
 int IR_Sys_RegisterResultCAllBack(DetectResult_CALLBACK cb);
 
+int IR_Sys_SetIrCtrlCb(IRControlFunctions ir_cb);
+
+int IR_Sys_SetVisCtrlCb(VisControlFunctions vis_cb);
+
 #ifdef __cplusplus
 }
 #endif

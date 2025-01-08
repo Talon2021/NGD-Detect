@@ -3,6 +3,7 @@
 #include "Cserial.h"
 #include "common.h"
 #include "CConfig.h"
+#include "IR_common.h"
 #define G_UART_DEV5 "/dev/ttyS7"
 #define READ_SERIAL_MS  100
 class CCInfraredImage
@@ -24,6 +25,7 @@ private:
     pthread_mutex_t m_Lock;
     
     CConfig *m_cconfig;
+    IRControlFunctions m_CtrlFnxCb;
     int LoadParam();
 public:
     CCInfraredImage(void *handle, int ch);
@@ -199,6 +201,9 @@ public:
     int SetElectricFocu(int action);
 
     int SetAutoFocuData(int type);
+
+    int RegisterIrCtrlCb(IRControlFunctions cb);
+
 };
 
 

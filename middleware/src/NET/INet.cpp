@@ -45,6 +45,30 @@ INet *INet::m_instance = 0;
 
 static int subMaskWillBeChanged=0;
 
+static int check_interface_end() {
+    FILE *file = fopen("/etc/network/interfaces", "r");
+    if (file == NULL) {
+        return -1;  // 文件打开失败
+    }
+
+    char line[256];
+    while (fgets(line, sizeof(line), file)) {
+        // 去除行尾的换行符
+        line[strcspn(line, "\n")] = 0;
+
+        // 判断是否包含目标字段
+        if (strstr(line, "INTERFACE_BEGIN") != NULL) {
+            fclose(file);
+            return 1;  // 找到了INTERFACE_END字段
+        }
+    }
+	fprintf(stderr, "rm interfile ===========\n");
+	fclose(file);
+	mysystem("rm /etc/network/interfaces");
+	mysystem("sync");
+    return 0;  // 没有找到INTERFACE_END字段
+}
+
 int INet::LoadParam()
 {
 	int port, getPort;
@@ -203,7 +227,7 @@ int INet::Init()
 		return -1;
 	}
 	pthread_mutex_init(&m_writeLock, NULL);
-
+	check_interface_end();
 	LoadParam();
 
     return 0;

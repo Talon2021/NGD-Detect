@@ -12,7 +12,7 @@ int Detect_Task::GetFrameDetectThread()
         m_ThreadPool->enqueue([this,frame](){
             this->taskModelReson(frame);
         });
-        usleep(10 *1000);
+        usleep(50 *1000);
     }
     return 0;
 }

@@ -72,6 +72,7 @@ int AVL_InfraredImage_SetElectricFocu(int nch, int action);
 
 int AVL_InfraredImage_SetAutoFocuData(int nch, int type);
 
+int AVL_InfraredImage_RegisterIrCtrlCb(int nch, IRControlFunctions cb);
 
 int AVL_InfraredImage_SetImagesaturation(int nch, int value);
 
@@ -240,6 +241,9 @@ int AVL_Ext_GetCvbsEnable(int nch, int *enable);
 
 int AVL_Ext_GetDevVersionInfo(int nch, DevInfo_st *info);
 
+int AVL_Ext_SetTemperatureMode(int nch, int mode);
+
+int AVL_Ext_GetTemperaTureMode(int nch, int *mode);
 
 int AVL_Vis_SetBrightness(int nch, int value);
 
@@ -260,5 +264,13 @@ int AVL_Vis_GetSaturation(int nch, int *value);
 int AVL_Vis_SetSharpness(int nch, int value);
 
 int AVL_Vis_GetSharpness(int nch, int *value);
+
+int AVL_Vis_SetDigitalZoom(int nch, float value);
+
+int AVL_Vis_GetDigitalZoom(int nch, float *value);
+
+int AVL_Vis_RegisterVisCtrlCb(int nch, VisControlFunctions cb);
+
+int AVL_Vis_SetAutoFocuData(int nch, int mode);
 
 #endif

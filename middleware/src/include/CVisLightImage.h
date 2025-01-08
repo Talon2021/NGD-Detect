@@ -3,6 +3,7 @@
 #include "CConfig.h"
 #include <pthread.h>
 #include "Cserial.h"
+#include "IR_common.h"
 
 
 class CVisLightImage
@@ -31,6 +32,12 @@ public:
     int SetSharpness(int value);
     int GetSharpness(int *value);
 
+    int SetDigitalZoom(float value);
+    int GetDigitalZoom(float *value);
+
+    int RegisterVisCtrlCb(VisControlFunctions cb);
+
+    int SetAutoFocuData(int mode);
 private:
     int LoadParam();
     int m_init;
@@ -39,10 +46,13 @@ private:
     int m_focu_mode;
     int m_saturation;
     int m_sharpness;
+    float m_DigitalZoom;
     pthread_mutex_t m_Lock;
     CConfig *m_cconfig;
 
     Cserial *m_serial;
+
+    VisControlFunctions m_CtrlFnxCb;
 };
 
 

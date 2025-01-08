@@ -55,14 +55,14 @@ int CCInfraredImage::LoadParam()
     value = m_cconfig->GetValue(IR_CONFIG_SECTION,"Contrast",(long)50);
     SetImageContrast(value);
 
-    value = m_cconfig->GetValue(IR_CONFIG_SECTION,"Sharpening",(long)0);
-    SetInfraredImageSharpening(value);
+    // value = m_cconfig->GetValue(IR_CONFIG_SECTION,"Sharpening",(long)0);
+    // SetInfraredImageSharpening(value);
 
     value = m_cconfig->GetValue(IR_CONFIG_SECTION,"Polarity",(long)0);
     SetInfraredImagePolarity(value);
 
-    value = m_cconfig->GetValue(IR_CONFIG_SECTION,"saturation",(long)0);
-    SetImagesaturation(value);
+    // value = m_cconfig->GetValue(IR_CONFIG_SECTION,"saturation",(long)0);
+    // SetImagesaturation(value);
 
     m_ElectronicZoom = m_cconfig->GetValue(IR_CONFIG_SECTION,"electron_zoom",(long)1);
     SetInfraredImageElectronicZoom(m_ElectronicZoom);
@@ -82,6 +82,7 @@ CCInfraredImage::CCInfraredImage(void *handle, int ch)
     m_init = 0;
     //Comm_CreateThread(&m_serialThread, 0, g_threadImage);
     m_han = handle;
+    memset(&m_CtrlFnxCb, 0, sizeof(IRControlFunctions));
 }
 
 int CCInfraredImage::Init()
@@ -101,7 +102,7 @@ int CCInfraredImage::Init()
     m_cconfig = CConfig::GetInstance();;
     m_init = 1;
 
-    LoadParam();
+    //LoadParam();
     
     return 0;
 }
@@ -128,12 +129,20 @@ int CCInfraredImage::SetImageBrightness(int value)
     {
         return -1;
     }
+    int ret = 0;
     pthread_mutex_lock(&m_Lock);
     if(m_brightness == value)
     {
         pthread_mutex_unlock(&m_Lock);
         return 0;
     }
+    if(m_CtrlFnxCb.IR_SetPicbrightness == NULL)
+    {
+        ERROR("set pic IR_SetPicbrightness cb is NULL");
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+#if 0
     int ret = 0;
     JsonConfigExt info(_Code(IR_PIC_BRIGHTNESS_CODE, "brightness_ir"), "set");
     info.data = DataConfigBody();
@@ -160,9 +169,20 @@ int CCInfraredImage::SetImageBrightness(int value)
         pthread_mutex_unlock(&m_Lock);
         return -1;
     }
-
+#endif
+    
+    
+    ret = m_CtrlFnxCb.IR_SetPicbrightness(value);
+    if(ret != 0)
+    {
+        ERROR("set IR_SetPicContrast is fail ret = %d \n", ret);
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+    
     m_cconfig->SetValue(IR_CONFIG_SECTION,"birgthness",(long)value);
     m_brightness = value;
+    
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -186,12 +206,20 @@ int CCInfraredImage::SetImageContrast(int value)
     {
         return -1;
     }
+    int ret = 0;
     pthread_mutex_lock(&m_Lock);
     if(m_contrast == value)
     {
         pthread_mutex_unlock(&m_Lock);
         return 0;
     }
+    if(m_CtrlFnxCb.IR_SetPicContrast == NULL)
+    {
+        ERROR("set pic IR_SetPicContrast cb is NULL");
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+#if 0
     int ret = 0;
     JsonConfigExt info(_Code(IR_PIC_CONTRAST_CODE, "contrast_ir"), "set");
     info.data = DataConfigBody();
@@ -215,7 +243,17 @@ int CCInfraredImage::SetImageContrast(int value)
         pthread_mutex_unlock(&m_Lock);
         return -1;
     }
-
+#endif 
+    
+    
+    ret = m_CtrlFnxCb.IR_SetPicContrast(value);
+    if(ret != 0)
+    {
+        ERROR("set IR_SetPicContrast is fail ret = %d \n", ret);
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+    
     m_cconfig->SetValue(IR_CONFIG_SECTION,"Contrast",(long)value);
     m_contrast = value;
     pthread_mutex_unlock(&m_Lock);
@@ -433,6 +471,13 @@ int CCInfraredImage::SetInfraredImagePolarity(int value)
         pthread_mutex_unlock(&m_Lock);
         return 0;
     }
+    if(m_CtrlFnxCb.IR_SetPicPreMode == NULL)
+    {
+        ERROR("set pic IR_SetPicPreMode cb is NULL");
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+#if 0
     JsonConfigExt info(_Code(IR_PSEUDO_CONFIG_CODE, "pseudo"), "set");
     info.data = DataConfigBody();
     info.data->value = pseudo_enum[value]; 
@@ -452,6 +497,14 @@ int CCInfraredImage::SetInfraredImagePolarity(int value)
     if(std::stoi(out_response.status.value()) != 0)
     {
         ERROR(" reply message is status = %s \n", out_response.status->c_str());
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+#endif
+    ret = m_CtrlFnxCb.IR_SetPicPreMode(value);
+    if(ret != 0)
+    {
+        ERROR("set IR_SetPicPreMode is fail ret = %d \n", ret);
         pthread_mutex_unlock(&m_Lock);
         return -1;
     }
@@ -558,6 +611,13 @@ int CCInfraredImage::SetInfraredImageElectronicZoom(float value)
         pthread_mutex_unlock(&m_Lock);
         return 0;
     }
+    if(m_CtrlFnxCb.IR_SetPicDigitalZoom == NULL)
+    {
+        ERROR("set pic IR_SetPicDigitalZoom cb is NULL");
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+#if 0
     JsonConfigExt info(_Code(IR_ZOOM_CONFIG_CODE, "zoom"), "set");
     info.data = DataConfigBody();
     info.data->value = std::to_string(value);  
@@ -580,7 +640,15 @@ int CCInfraredImage::SetInfraredImageElectronicZoom(float value)
         pthread_mutex_unlock(&m_Lock);
         return -1;
     }
-
+#endif
+    ret = m_CtrlFnxCb.IR_SetPicDigitalZoom(value);
+    if(ret != 0)
+    {
+        ERROR("set IR_SetPicDigitalZoom is fail ret = %d \n", ret);
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+    
     m_cconfig->SetValue(IR_CONFIG_SECTION,"electron_zoom",(float)value);
 
     m_ElectronicZoom = value;
@@ -617,7 +685,13 @@ int CCInfraredImage::SetInfraredImageFocusMode(int mode)
         pthread_mutex_unlock(&m_Lock);
         return 0;
     }
-
+    if(m_CtrlFnxCb.IR_SetAfocesMode == NULL)
+    {
+        ERROR("set pic IR_SetAfocesMode cb is NULL");
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+#if 0
     if(mode == 0)       //0 自动调焦 1 电动调焦
     {
         msg_flag = 1;
@@ -654,6 +728,14 @@ int CCInfraredImage::SetInfraredImageFocusMode(int mode)
             return -1;
         }
     }
+#endif 
+    ret = m_CtrlFnxCb.IR_SetAfocesMode(mode);
+    if(ret != 0)
+    {
+        ERROR("set IR_SetAfocesMode is fail ret = %d \n", ret);
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
     m_cconfig->SetValue(IR_CONFIG_SECTION,"focus_mode",(long)mode);
     m_FocusMode = mode;
     pthread_mutex_unlock(&m_Lock);
@@ -685,7 +767,13 @@ int CCInfraredImage::SetGasEnhanced(int enable)
         pthread_mutex_unlock(&m_Lock);
         return 0;
     }
-
+    if(m_CtrlFnxCb.IR_SetGasEnhanced == NULL)
+    {
+        ERROR("set pic IR_SetGasEnhanced cb is NULL");
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+#if 0
     JsonConfigExt info(_Code(GAS_ENHANCEMENT_CODE, "gas_enhancement"), "set");
     info.data = DataConfigBody();
     info.data->value = std::to_string(enable);  
@@ -708,7 +796,14 @@ int CCInfraredImage::SetGasEnhanced(int enable)
         pthread_mutex_unlock(&m_Lock);
         return -1;
     }
-
+#endif
+    ret = m_CtrlFnxCb.IR_SetGasEnhanced(enable);
+    if(ret != 0)
+    {
+        ERROR("set IR_SetGasEnhanced is fail ret = %d \n", ret);
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
     m_cconfig->SetValue(IR_CONFIG_SECTION,"gas_enhanced",(long)enable);
     m_GasEnhanced = enable;
     pthread_mutex_unlock(&m_Lock);
@@ -735,7 +830,13 @@ int CCInfraredImage::SetElectricFocu(int action)
     }
     int ret = 0;
     pthread_mutex_lock(&m_Lock);
-
+    if(m_CtrlFnxCb.IR_SetAfocesStatus == NULL)
+    {
+        ERROR("set pic IR_SetAfocesStatus cb is NULL");
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+#if 0
     JsonConfigExt info(_Code(IR_ELEC_FOCU_DATA_CODE, "elecfocus_ir"), "set");
     info.data = DataConfigBody();
     info.data->action = std::to_string(action); 
@@ -758,7 +859,14 @@ int CCInfraredImage::SetElectricFocu(int action)
         pthread_mutex_unlock(&m_Lock);
         return -1;
     }
-
+#endif
+    ret = m_CtrlFnxCb.IR_SetAfocesStatus(1);
+    if(ret != 0)
+    {
+        ERROR("set IR_SetAfocesStatus is fail ret = %d \n", ret);
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
     pthread_mutex_unlock(&m_Lock);
     return 0;
 }
@@ -773,6 +881,13 @@ int CCInfraredImage::SetAutoFocuData(int type)
     int ret = 0;
     std::string action;
     pthread_mutex_lock(&m_Lock);
+    if(m_CtrlFnxCb.IR_SetAfocesStatus == NULL)
+    {
+        ERROR("set pic IR_SetAfocesStatus cb is NULL");
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+#if 0 
     if(type == 0)
     {
         action = "single";
@@ -803,7 +918,25 @@ int CCInfraredImage::SetAutoFocuData(int type)
         pthread_mutex_unlock(&m_Lock);
         return -1;
     }
+#endif 
 
+    ret = m_CtrlFnxCb.IR_SetAfocesStatus(type);
+    if(ret != 0)
+    {
+        ERROR("set IR_SetAfocesStatus is fail ret = %d \n", ret);
+        pthread_mutex_unlock(&m_Lock);
+        return -1;
+    }
+    
     pthread_mutex_unlock(&m_Lock);
+    return 0;
+}
+
+int CCInfraredImage::RegisterIrCtrlCb(IRControlFunctions cb)
+{
+    pthread_mutex_lock(&m_Lock);
+    memcpy(&m_CtrlFnxCb, &cb, sizeof(IRControlFunctions));
+    pthread_mutex_unlock(&m_Lock);
+    LoadParam();
     return 0;
 }
